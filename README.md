@@ -4,6 +4,7 @@
 ## Description
 Swapify adalah platform sosial yang memungkinkan pengguna untuk menawarkan dan menukar pakaian bekas yang masih layak pakai kepada pengguna lain. Platform ini bertujuan untuk memperpanjang siklus penggunaan pakaian sekaligus mendorong penerapan gaya hidup berkelanjutan melalui konsep slow fashion dan reuse.
 
+
 ## Group Members
 
 | Nama | NPM |
