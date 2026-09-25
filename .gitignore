@@ -15,7 +15,8 @@ __pycache__/
 .idea/
 
 # Tailwind standalone build output
-theme/static/css/dist/
+# theme/static/css/dist/
+staticfiles/
 
 # JavaScript dependencies (not used by the current standalone setup)
 node_modules/
