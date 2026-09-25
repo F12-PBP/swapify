@@ -2,7 +2,7 @@ name: Django Quality Checks
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, staging, develop]
 
 permissions:
   contents: read
@@ -10,6 +10,9 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
+
+    env:
+      SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
 
     steps:
       - name: Checkout repository

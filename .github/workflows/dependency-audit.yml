@@ -2,9 +2,9 @@ name: Dependency Audit
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, staging, develop]
   push:
-    branches: [main]
+    branches: [main, staging, develop]
   workflow_dispatch:
 
 permissions:
