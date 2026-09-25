@@ -1,5 +1,90 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Fraunces";
+  src: url("../../fonts/Fraunces-VariableFont_SOFT,WONK,opsz,wght.ttf");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("../../fonts/PlusJakartaSans-VariableFont_wght.ttf");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Fraunces - Heading*/
+  --text-h1: 3.75rem;
+  --text-h1--line-height: 3.75rem;
+  --text-h2: 3rem;
+  --text-h2--line-height: 3rem;
+  --text-h3: 2.25rem;
+  --text-h3--line-height: 2.5rem;
+  --text-h4: 1.875rem;
+  --text-h4--line-height: 2.25rem;
+  --text-h5: 1.5rem;
+  --text-h5--line-height: 2rem;
+  --text-h6: 1.25rem;
+  --text-h6--line-height: 1.75rem;
+  --text-h7: 1rem;
+  --text-h7--line-height: 1.5rem;
+  --text-h8: 0.875rem;
+  --text-h8--line-height: 1.25rem;
+  --text-h9: 0.75rem;
+  --text-h9--line-height: 1rem;
+
+  /* Plus Jakarta Sans — subheading */
+  --text-s1: 3.75rem;
+  --text-s1--line-height: 3.75rem;
+  --text-s2: 3rem;
+  --text-s2--line-height: 3rem;
+  --text-s3: 2.25rem;
+  --text-s3--line-height: 2.5rem;
+  --text-s4: 1.875rem;
+  --text-s4--line-height: 2.25rem;
+  --text-s5: 1.5rem;
+  --text-s5--line-height: 2rem;
+  --text-s6: 1.25rem;
+  --text-s6--line-height: 1.75rem;
+  --text-s7: 1rem;
+  --text-s7--line-height: 1.5rem;
+  --text-s8: 0.875rem;
+  --text-s8--line-height: 1.25rem;
+  --text-s9: 0.75rem;
+  --text-s9--line-height: 1rem;
+  --text-s10: 0.625rem;
+  --text-s10--line-height: 0.75rem;
+
+  /* Plus Jakarta Sans - Body*/
+  --text-b1: 3.75rem;
+  --text-b1--line-height: 3.75rem;
+  --text-b2: 3rem;
+  --text-b2--line-height: 3rem;
+  --text-b3: 2.25rem;
+  --text-b3--line-height: 2.5rem;
+  --text-b4: 1.875rem;
+  --text-b4--line-height: 2.25rem;
+  --text-b5: 1.5rem;
+  --text-b5--line-height: 2rem;
+  --text-b6: 1.25rem;
+  --text-b6--line-height: 1.75rem;
+  --text-b7: 1rem;
+  --text-b7--line-height: 1.5rem;
+  --text-b8: 0.875rem;
+  --text-b8--line-height: 1.25rem;
+  --text-b9: 0.75rem;
+  --text-b9--line-height: 1rem;
+  --text-b10: 0.625rem;
+  --text-b10--line-height: 0.75rem;
+}
+
 @source not "./daisyui{,*}.mjs";
 @source "../../../apps";
 @source "../../../templates";
@@ -25,6 +110,11 @@
 .input:focus{
   outline: 1px solid #0000;
   border: 1px solid #0000;
+  border-radius: 9999px;
+}
+
+button {
+  border-radius: 9999px;
 }
 
 .ds-preview {
