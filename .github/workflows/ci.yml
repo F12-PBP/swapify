@@ -11,6 +11,9 @@ jobs:
   quality:
     runs-on: ubuntu-latest
 
+    env:
+      SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
