@@ -5,7 +5,14 @@
 {% endblock %}
 
 {% block content %}
-    <h1>
+<section class="flex justify-center flex-col items-center min-h-screen gap-2">
+    <h1 class="text-4xl font-semibold text-center">
         Swapify
     </h1>
+    <a class="btn btn-primary" href="{% url 'main:DesignSystemView.as_view()' %}">
+        Show Design System
+    </a>
+
+</section>
+
 {% endblock %}

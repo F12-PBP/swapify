@@ -19,3 +19,6 @@ theme/static/css/dist/
 
 # JavaScript dependencies (not used by the current standalone setup)
 node_modules/
+
+.vscode
+
