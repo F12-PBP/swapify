@@ -1,0 +1,24 @@
+{% extends "components/card-ds.html" %}
+
+{% block title %}
+    Text field
+{% endblock %}
+
+{% block preview %}
+    <label class="w-full max-w-xs">
+        <span class="label-text mb-2 font-medium">Nama Pakaian</span>
+        <input
+            class="input swap-input w-full"
+            placeholder="Contoh: Gaun Hijau"
+            type="text"
+        >
+    </label>
+{% endblock %}
+
+{% block code %}
+&lt;input
+  class="input w-full"
+  placeholder="Nama barang"
+  type="text"
+/&gt;
+{% endblock %}

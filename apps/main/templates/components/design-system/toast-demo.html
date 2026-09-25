@@ -1,0 +1,21 @@
+{% extends "components/card-ds.html" %}
+
+{% block title %}
+    Success feedback
+{% endblock %}
+
+{% block preview %}
+    <div class="min-h-28">
+        <div class="alert alert-success swap-toast max-w-xs" role="status">
+            <span>Barang berhasil ditambahkan.</span>
+        </div>
+    </div>
+{% endblock %}
+
+{% block code %}
+&lt;div class="toast toast-end"&gt;
+  &lt;div class="alert alert-success swap-toast" role="status"&gt;
+    &lt;span&gt;Barang berhasil ditambahkan.&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+{% endblock %}

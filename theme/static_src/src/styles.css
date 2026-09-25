@@ -21,3 +21,16 @@
   --depth: 1;
   --noise: 0;
 }
+
+.input:focus{
+  outline: 1px solid #0000;
+  border: 1px solid #0000;
+}
+
+.ds-preview {
+  @apply flex items-center justify-center rounded-box bg-base-200 p-6;
+}
+
+.ds-code {
+  @apply overflow-x-auto rounded-box bg-neutral p-4 text-xs leading-6 text-neutral-content;
+}

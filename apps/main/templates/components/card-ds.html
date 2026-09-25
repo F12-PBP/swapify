@@ -1,0 +1,22 @@
+<article class="card border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body gap-5">
+        <div>
+            <h2 class="card-title">
+               {%block title%}
+               {%endblock title%}
+            </h2>
+        </div>
+
+        <div class="ds-preview">
+               {%block preview%}
+               {%endblock preview%}
+        </div>
+
+        <div>
+            <p class="mb-2 text-sm font-medium">
+                Usage
+            </p>
+            <pre class="ds-code"><code>{%block code%}{%endblock code%}</code></pre>
+        </div>
+    </div>
+</article>
