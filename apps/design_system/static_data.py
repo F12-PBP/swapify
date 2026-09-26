@@ -55,6 +55,7 @@ COLOR_PALETTES = (
         "name": "red",
         "title": "Red",
         "swatches": (
+            ("10", "#FEEEED"),
             ("20", "#FBD5D0"),
             ("30", "#F6A69D"),
             ("40", "#EE7569"),
@@ -96,6 +97,59 @@ COLOR_PALETTES = (
             ("80", "#1B5236"),
             ("90", "#143F2A"),
             ("100", "#0F2E1D"),
+        ),
+    },
+)
+
+TYPOGRAPHIES = (
+    {
+        "name": "heading",
+        "title": "Heading (Fraunces)",
+        "font_class": "font-display",
+        "styles": (
+            ("H1", "text-h1", 60, 60),
+            ("H2", "text-h2", 48, 48),
+            ("H3", "text-h3", 36, 40),
+            ("H4", "text-h4", 30, 36),
+            ("H5", "text-h5", 24, 32),
+            ("H6", "text-h6", 20, 28),
+            ("H7", "text-h7", 16, 24),
+            ("H8", "text-h8", 14, 20),
+            ("H9", "text-h9", 12, 16),
+        ),
+    },
+    {
+        "name": "subheading",
+        "title": "Subheading (Plus Jakarta Sans)",
+        "font_class": "font-sans",
+        "styles": (
+            ("S1", "text-s1", 60, 60),
+            ("S2", "text-s2", 48, 48),
+            ("S3", "text-s3", 36, 40),
+            ("S4", "text-s4", 30, 36),
+            ("S5", "text-s5", 24, 32),
+            ("S6", "text-s6", 20, 28),
+            ("S7", "text-s7", 16, 24),
+            ("S8", "text-s8", 14, 20),
+            ("S9", "text-s9", 12, 16),
+            ("S10", "text-s10", 10, 12),
+        ),
+    },
+    {
+        "name": "body",
+        "title": "Body (Plus Jakarta Sans)",
+        "font_class": "font-sans",
+        "styles": (
+            ("B1", "text-b1", 60, 60),
+            ("B2", "text-b2", 48, 48),
+            ("B3", "text-b3", 36, 40),
+            ("B4", "text-b4", 30, 36),
+            ("B5", "text-b5", 24, 32),
+            ("B6", "text-b6", 20, 28),
+            ("B7", "text-b7", 16, 24),
+            ("B8", "text-b8", 14, 20),
+            ("B9", "text-b9", 12, 16),
+            ("B10", "text-b10", 10, 12),
         ),
     },
 )
