@@ -3,6 +3,13 @@ from django.urls import reverse
 
 
 class DesignSystemViewTests(TestCase):
+    def test_custom_dropdown_markup(self):
+        response = self.client.get(reverse("design_system:ds"))
+
+        self.assertContains(response, 'id="ds-dropdown"')
+        self.assertContains(response, 'name="category" value=""')
+        self.assertContains(response, "js/design-system-dropdown.js")
+
     def test_design_system_returns_ok(self):
         response = self.client.get(reverse("design_system:ds"))
 
@@ -14,7 +21,17 @@ class DesignSystemViewTests(TestCase):
                 len(palette["swatches"])
                 for palette in response.context["color_palettes"]
             ),
-            63,
+            64,
         )
         self.assertContains(response, "var(--color-primary-base)")
         self.assertContains(response, "var(--color-green-100)")
+        self.assertContains(response, 'id="color-palette-title"', count=1)
+        self.assertContains(response, "swap-chip")
+        self.assertContains(response, "swap-alert-success")
+        self.assertContains(response, "icons/alert-success.svg")
+        self.assertContains(response, "icons/alert-close-success.svg")
+        self.assertContains(response, 'id="ds-dropdown"')
+        self.assertContains(response, 'data-value="choice-1"')
+        self.assertContains(response, "js/design-system-dropdown.js")
+        self.assertContains(response, 'name="ds-choice"')
+        self.assertContains(response, "swap-accordion")
