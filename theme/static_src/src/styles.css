@@ -164,6 +164,17 @@
 @source "../../../apps";
 @source "../../../templates";
 
+/* Keep design system tokens available before they appear in a template. */
+@source inline("text-h{1..9}");
+@source inline("text-s{1..10}");
+@source inline("text-b{1..10}");
+@source inline("{bg,text,border}-primary-{base,{10..100..10}}");
+@source inline("{bg,text,border}-secondary-{base,{10..100..10}}");
+@source inline("{bg,text,border}-neutral-{10..120..10}");
+@source inline("{bg,text,border}-red-{base,{20..50..10},{70..100..10}}");
+@source inline("{bg,text,border}-yellow-{base,{10..90..10}}");
+@source inline("{bg,text,border}-green-{base,{10..50..10},{70..100..10}}");
+
 @plugin "./daisyui.mjs";
 
 @plugin "./daisyui-theme.mjs" {
