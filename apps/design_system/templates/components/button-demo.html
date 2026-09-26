@@ -1,0 +1,63 @@
+{% extends "components/card-ds.html" %}
+
+{% block title %}
+    Button
+{% endblock %}
+
+{% block preview %}
+    <div class="grid gap-3 sm:grid-cols-3">
+        <div class="flex flex-col items-center justify-center">
+            <code class="text-[12px]">btn-primary</code>
+            <button class="btn btn-primary" type="button">Control to Action</button>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+            <code class="text-[12px]">btn-secondary</code>
+            <button class="btn btn-secondary" type="button">Control to Action</button>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+            <code class="text-[12px]">btn-error</code>
+            <button class="btn btn-error" type="button">Control to Action</button>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+            <code class="text-[12px]">btn-primary-ghost</code>
+            <button class="btn btn-primary-ghost" type="button">Control to Action</button>
+        </div>
+         <div class="flex flex-col items-center justify-center">
+            <code class="text-[12px]">btn-secondary-ghost</code>
+            <button class="btn btn-secondary-ghost" type="button">Control to Action</button>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+            <code class="text-[12px]">btn-error-ghost</code>
+            <button class="btn btn-error-ghost" type="button">Control to Action</button>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+            <code class="text-[12px]">btn-neutral</code>
+            <button class="btn btn-neutral" type="button">Control to Action</button>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+            <code class="text-[12px]">disabled</code>
+            <button class="btn btn-neutral" type="button" disabled>Control to Action</button>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block code %}&lt;button class="btn btn-primary" type="button"&gt;
+  Primary
+&lt;/button&gt;
+
+&lt;button class="btn btn-primary-ghost" type="button"&gt;
+  Primary ghost
+&lt;/button&gt;
+
+&lt;button class="btn btn-secondary" type="button"&gt;
+  Secondary
+&lt;/button&gt;
+
+&lt;button class="btn btn-secondary-ghost" type="button"&gt;
+  Secondary ghost
+&lt;/button&gt;
+
+&lt;button class="btn btn-error" type="button"&gt;Danger&lt;/button&gt;
+&lt;button class="btn btn-neutral" type="button" disabled&gt;Disabled&lt;/button&gt;
+{% endblock %}

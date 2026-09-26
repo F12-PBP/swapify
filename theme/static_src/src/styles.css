@@ -217,22 +217,29 @@
 }
 
 .btn {
-  border-radius: 9999px;
+  min-height: 3rem;
+  border-radius: 1.5rem;
+  padding-inline: 1rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-b7);
+  font-weight: 600;
+  line-height: var(--text-b7--line-height);
+  box-shadow: 0 4px 24px rgb(0 0 0 / 4%);
 }
 
-/* Button states: default -> hover -> active */
+/* ================================================== */
+/* Button */
+/* ================================================== */
+
 .btn-primary,
 .btn-secondary,
 .btn-primary-ghost,
 .btn-secondary-ghost {
   border-width: 1px;
   transition:
-    background-color 150ms ease,
-    border-color 150ms ease,
-    color 150ms ease;
-}
-
-.btn {
+    background-color 100ms ease,
+    border-color 100ms ease,
+    color 100ms ease;
 }
 
 .btn-primary {
@@ -319,6 +326,57 @@
   border-color: var(--color-secondary-40);
   background-color: var(--color-secondary-40);
   color: var(--color-secondary-60);
+}
+
+.btn-error {
+  border-color: var(--color-red-base);
+  background-color: var(--color-red-base);
+  color: var(--color-neutral-10);
+}
+.btn-error:hover:not(:disabled) {
+  border-color: var(--color-red-20);
+  background-color: var(--color-red-20);
+  color: var(--color-red-base);
+}
+.btn-error:active:not(:disabled) {
+  border-color: var(--color-red-70);
+  background-color: var(--color-red-70);
+  color: var(--color-neutral-10);
+}
+.btn-error-ghost {
+  border: 1px solid var(--color-red-base);
+  background: transparent;
+  color: var(--color-red-base);
+}
+.btn-error-ghost:hover:not(:disabled) {
+  background: var(--color-red-base);
+  color: var(--color-neutral-10);
+}
+.btn-error-ghost:active:not(:disabled) {
+  background: var(--color-red-70);
+  color: var(--color-neutral-10);
+}
+.btn-neutral {
+  border-color: var(--color-neutral-20);
+  background: var(--color-neutral-20);
+  color: var(--color-neutral-90);
+}
+.btn-neutral:hover:not(:disabled) {
+  border-color: var(--color-neutral-90);
+  background: transparent;
+  color: var(--color-neutral-90);
+}
+.btn-neutral:active:not(:disabled) {
+  border-color: var(--color-neutral-50);
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-90);
+}
+button.btn:disabled {
+  border-color: var(--color-neutral-40);
+  background: var(--color-neutral-40);
+  color: var(--color-neutral-50);
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
 .ds-preview {
