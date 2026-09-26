@@ -216,7 +216,7 @@
   border-radius: 9999px;
 }
 
-button {
+.btn {
   border-radius: 9999px;
 }
 
@@ -230,6 +230,9 @@ button {
     background-color 150ms ease,
     border-color 150ms ease,
     color 150ms ease;
+}
+
+.btn {
 }
 
 .btn-primary {
