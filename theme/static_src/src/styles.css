@@ -454,6 +454,40 @@ button.btn:disabled {
   outline-offset: 2px;
 }
 
+/* ================================================== */
+/* Chips */
+/* ================================================== */
+.badge.swap-chip {
+  min-height: 2.625rem;
+  border: 1.6px solid var(--color-primary-60);
+  border-radius: 1.5rem;
+  padding-inline: 1.25rem;
+  background: var(--color-neutral-20);
+  color: var(--color-primary-70);
+  font-family: var(--font-sans);
+  font-size: var(--text-b7);
+  font-weight: 600;
+  cursor: pointer;
+}
+.badge.swap-chip:hover {
+  background: var(--color-primary-20);
+}
+.badge.swap-chip[aria-pressed="true"] {
+  background: var(--color-primary-60);
+  color: var(--color-secondary-10);
+}
+.badge.swap-chip-secondary {
+  border-color: var(--color-secondary-60);
+  color: var(--color-secondary-70);
+}
+.badge.swap-chip-secondary:hover {
+  background: var(--color-secondary-20);
+}
+.badge.swap-chip-secondary[aria-pressed="true"] {
+  background: var(--color-secondary-60);
+  color: var(--color-secondary-10);
+}
+
 .ds-preview {
   @apply flex items-center justify-center rounded-box bg-base-200 p-6;
 }
