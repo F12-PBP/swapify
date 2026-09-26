@@ -666,6 +666,53 @@ button.btn:disabled {
   outline-offset: 2px;
 }
 
+/* ================================================== */
+/* Radio and Checkbox */
+/* ================================================== */
+.radio,
+.checkbox {
+  appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 1.5rem 1.5rem;
+  box-shadow: none;
+}
+.radio {
+  background-image: url("/static/icons/radio-unchecked.svg");
+}
+.radio:checked {
+  background-image: url("/static/icons/radio-checked.svg");
+}
+.checkbox {
+  background-image: url("/static/icons/checkbox-unchecked.svg");
+}
+.checkbox:checked {
+  background-image: url("/static/icons/checkbox-checked.svg");
+}
+.radio:checked,
+.checkbox:checked {
+  border: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+.radio::before,
+.radio::after,
+.checkbox::before,
+.checkbox::after {
+  display: none;
+}
+.radio:focus-visible,
+.checkbox:focus-visible {
+  outline: 2px solid var(--color-neutral-110);
+  outline-offset: 3px;
+}
+
 .ds-preview {
   @apply flex items-center justify-center rounded-box bg-base-200 p-6;
 }
