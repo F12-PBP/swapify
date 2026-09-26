@@ -713,6 +713,36 @@ button.btn:disabled {
   outline-offset: 3px;
 }
 
+/* ================================================== */
+/* Accordion */
+/* ================================================== */
+.collapse.swap-accordion {
+  border-radius: 0.75rem;
+  background: transparent;
+}
+.swap-accordion .collapse-title {
+  min-height: 2.75rem;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-primary-base);
+  color: var(--color-neutral-10);
+  font-size: var(--text-b8);
+  line-height: var(--text-b8--line-height);
+  box-shadow: 0 4px 32px rgb(0 0 0 / 4%);
+}
+.swap-accordion .collapse-content {
+  border: 1.2px solid var(--color-primary-base);
+  border-radius: 0.75rem;
+  margin-top: 0.25rem;
+  background: var(--color-neutral-30);
+  color: var(--color-primary-base);
+  font-size: var(--text-b8);
+  line-height: var(--text-b8--line-height);
+}
+.collapse.swap-accordion[open] > .collapse-content {
+  padding: 0.75rem;
+}
+
 .ds-preview {
   @apply flex items-center justify-center rounded-box bg-base-200 p-6;
 }

@@ -1,0 +1,15 @@
+{% extends "components/card-ds.html" %}
+
+{% block title %}Accordion{% endblock %}
+
+{% block preview %}
+<div class="grid w-full max-w-sm gap-3">
+    <details class="collapse collapse-arrow swap-accordion"><summary class="collapse-title">Question?</summary><div class="collapse-content"><p>Answer</p><p>Answer</p></div></details>
+    <details class="collapse collapse-arrow swap-accordion" open><summary class="collapse-title">Question?</summary><div class="collapse-content"><p>Answer</p><p>Answer</p></div></details>
+</div>
+{% endblock %}
+
+{% block code %}&lt;details class="collapse collapse-arrow swap-accordion"&gt;
+  &lt;summary class="collapse-title"&gt;Question?&lt;/summary&gt;
+  &lt;div class="collapse-content"&gt;Answer&lt;/div&gt;
+&lt;/details&gt;{% endblock %}
