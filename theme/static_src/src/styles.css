@@ -124,7 +124,8 @@
   --color-neutral-110: #2b2525;
   --color-neutral-120: #191717;
 
-  /* Red 10 is pending a valid six-digit hex value from the design source. */
+  /* Confirmed against the Figma alert component. */
+  --color-red-10: #feeeed;
   --color-red-20: #fbd5d0;
   --color-red-30: #f6a69d;
   --color-red-40: #ee7569;
@@ -171,7 +172,7 @@
 @source inline("{bg,text,border}-primary-{base,{10..100..10}}");
 @source inline("{bg,text,border}-secondary-{base,{10..100..10}}");
 @source inline("{bg,text,border}-neutral-{10..120..10}");
-@source inline("{bg,text,border}-red-{base,{20..50..10},{70..100..10}}");
+@source inline("{bg,text,border}-red-{base,{10..50..10},{70..100..10}}");
 @source inline("{bg,text,border}-yellow-{base,{10..90..10}}");
 @source inline("{bg,text,border}-green-{base,{10..50..10},{70..100..10}}");
 
@@ -486,6 +487,58 @@ button.btn:disabled {
 .badge.swap-chip-secondary[aria-pressed="true"] {
   background: var(--color-secondary-60);
   color: var(--color-secondary-10);
+}
+
+/* ================================================== */
+/* Alert */
+/* ================================================== */
+.alert.swap-alert {
+  display: flex;
+  gap: 0.75rem;
+  border: 0;
+  border-left: 0.75rem solid currentColor;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  box-shadow: 4px 4px 20px rgb(0 0 0 / 4%);
+  font-family: var(--font-sans);
+}
+.swap-alert-error {
+  background: var(--color-red-10);
+  color: var(--color-red-base);
+}
+.swap-alert-warning {
+  background: var(--color-yellow-10);
+  color: var(--color-yellow-60);
+}
+.swap-alert-success {
+  background: var(--color-green-10);
+  color: var(--color-green-base);
+}
+.swap-alert-info {
+  background: var(--color-neutral-40);
+  color: var(--color-neutral-80);
+}
+.swap-alert-body {
+  color: var(--color-neutral-110);
+  font-size: var(--text-b9);
+  line-height: var(--text-b9--line-height);
+}
+.swap-alert-icon {
+  flex: none;
+}
+.swap-alert-close {
+  margin-left: auto;
+  align-self: flex-start;
+  border-radius: 0.25rem;
+  padding: 0;
+  cursor: pointer;
+}
+.swap-alert-close img {
+  display: block;
+}
+.swap-alert-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .ds-preview {
