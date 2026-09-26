@@ -210,12 +210,6 @@
   --color-success-content: var(--color-neutral-10);
 }
 
-.input:focus{
-  outline: 1px solid #0000;
-  border: 1px solid #0000;
-  border-radius: 9999px;
-}
-
 .btn {
   min-height: 3rem;
   border-radius: 1.5rem;
@@ -377,6 +371,87 @@ button.btn:disabled {
   color: var(--color-neutral-50);
   box-shadow: none;
   cursor: not-allowed;
+}
+
+/* ================================================== */
+/* Input */
+/* ================================================== */
+
+.input {
+  min-height: 3rem;
+  border: 1px solid transparent;
+  border-radius: 2rem;
+  background: var(--color-neutral-30);
+  color: var(--color-primary-base);
+  font-family: var(--font-sans);
+  font-size: var(--text-b7);
+  box-shadow: 0 4px 32px rgb(0 0 0 / 4%);
+  transition: background-color 80ms ease-out, border-color 80ms ease-out, box-shadow 80ms ease-out;
+}
+
+.input::placeholder {
+  color: var(--color-neutral-60);
+}
+
+.input:where([placeholder]:not(:placeholder-shown):not(:disabled)) {
+  border-color: var(--color-primary-base);
+  box-shadow: none;
+}
+
+.input:hover:not(:disabled) {
+  box-shadow: -2px -2px 24px rgb(74 74 74 / 4%), 2px 2px 24px rgb(74 74 74 / 4%);
+}
+
+.input:focus,
+.input:focus-within {
+  outline: none;
+  border-color: var(--color-primary-base);
+  box-shadow: -2px -2px 24px rgb(74 74 74 / 4%), 2px 2px 24px rgb(74 74 74 / 4%);
+}
+
+.input:focus,
+.input:focus-within {
+  box-shadow: -2px -2px 4px rgb(115 20 29 / 50%), 2px 2px 4px rgb(115 20 29 / 50%);
+}
+
+.input:disabled {
+  opacity: 1;
+  background-color: var(--color-neutral-40);
+  color: var(--color-neutral-60);
+}
+
+.swap-field-label {
+  color: var(--color-primary-60);
+  font-weight: 600;
+}
+
+.swap-field-error {
+  color: var(--color-red-base);
+  font-size: var(--text-b9);
+}
+
+/* ================================================== */
+/* File Input */
+/* ================================================== */
+.file-input.swap-file-input {
+  min-height: 5.5rem;
+  border-radius: 0.75rem;
+  border: 1px dashed var(--color-neutral-60);
+  background: var(--color-neutral-20);
+  color: var(--color-primary-base);
+  padding: 1.5rem;
+  text-align: center;
+}
+.file-input.swap-file-input::file-selector-button {
+  border: 0;
+  background: transparent;
+  color: var(--color-primary-base);
+  font: inherit;
+  cursor: pointer;
+}
+.file-input.swap-file-input:focus-visible {
+  outline: 2px solid var(--color-primary-base);
+  outline-offset: 2px;
 }
 
 .ds-preview {

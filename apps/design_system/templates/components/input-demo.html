@@ -1,0 +1,41 @@
+{% extends "components/card-ds.html" %}
+
+{% block title %}
+    Text field
+{% endblock %}
+
+{% block preview %}
+<div class="grid w-full max-w-xs gap-4">
+    <label class="w-full" for="ds-clothing-name">
+        <span class="swap-field-label mb-2 block">Nama Pakaian <span class="text-red-base">*</span></span>
+        <input
+            id="ds-clothing-name"
+            class="input swap-input w-full"
+            placeholder="Contoh: Gaun Hijau"
+            type="text"
+        >
+        <span class="swap-field-error mt-1 block">Contoh pesan validasi</span>
+    </label>
+    <label class="w-full" for="ds-clothing-name-filled">
+        <span class="swap-field-label mb-2 block">Filled state</span>
+        <input
+            id="ds-clothing-name-filled"
+            class="input swap-input w-full"
+            placeholder="Contoh: Gaun Hijau"
+            type="text"
+            value="Gaun Hijau"
+        >
+    </label>
+    <label class="w-full" for="ds-file-upload">
+        <span class="swap-field-label mb-2 block">Unggah gambar</span>
+        <input id="ds-file-upload" class="file-input swap-file-input w-full" type="file" accept="image/*">
+    </label>
+</div>
+{% endblock %}
+
+{% block code %}&lt;input
+  class="input w-full"
+  placeholder="Nama barang"
+  type="text"
+/&gt;
+{% endblock %}
