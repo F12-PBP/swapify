@@ -4,7 +4,7 @@
 
 {% block content %}
 <section class="px-4 py-10 md:px-6">
-    <a class="btn btn-ghost btn-sm mb-6" href="{% url 'clothingCatalog:list' %}">← Kembali ke katalog</a>
+    <a class="btn btn-ghost btn-sm mb-6" href="{% url 'clothing_catalog:list' %}">← Kembali ke katalog</a>
 
     <article class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-6">
@@ -39,8 +39,8 @@
 
             {% if user == clothing.owner %}
                 <div class="card-actions justify-end border-t border-base-300 pt-5">
-                    <a class="btn btn-outline" href="{% url 'clothingCatalog:update' clothing.pk %}">Ubah</a>
-                    <a class="btn btn-error btn-outline" href="{% url 'clothingCatalog:delete' clothing.pk %}">Hapus</a>
+                    <a class="btn btn-outline" href="{% url 'clothing_catalog:update' clothing.pk %}">Ubah</a>
+                    <a class="btn btn-error btn-outline" href="{% url 'clothing_catalog:delete' clothing.pk %}">Hapus</a>
                 </div>
             {% endif %}
         </div>

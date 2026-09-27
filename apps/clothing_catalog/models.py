@@ -60,4 +60,4 @@ class Clothing(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("clothingCatalog:detail", kwargs={"pk": self.pk})
+        return reverse("clothing_catalog:detail", kwargs={"pk": self.pk})

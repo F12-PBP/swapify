@@ -23,9 +23,9 @@ class ClothingViewTests(TestCase):
         )
 
     def test_catalog_and_detail_are_public(self):
-        list_response = self.client.get(reverse("clothingCatalog:list"))
+        list_response = self.client.get(reverse("clothing_catalog:list"))
         detail_response = self.client.get(
-            reverse("clothingCatalog:detail", args=[self.clothing.pk])
+            reverse("clothing_catalog:detail", args=[self.clothing.pk])
         )
 
         self.assertEqual(list_response.status_code, 200)
@@ -35,7 +35,7 @@ class ClothingViewTests(TestCase):
     def test_authenticated_user_becomes_owner_when_creating_clothing(self):
         self.client.force_login(self.owner)
         response = self.client.post(
-            reverse("clothingCatalog:create"),
+            reverse("clothing_catalog:create"),
             {
                 "name": "Jaket Denim",
                 "description": "Jaket denim biru.",
@@ -54,10 +54,10 @@ class ClothingViewTests(TestCase):
         self.client.force_login(self.other_user)
 
         update_response = self.client.get(
-            reverse("clothingCatalog:update", args=[self.clothing.pk])
+            reverse("clothing_catalog:update", args=[self.clothing.pk])
         )
         delete_response = self.client.post(
-            reverse("clothingCatalog:delete", args=[self.clothing.pk])
+            reverse("clothing_catalog:delete", args=[self.clothing.pk])
         )
 
         self.assertEqual(update_response.status_code, 403)

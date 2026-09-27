@@ -8,7 +8,7 @@ from .views import (
     ClothingUpdateView,
 )
 
-app_name = "clothingCatalog"
+app_name = "clothing_catalog"
 
 urlpatterns = [
     path("", ClothingListView.as_view(), name="list"),

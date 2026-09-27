@@ -22,7 +22,7 @@
                 </label>
             {% endfor %}
             <div class="card-actions justify-end pt-3">
-                <a class="btn btn-ghost" href="{% if clothing %}{{ clothing.get_absolute_url }}{% else %}{% url 'clothingCatalog:list' %}{% endif %}">Batal</a>
+                <a class="btn btn-ghost" href="{% if clothing %}{{ clothing.get_absolute_url }}{% else %}{% url 'clothing_catalog:list' %}{% endif %}">Batal</a>
                 <button class="btn btn-primary" type="submit">Simpan</button>
             </div>
         </div>

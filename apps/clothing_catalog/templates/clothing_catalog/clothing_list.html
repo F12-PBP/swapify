@@ -10,7 +10,7 @@
             <p class="mt-2 text-base-content/70">Temukan pakaian yang tersedia untuk ditukar.</p>
         </div>
         {% if user.is_authenticated %}
-            <a class="btn btn-primary" href="{% url 'clothingCatalog:create' %}">Tambah pakaian</a>
+            <a class="btn btn-primary" href="{% url 'clothing_catalog:create' %}">Tambah pakaian</a>
         {% endif %}
     </div>
 
@@ -45,7 +45,7 @@
         <div class="rounded-box border border-dashed border-base-300 p-10 text-center">
             <p class="text-base-content/70">Belum ada pakaian dalam katalog.</p>
             {% if user.is_authenticated %}
-                <a class="btn btn-primary mt-4" href="{% url 'clothingCatalog:create' %}">Tambah pakaian pertama</a>
+                <a class="btn btn-primary mt-4" href="{% url 'clothing_catalog:create' %}">Tambah pakaian pertama</a>
             {% endif %}
         </div>
     {% endif %}
