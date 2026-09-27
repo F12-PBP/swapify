@@ -1,0 +1,24 @@
+name: Dependency Audit
+
+on:
+  pull_request:
+    branches: [main, staging, develop]
+  push:
+    branches: [main, staging, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pip-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Audit production dependencies
+        uses: pypa/gh-action-pip-audit@v1.1.0
+        with:
+          inputs: requirements.txt

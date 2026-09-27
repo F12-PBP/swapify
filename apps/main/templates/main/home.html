@@ -5,7 +5,16 @@
 {% endblock %}
 
 {% block content %}
-    <h1>
+<section class="flex justify-center flex-col items-center min-h-screen space-y-4">
+    <h1 class="text-h1 font-semibold font-display text-center">
         Swapify
     </h1>
+    <p>Swap Smartly, Wear Happily</p>
+
+    <a class="btn btn-primary rounded-full" href="{% url 'design_system:ds' %}">
+        Show Design System
+    </a>
+
+</section>
+
 {% endblock %}

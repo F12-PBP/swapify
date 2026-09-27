@@ -1,0 +1,18 @@
+{% extends "components/card-ds.html" %}
+{% load static %}
+
+{% block title %}Alert{% endblock %}
+
+{% block preview %}
+<div class="grid w-full gap-3">
+    <div class="alert swap-alert swap-alert-error" role="alert"><img class="swap-alert-icon" src="{% static 'icons/alert-error.svg' %}" alt="" width="44" height="44"><div><strong class="text-b8">Error</strong><p class="swap-alert-body">Tindakan tidak berhasil.</p></div><button class="swap-alert-close" type="button" aria-label="Tutup pesan error" onclick="this.closest('.swap-alert').remove()"><img src="{% static 'icons/alert-close-error.svg' %}" alt="" width="28" height="28"></button></div>
+    <div class="alert swap-alert swap-alert-warning" role="status"><img class="swap-alert-icon" src="{% static 'icons/alert-warning.svg' %}" alt="" width="44" height="44"><div><strong class="text-b8">Warning</strong><p class="swap-alert-body">Periksa kembali data Anda.</p></div><button class="swap-alert-close" type="button" aria-label="Tutup pesan warning" onclick="this.closest('.swap-alert').remove()"><img src="{% static 'icons/alert-close-warning.svg' %}" alt="" width="28" height="28"></button></div>
+    <div class="alert swap-alert swap-alert-success" role="status"><img class="swap-alert-icon" src="{% static 'icons/alert-success.svg' %}" alt="" width="44" height="44"><div><strong class="text-b8">Success</strong><p class="swap-alert-body">Perubahan berhasil disimpan.</p></div><button class="swap-alert-close" type="button" aria-label="Tutup pesan success" onclick="this.closest('.swap-alert').remove()"><img src="{% static 'icons/alert-close-success.svg' %}" alt="" width="28" height="28"></button></div>
+    <div class="alert swap-alert swap-alert-info" role="status"><img class="swap-alert-icon" src="{% static 'icons/alert-info.svg' %}" alt="" width="44" height="44"><div><strong class="text-b8">Info</strong><p class="swap-alert-body">Informasi tambahan tersedia.</p></div><button class="swap-alert-close" type="button" aria-label="Tutup pesan info" onclick="this.closest('.swap-alert').remove()"><img src="{% static 'icons/alert-close-info.svg' %}" alt="" width="28" height="28"></button></div>
+</div>
+{% endblock %}
+
+{% block code %}&lt;div class="alert swap-alert swap-alert-success" role="status"&gt;
+  &lt;img src="{% static 'icons/alert-success.svg' %}" alt="" width="44" height="44"&gt;
+  &lt;div&gt;&lt;strong&gt;Success&lt;/strong&gt;&lt;p class="swap-alert-body"&gt;Tersimpan.&lt;/p&gt;&lt;/div&gt;
+&lt;/div&gt;{% endblock %}
