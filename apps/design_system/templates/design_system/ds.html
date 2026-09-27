@@ -23,41 +23,43 @@
 
         <div class="space-y-8 rounded-2xl border border-neutral-40 bg-neutral-10 p-4 shadow-sm sm:p-6">
             {% for palette in color_palettes %}
-                <section aria-labelledby="palette-{{ palette.name }}" class="min-w-0 space-y-3">
-                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                        <h3 id="palette-{{ palette.name }}" class="text-sm font-bold text-neutral-120 sm:text-base">
-                            {{ palette.title }}
-                        </h3>
-                    </div>
-
-                    <div class="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0" role="region" aria-label="Token warna {{ palette.title }}" tabindex="0">
-                        <div class="flex w-max gap-2 sm:w-full">
-                            {% for swatch in palette.swatches %}
-                                <div
-                                    class="flex h-28 w-24 shrink-0 flex-col justify-end rounded-xl border border-neutral-120/5 p-2.5 text-xs sm:min-w-0 sm:flex-1 {% if swatch.light_text %}text-neutral-10{% else %}text-neutral-120{% endif %}"
-                                    style="background-color: var(--color-{{ palette.name }}-{{ swatch.token }});"
-                                >
-                                    <span class="font-semibold">{{ swatch.token|title }}</span>
-                                    <span class="text-[11px] leading-tight">{{ swatch.hex }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </section>
+                {%include 'design_system/color-palette.html'%}
             {% endfor %}
         </div>
     </section>
 
-    <div class="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2">
-        {% include "components/button-demo.html" %}
-        {% include "components/input-demo.html" %}
-        {% include "components/toast-demo.html" %}
-        {% include "components/chip-demo.html" %}
-        {% include "components/alert-demo.html" %}
-        {% include "components/select-demo.html" %}
-        {% include "components/choice-demo.html" %}
-        {% include "components/accordion-demo.html" %}
-    </div>
+    <section class="space-y-4" aria-labelledby="typography-title">
+        <div>
+            <h2 id="typography-title" class="font-display text-h5 font-semibold sm:text-h3">
+                Typography
+            </h2>
+        </div>
+
+        <div class="space-y-8 rounded-2xl border border-neutral-40 bg-neutral-10 p-4 shadow-sm sm:p-6">
+            {% for typography in typographies %}
+                {%include 'design_system/typography.html'%}
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="space-y-4" aria-labelledby="ui-components-title">
+         <div>
+            <h2 id="ui-components-title" class="font-display text-h5 font-semibold sm:text-h3">
+                UI Components
+            </h2>
+        </div>
+
+        <div class="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2">
+            {% include "components/button-demo.html" %}
+            {% include "components/input-demo.html" %}
+            {% include "components/toast-demo.html" %}
+            {% include "components/chip-demo.html" %}
+            {% include "components/alert-demo.html" %}
+            {% include "components/select-demo.html" %}
+            {% include "components/choice-demo.html" %}
+            {% include "components/accordion-demo.html" %}
+        </div>
+    </section>
 
     <section class="space-y-4">
         <h2 class="text-xl font-bold">
