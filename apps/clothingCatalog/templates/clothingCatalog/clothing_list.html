@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Katalog Pakaian{% endblock %}
+
+{% block content %}
+<section class="px-4 py-10 md:px-6">
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h1 class="font-display text-h3">Katalog Pakaian</h1>
+            <p class="mt-2 text-base-content/70">Temukan pakaian yang tersedia untuk ditukar.</p>
+        </div>
+        {% if user.is_authenticated %}
+            <a class="btn btn-primary" href="{% url 'clothingCatalog:create' %}">Tambah pakaian</a>
+        {% endif %}
+    </div>
+
+    {% if clothing_items %}
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {% for clothing in clothing_items %}
+                <article class="card border border-base-300 bg-base-100 shadow-sm">
+                    <div class="card-body gap-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <h2 class="card-title">{{ clothing.name }}</h2>
+                            {% if clothing.availability == 'available' %}
+                                <span class="badge badge-success badge-outline">{{ clothing.get_availability_display }}</span>
+                            {% else %}
+                                <span class="badge badge-ghost">{{ clothing.get_availability_display }}</span>
+                            {% endif %}
+                        </div>
+                        <p class="line-clamp-3 text-base-content/70">{{ clothing.description }}</p>
+                        <div class="flex flex-wrap gap-2 text-sm">
+                            <span class="badge badge-outline">{{ clothing.get_category_display }}</span>
+                            <span class="badge badge-outline">{{ clothing.get_size_display }}</span>
+                            <span class="badge badge-outline">{{ clothing.get_condition_display }}</span>
+                        </div>
+                        <p class="text-sm text-base-content/60">Ditawarkan oleh {{ clothing.owner.username }}</p>
+                        <div class="card-actions justify-end">
+                            <a class="btn btn-outline btn-sm" href="{{ clothing.get_absolute_url }}">Lihat detail</a>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="rounded-box border border-dashed border-base-300 p-10 text-center">
+            <p class="text-base-content/70">Belum ada pakaian dalam katalog.</p>
+            {% if user.is_authenticated %}
+                <a class="btn btn-primary mt-4" href="{% url 'clothingCatalog:create' %}">Tambah pakaian pertama</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

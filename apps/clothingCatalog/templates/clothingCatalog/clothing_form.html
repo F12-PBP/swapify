@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{% if clothing %}Ubah pakaian{% else %}Tambah pakaian{% endif %}{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-2xl px-4 py-10 md:px-6">
+    <div class="mb-8">
+        <h1 class="font-display text-h3">{% if clothing %}Ubah pakaian{% else %}Tambah pakaian{% endif %}</h1>
+        <p class="mt-2 text-base-content/70">Lengkapi informasi pakaian yang ingin kamu tukarkan.</p>
+    </div>
+
+    <form method="post" class="card border border-base-300 bg-base-100 shadow-sm">
+        {% csrf_token %}
+        <div class="card-body gap-5">
+            {% for field in form %}
+                <label class="w-full" for="{{ field.id_for_label }}">
+                    <span class="swap-field-label mb-2 block">{{ field.label }}</span>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <span class="swap-field-error mt-1 block">{{ error }}</span>
+                    {% endfor %}
+                </label>
+            {% endfor %}
+            <div class="card-actions justify-end pt-3">
+                <a class="btn btn-ghost" href="{% if clothing %}{{ clothing.get_absolute_url }}{% else %}{% url 'clothingCatalog:list' %}{% endif %}">Batal</a>
+                <button class="btn btn-primary" type="submit">Simpan</button>
+            </div>
+        </div>
+    </form>
+</section>
+{% endblock %}
