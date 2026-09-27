@@ -1,0 +1,19 @@
+{% extends "components/card-ds.html" %}
+
+{% block title %}Radio &amp; Checkbox{% endblock %}
+
+{% block preview %}
+<div class="flex flex-wrap gap-6 text-neutral-110">
+    <fieldset class="space-y-4"><legend class="mb-2 font-semibold">Radio</legend>
+        <label class="flex cursor-pointer items-center gap-3 text-b7"><input class="radio" type="radio" name="ds-choice" checked><span>Label</span></label>
+        <label class="flex cursor-pointer items-center gap-3 text-b7"><input class="radio" type="radio" name="ds-choice"><span>Label</span></label>
+    </fieldset>
+    <fieldset class="space-y-4"><legend class="mb-2 font-semibold">Checkbox</legend>
+        <label class="flex cursor-pointer items-center gap-3 text-b7"><input class="checkbox" type="checkbox"><span>Label</span></label>
+        <label class="flex cursor-pointer items-center gap-3 text-b7"><input class="checkbox" type="checkbox" checked><span>Label</span></label>
+    </fieldset>
+</div>
+{% endblock %}
+
+{% block code %}&lt;label&gt;&lt;input class="radio" type="radio" name="choice"&gt; Label&lt;/label&gt;
+&lt;label&gt;&lt;input class="checkbox" type="checkbox"&gt; Label&lt;/label&gt;{% endblock %}

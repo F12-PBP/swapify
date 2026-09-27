@@ -1,0 +1,15 @@
+<section aria-labelledby="typography-{{ typography.name }}" class="min-w-0 space-y-3">
+    <h3 id="typography-{{ typography.name }}" class="text-base font-semibold text-neutral-110">
+        {{ typography.title }}
+    </h3>
+
+    <div class="flex gap-3 w-full">
+        {% for style in typography.styles %}
+            <article class="min-w-0 rounded-xl bg-neutral-20 p-4 justify-between gap-3 flex flex-col flex-1">
+               <code class="font-semibold">{{ style.class_name }}</code>
+                <p class="{{ typography.font_class }} {{ style.class_name }} text-primary-base">Aa</p>
+               <span>{{ style.px }}/{{ style.line_height }} px</span>
+            </article>
+        {% endfor %}
+    </div>
+</section>
