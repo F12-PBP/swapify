@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Hapus pakaian{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-xl px-4 py-10 md:px-6">
+    <div class="card border border-error/30 bg-base-100 shadow-sm">
+        <div class="card-body gap-5">
+            <h1 class="font-display text-h4">Hapus pakaian?</h1>
+            <p>Kamu akan menghapus <strong>{{ clothing.name }}</strong> dari katalog. Tindakan ini tidak dapat dibatalkan.</p>
+            <form method="post" class="card-actions justify-end">
+                {% csrf_token %}
+                <a class="btn btn-ghost" href="{{ clothing.get_absolute_url }}">Batal</a>
+                <button class="btn btn-error" type="submit">Hapus pakaian</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
