@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "tailwind",
     "theme",
     "apps.clothing_catalog",
+    "apps.design_system",
 ]
 
 if DEBUG:
