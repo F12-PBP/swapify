@@ -1,0 +1,10 @@
+{%extends 'base.html'%}
+
+{% block title %}Profile Detail{% endblock %}
+
+{%block content%}
+<section class="flex flex-col">
+     <p>Username: {{user.username}}</p>
+     <p>Profiel display: {{profile.display_name}}</p>
+</section>
+{%endblock%}
