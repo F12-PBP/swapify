@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "theme",
     "apps.clothing_catalog",
     "apps.design_system",
+    "apps.swap_request",
 ]
 
 if DEBUG:
