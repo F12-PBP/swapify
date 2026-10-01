@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "apps.clothing_catalog",
     "apps.design_system",
     "apps.transaction",
+    "apps.chat",
 ]
 
 if DEBUG:
