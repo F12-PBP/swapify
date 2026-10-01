@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Pesan · Swapify{% endblock %}
+
+{% block content %}
+<div class="px-4 pb-16">
+
+    <div class="mb-6">
+        <h1 class="text-2xl md:text-3xl font-bold">Pesan</h1>
+        <p class="mt-1 text-base-content/60">
+            Chat dengan pengguna yang swap request-nya sudah diterima.
+        </p>
+    </div>
+
+    {# Pesan dari django.contrib.messages (mis. "Chat hanya tersedia setelah swap request diterima.") #}
+    {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+                <div role="alert"
+                    class="alert {% if 'error' in message.tags %}alert-error{% elif 'success' in message.tags %}alert-success{% elif 'warning' in message.tags %}alert-warning{% else %}alert-info{% endif %}">
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="space-y-3">
+        {% for room in chat_rooms %}
+            {% with partner=room.partner %}
+                <a href="{% url 'chat:detail' room.pk %}"
+                    class="card bg-base-100 border border-base-300 transition hover:border-primary hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                    <div class="card-body flex-row items-center gap-4 p-4">
+
+                        {# Avatar inisial #}
+                        <div class="w-12 h-12 shrink-0 rounded-full bg-primary text-primary-content flex items-center justify-center text-lg font-semibold"
+                            aria-hidden="true">
+                            {{ partner.get_username|slice:":1"|upper }}
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2">
+                                <h2 class="font-semibold truncate">{{ partner.get_username }}</h2>
+                                {% if not room.is_active %}
+                                    <span class="badge badge-ghost badge-sm">Tidak aktif</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="text-xs text-base-content/50 truncate">
+                                {{ room.swap_request.requested_clothing.name }}
+                                &harr; {{ room.swap_request.offered_clothing.name }}
+                            </p>
+
+                            {% if room.last_message %}
+                                <p class="text-sm text-base-content/70 truncate">
+                                    {% if room.last_sender_id == user.id %}Kamu: {% endif %}{{ room.last_message }}
+                                </p>
+                            {% else %}
+                                <p class="text-sm text-base-content/50 italic">Belum ada pesan</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="shrink-0 flex flex-col items-end gap-1">
+                            <time class="text-xs text-base-content/50"
+                                datetime="{{ room.last_activity|date:'c' }}">
+                                {{ room.last_activity|date:"d M Y, H:i" }}
+                            </time>
+                            {% if room.unread_count %}
+                                <span class="badge badge-primary badge-sm">{{ room.unread_count }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            {% endwith %}
+        {% empty %}
+            <div class="card bg-base-100 border border-dashed border-base-300">
+                <div class="card-body items-center text-center py-12">
+                    <h2 class="text-lg font-semibold">Belum ada percakapan</h2>
+                    <p class="max-w-md text-base-content/60">
+                        Chat akan muncul di sini setelah swap request kamu diterima
+                        atau kamu menerima swap request dari pengguna lain.
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
