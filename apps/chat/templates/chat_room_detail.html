@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Chat dengan {{ partner.get_username }} · Swapify{% endblock %}
+
+{% block content %}
+<div class="px-4 pb-16">
+
+    {# Pesan dari django.contrib.messages (mis. "Chat ini sudah tidak aktif.") #}
+    {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+                <div role="alert"
+                    class="alert {% if 'error' in message.tags %}alert-error{% elif 'success' in message.tags %}alert-success{% elif 'warning' in message.tags %}alert-warning{% else %}alert-info{% endif %}">
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="card bg-base-100 border border-base-300 overflow-hidden">
+
+        {# ===== Header ===== #}
+        <div class="flex items-center gap-3 border-b border-base-300 px-4 py-3">
+            <a href="{% url 'chat:list' %}"
+                class="btn btn-ghost btn-sm btn-circle"
+                aria-label="Kembali ke daftar pesan">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+
+            <div class="w-10 h-10 shrink-0 rounded-full bg-primary text-primary-content flex items-center justify-center font-semibold"
+                aria-hidden="true">
+                {{ partner.get_username|slice:":1"|upper }}
+            </div>
+
+            <div class="min-w-0 flex-1">
+                <h1 class="font-semibold truncate">{{ partner.get_username }}</h1>
+                <p class="text-xs text-base-content/60 truncate">
+                    Swap: {{ chat_room.swap_request.requested_clothing.name }}
+                    &harr; {{ chat_room.swap_request.offered_clothing.name }}
+                </p>
+            </div>
+
+            <span id="chat-status-badge"
+                class="badge badge-sm {% if is_active %}badge-success{% else %}badge-ghost{% endif %}">
+                {% if is_active %}Aktif{% else %}Tidak aktif{% endif %}
+            </span>
+        </div>
+
+        {# ===== Daftar pesan ===== #}
+        <div id="message-list"
+            class="h-[60vh] min-h-[320px] overflow-y-auto bg-base-200/40 px-4 py-4"
+            data-poll-url="{% url 'chat:messages_json' chat_room.pk %}"
+            role="log"
+            aria-live="polite"
+            aria-label="Riwayat pesan">
+
+            {% for msg in chat_messages %}
+                {% if msg.sender_id == user.id %}
+                    <div class="chat chat-end" data-message-id="{{ msg.id }}">
+                        <div class="chat-bubble chat-bubble-primary whitespace-pre-wrap break-words">{{ msg.message }}</div>
+                        <div class="chat-footer mt-1 text-xs opacity-60">
+                            <time datetime="{{ msg.sent_at|date:'c' }}">{{ msg.sent_at|date:"H:i" }}</time>
+                            · {% if msg.is_read %}Dibaca{% else %}Terkirim{% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="chat chat-start" data-message-id="{{ msg.id }}">
+                        <div class="chat-bubble whitespace-pre-wrap break-words">{{ msg.message }}</div>
+                        <div class="chat-footer mt-1 text-xs opacity-60">
+                            <time datetime="{{ msg.sent_at|date:'c' }}">{{ msg.sent_at|date:"H:i" }}</time>
+                        </div>
+                    </div>
+                {% endif %}
+            {% empty %}
+                <div id="empty-state" class="flex h-full items-center justify-center text-center text-base-content/60">
+                    <p>
+                        Belum ada pesan.
+                        {% if is_active %}Sapa {{ partner.get_username }} untuk memulai obrolan.{% endif %}
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# ===== Form kirim pesan (hanya tampil saat chat aktif) ===== #}
+        <div class="border-t border-base-300 p-4">
+
+            <div id="chat-form-wrapper" class="{% if not is_active %}hidden{% endif %}">
+                <form id="chat-form"
+                    method="post"
+                    action="{% url 'chat:send' chat_room.pk %}"
+                    class="flex items-end gap-2">
+                    {% csrf_token %}
+                    {# Nama field "message" sesuai ChatMessageForm; batas 2000 karakter sesuai model. #}
+                    <textarea id="id_message"
+                            name="message"
+                            rows="2"
+                            maxlength="2000"
+                            required
+                            placeholder="Tulis pesan..."
+                            aria-label="Tulis pesan"
+                            class="textarea textarea-bordered w-full resize-none"></textarea>
+                    <button id="chat-submit" type="submit" class="btn btn-primary">Kirim</button>
+                </form>
+                <p class="mt-2 text-xs text-base-content/50">
+                    Tekan Enter untuk mengirim, Shift + Enter untuk baris baru.
+                </p>
+            </div>
+
+            <div id="chat-inactive-wrapper" class="{% if is_active %}hidden{% endif %}">
+                <div role="alert" class="alert alert-warning">
+                    <span>
+                        Chat ini sudah tidak aktif, jadi kamu tidak bisa mengirim pesan baru.
+                        Riwayat pesan tetap bisa dibaca.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    var POLL_INTERVAL_MS = 3000;
+
+    var list = document.getElementById("message-list");
+    var form = document.getElementById("chat-form");
+    var textarea = document.getElementById("id_message");
+    var submitBtn = document.getElementById("chat-submit");
+    var formWrapper = document.getElementById("chat-form-wrapper");
+    var inactiveWrapper = document.getElementById("chat-inactive-wrapper");
+    var statusBadge = document.getElementById("chat-status-badge");
+    var pollUrl = list.dataset.pollUrl;
+
+    var seen = new Set();
+    var lastId = 0;
+    var busy = false;
+
+    // ---------- Helpers ----------
+    function scrollToBottom() {
+        list.scrollTop = list.scrollHeight;
+    }
+
+    function isNearBottom() {
+        return list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+    }
+
+    function formatTime(iso) {
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) { return ""; }
+        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function localizeTimes(root) {
+        root.querySelectorAll("time[datetime]").forEach(function (el) {
+            var text = formatTime(el.getAttribute("datetime"));
+            if (text) { el.textContent = text; }
+        });
+    }
+
+    function setActive(active) {
+        formWrapper.classList.toggle("hidden", !active);
+        inactiveWrapper.classList.toggle("hidden", active);
+        statusBadge.textContent = active ? "Aktif" : "Tidak aktif";
+        statusBadge.classList.toggle("badge-success", active);
+        statusBadge.classList.toggle("badge-ghost", !active);
+    }
+
+    function buildMessage(m) {
+        var wrap = document.createElement("div");
+        wrap.className = m.is_mine ? "chat chat-end" : "chat chat-start";
+        wrap.dataset.messageId = m.id;
+
+        var bubble = document.createElement("div");
+        bubble.className = (m.is_mine ? "chat-bubble chat-bubble-primary" : "chat-bubble")
+            + " whitespace-pre-wrap break-words";
+        bubble.textContent = m.message;
+
+        var footer = document.createElement("div");
+        footer.className = "chat-footer mt-1 text-xs opacity-60";
+        var time = document.createElement("time");
+        time.setAttribute("datetime", m.sent_at);
+        time.textContent = formatTime(m.sent_at);
+        footer.appendChild(time);
+
+        wrap.appendChild(bubble);
+        wrap.appendChild(footer);
+        return wrap;
+    }
+
+    list.querySelectorAll("[data-message-id]").forEach(function (el) {
+        var id = Number(el.dataset.messageId);
+        seen.add(id);
+        if (id > lastId) { lastId = id; }
+    });
+    localizeTimes(list);
+    scrollToBottom();
+
+    // ---------- Polling pesan baru ----------
+    function poll() {
+        if (busy || document.hidden) { return; }
+        busy = true;
+
+        fetch(pollUrl + "?after=" + lastId, {
+            credentials: "same-origin",
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+            .then(function (res) {
+                if (!res.ok) { throw new Error("HTTP " + res.status); }
+                return res.json();
+            })
+            .then(function (data) {
+                setActive(Boolean(data.is_active));
+
+                var fresh = data.messages.filter(function (m) { return !seen.has(m.id); });
+                if (fresh.length === 0) { return; }
+
+                var stick = isNearBottom();
+                var empty = document.getElementById("empty-state");
+                if (empty) { empty.remove(); }
+
+                fresh.forEach(function (m) {
+                    seen.add(m.id);
+                    if (m.id > lastId) { lastId = m.id; }
+                    list.appendChild(buildMessage(m));
+                });
+
+                if (stick) { scrollToBottom(); }
+            })
+            .catch(function () {
+                /* Abaikan error jaringan sesaat; polling berikutnya akan mencoba lagi. */
+            })
+            .then(function () { busy = false; });
+    }
+
+    setInterval(poll, POLL_INTERVAL_MS);
+    document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) { poll(); }
+    });
+
+    // ---------- Form kirim ----------
+    if (form) {
+        // Enter = kirim, Shift+Enter = baris baru
+        textarea.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+                e.preventDefault();
+                if (textarea.value.trim() !== "") { form.requestSubmit(); }
+            }
+        });
+
+        form.addEventListener("submit", function (e) {
+            if (textarea.value.trim() === "") {
+                e.preventDefault();
+                return;
+            }
+            submitBtn.disabled = true;
+        });
+
+        textarea.focus();
+    }
+})();
+</script>
+{% endblock %}
