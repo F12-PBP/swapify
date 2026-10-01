@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="min-h-screen bg-neutral-20 py-10 px-5">
+    <div class="max-w-2xl mx-auto">
+
+        <div class="mb-8">
+            <p class="text-sm font-semibold text-primary-base mb-2">
+                TRANSACTION
+            </p>
+
+            <h1 class="text-3xl font-bold text-neutral-120">
+                Create Transaction
+            </h1>
+
+            <p class="text-neutral-80 mt-2">
+                Provide the information needed to arrange your clothing exchange.
+            </p>
+        </div>
+
+
+        <div class="bg-neutral-10 rounded-2xl border border-neutral-40 shadow-sm p-6 md:p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="rounded-xl bg-red-10 border border-red-30 px-5 py-3">
+                        <p class="text-sm font-medium text-red-80">
+                            {{ form.non_field_errors }}
+                        </p>
+                    </div>
+                {% endif %}
+
+
+                <div>
+                    <label
+                        for="{{ form.method.id_for_label }}"
+                        class="block text-sm font-semibold text-neutral-110 mb-2"
+                    >
+                        {{ form.method.label }}
+                    </label>
+
+                    <div class="px-2">
+                        {{ form.method }}
+                    </div>
+
+                    {% for error in form.method.errors %}
+                        <p class="text-sm text-red-base mt-2">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+                </div>
+
+
+                <div
+                    id="deliveryFields"
+                    class="rounded-2xl bg-neutral-30 border border-neutral-40 p-5 space-y-7"
+                >
+                    <div>
+                        <h2 class="text-lg font-bold text-neutral-120">
+                            Delivery Information
+                        </h2>
+
+                        <p class="text-sm text-neutral-80 mt-1">
+                            Enter the tracking information for the package you are sending.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label
+                            for="{{ form.requester_resi.id_for_label }}"
+                            class="block text-sm font-semibold text-neutral-110 mb-3"
+                        >
+                            {{ form.requester_resi.label }}
+                        </label>
+
+                        {{ form.requester_resi }}
+
+                        {% for error in form.requester_resi.errors %}
+                            <p class="text-sm text-red-base mt-2">
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        <label
+                            for="{{ form.requester_delivery_estimate.id_for_label }}"
+                            class="block text-sm font-semibold text-neutral-110 mb-3"
+                        >
+                            {{ form.requester_delivery_estimate.label }}
+                        </label>
+
+                        {{ form.requester_delivery_estimate }}
+
+                        {% for error in form.requester_delivery_estimate.errors %}
+                            <p class="text-sm text-red-base mt-2">
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="rounded-xl bg-primary-10 border border-primary-30 px-5 py-3">
+                        <p class="text-sm text-primary-70">
+                            Your partner will provide their tracking information separately.
+                            Your resi will need to be validated by the other party before
+                            the exchange can proceed.
+                        </p>
+                    </div>
+                </div>
+
+
+                <div
+                    id="meetupFields"
+                    class="rounded-2xl bg-secondary-10 border border-secondary-30 p-5 space-y-7"
+                >
+                    <div>
+                        <h2 class="text-lg font-bold text-neutral-120">
+                            Meetup Information
+                        </h2>
+
+                        <p class="text-sm text-neutral-80 mt-1">
+                            Choose the agreed upon location to meet (remember to always meet in a safe location).
+                        </p>
+                    </div>
+
+                    <div>
+                        <label
+                            for="{{ form.meetup_date.id_for_label }}"
+                            class="block text-sm font-semibold text-neutral-110 mb-3"
+                        >
+                            {{ form.meetup_date.label }}
+                        </label>
+
+                        {{ form.meetup_date }}
+
+                        {% for error in form.meetup_date.errors %}
+                            <p class="text-sm text-red-base mt-2">
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        <label
+                            for="{{ form.meetup_location.id_for_label }}"
+                            class="block text-sm font-semibold text-neutral-110 mb-3"
+                        >
+                            {{ form.meetup_location.label }}
+                        </label>
+
+                        {{ form.meetup_location }}
+
+                        {% for error in form.meetup_location.errors %}
+                            <p class="text-sm text-red-base mt-2">
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button
+                        type="submit"
+                        class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60"
+                    >
+                        Create Transaction
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const methodSelect = document.getElementById('methodSelect');
+    const deliveryFields = document.getElementById('deliveryFields');
+    const meetupFields = document.getElementById('meetupFields');
+
+    function updateFields() {
+        const method = methodSelect.value;
+
+        if (method === 'Delivery') {
+            deliveryFields.classList.remove('hidden');
+            meetupFields.classList.add('hidden');
+        } else if (method === 'Meetup') {
+            deliveryFields.classList.add('hidden');
+            meetupFields.classList.remove('hidden');
+        }
+    }
+
+    methodSelect.addEventListener('change', updateFields);
+
+    updateFields();
+</script>
+
+{% endblock %}
