@@ -11,7 +11,7 @@
 
     motion.add('(prefers-reduced-motion: no-preference)', () => {
         gsap.set(mascot, { y: 204 });
-        gsap.set(hand, { transformOrigin: '95% 85%' });
+        gsap.set(hand, { transformOrigin: '88% 72%' });
         gsap.set(head, { transformOrigin: '50% 80%' });
 
         const timeline = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 3 });

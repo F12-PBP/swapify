@@ -1,5 +1,5 @@
 {% load static %}
-<section class="mx-auto w-full max-w-[1440px] px-8 pt-[68px] pb-25 xl:px-20 xl:pt-25 xl:pb-50" aria-labelledby="hero-title">
+<section id="hero" class="mx-auto w-full max-w-[1440px] px-8 pt-[68px] pb-25 xl:px-20 xl:pt-25 xl:pb-50" aria-labelledby="hero-title">
     <div class="flex flex-col items-center justify-center xl:flex-row xl:gap-24 min-[1440px]:gap-30">
         <div class="flex w-full max-w-lg flex-col gap-6 xl:w-[503px] xl:max-w-none xl:shrink-0 xl:gap-10">
             <div class="flex flex-col gap-10 xl:gap-9">
@@ -20,8 +20,16 @@
                         </p>
                     </div>
 
-                    <div class="relative h-[251px] w-[280px] max-w-full shrink-0 xl:hidden">
-                        <img src="{% static 'images/landing_page/hero/swapy-mobile.svg' %}" alt="Swapy, the Swapify mascot, holding shopping bags" width="180" height="213" class="absolute top-[15px] left-[48px] max-w-none">
+                    <div data-hero-scene class="relative h-[251px] w-[280px] max-w-full shrink-0 xl:hidden">
+                        <div class="absolute top-[219px] left-[82.7px] h-[37px] w-[177px] origin-top-left scale-[0.625]" aria-hidden="true">
+                            <img data-hero-shadow src="{% static 'images/landing_page/hero/swapy-shadow.svg' %}" alt="" class="block max-w-none">
+                        </div>
+                        <div class="absolute top-[45px] left-[48px] h-[288px] w-[288px] origin-top-left scale-[0.625]" role="img" aria-label="Swapy, the Swapify mascot, holding shopping bags">
+                            <div data-hero-mascot class="relative h-[288px] w-[288px]">
+                                <img data-hero-normal src="{% static 'images/landing_page/hero/swapy-hero.svg' %}" alt="" class="absolute top-0 left-0 block max-w-none">
+                                <img data-hero-wink src="{% static 'images/landing_page/hero/swapy-hero-wink.svg' %}" alt="" class="absolute top-0 left-0 block max-w-none opacity-0">
+                            </div>
+                        </div>
                         <span class="absolute top-[219px] left-[145px] rounded-full bg-primary-base px-2.5 py-0.75 text-s10 font-semibold text-neutral-10 shadow-md">Hi, I'm Swapy!</span>
                     </div>
                 </div>
@@ -44,10 +52,14 @@
         </div>
 
         <div class="hidden h-[344px] w-[508px] shrink-0 xl:block min-[1440px]:h-[430px] min-[1440px]:w-[635px]" aria-label="Swapy surrounded by items you can swap">
-            <div class="relative h-[430px] w-[635px] origin-top-left scale-80 min-[1440px]:scale-100">
-                <img src="{% static 'images/landing_page/hero/swapy-desktop.svg' %}" alt="Swapy, the Swapify mascot, holding shopping bags" width="300" height="355" class="absolute top-[21.72px] left-[125.49px] max-w-none">
+            <div data-hero-scene class="relative h-[430px] w-[635px] origin-top-left scale-80 min-[1440px]:scale-100">
+                <img data-hero-shadow src="{% static 'images/landing_page/hero/swapy-shadow.svg' %}" alt="" class="absolute top-[343px] left-[180px] block max-w-none">
+                <div data-hero-mascot class="absolute top-[68px] left-[125.49px] h-[288px] w-[288px]" role="img" aria-label="Swapy, the Swapify mascot, holding shopping bags">
+                    <img data-hero-normal src="{% static 'images/landing_page/hero/swapy-hero.svg' %}" alt="" class="absolute top-0 left-0 block max-w-none">
+                    <img data-hero-wink src="{% static 'images/landing_page/hero/swapy-hero-wink.svg' %}" alt="" class="absolute top-0 left-0 block max-w-none opacity-0">
+                </div>
 
-                <div class="card absolute -top-0.5 left-0 flex -rotate-[10.55deg] flex-row items-center gap-3 rounded-2xl border border-neutral-40 bg-neutral-30 px-4 py-3 shadow-sm backdrop-blur-sm">
+                <div data-hero-card class="card absolute -top-0.5 left-0 flex -rotate-[10.55deg] flex-row items-center gap-3 rounded-2xl border border-neutral-40 bg-neutral-30 px-4 py-3 shadow-sm backdrop-blur-sm">
                     <img src="{% static 'images/landing_page/hero/dress.svg' %}" alt="" width="46" height="57" class="shrink-0">
                     <div class="flex flex-col">
                         <p class="text-s8 font-semibold text-neutral-110">Floral Midi Dress</p>
@@ -55,7 +67,7 @@
                     </div>
                 </div>
 
-                <div class="card absolute top-[58px] right-0 flex rotate-[12.17deg] flex-row items-center gap-3 rounded-2xl border border-primary-30/60 bg-primary-20/90 px-4 py-3 shadow-sm backdrop-blur-sm">
+                <div data-hero-card class="card absolute top-[58px] right-0 flex rotate-[12.17deg] flex-row items-center gap-3 rounded-2xl border border-primary-30/60 bg-primary-20/90 px-4 py-3 shadow-sm backdrop-blur-sm">
                     <img src="{% static 'images/landing_page/hero/sneakers.svg' %}" alt="" width="61" height="49" class="shrink-0">
                     <div class="flex flex-col">
                         <p class="text-s8 font-semibold text-neutral-110">Vintage Sneakers</p>
@@ -63,7 +75,7 @@
                     </div>
                 </div>
 
-                <div class="card absolute top-[375px] -left-5 flex rotate-[5.53deg] flex-row items-center gap-3 rounded-2xl border border-secondary-30/60 bg-secondary-20 px-4 py-3 shadow-sm backdrop-blur-sm">
+                <div data-hero-card class="card absolute top-[375px] -left-5 flex rotate-[5.53deg] flex-row items-center gap-3 rounded-2xl border border-secondary-30/60 bg-secondary-20 px-4 py-3 shadow-sm backdrop-blur-sm">
                     <img src="{% static 'images/landing_page/hero/backpack.svg' %}" alt="" width="47" height="54" class="shrink-0">
                     <div class="flex flex-col">
                         <p class="text-s8 font-semibold text-neutral-110">Canvas Backpack</p>
