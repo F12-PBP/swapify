@@ -7,7 +7,9 @@
     const desktop = window.matchMedia('(min-width: 1280px)');
 
     function setOpen(open, restoreFocus = false) {
-        menu.classList.toggle('hidden', !open);
+        if (!open && menu.contains(document.activeElement)) toggle.focus();
+        menu.inert = !open;
+        menu.setAttribute('aria-hidden', String(!open));
         toggle.setAttribute('aria-expanded', String(open));
         toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
         if (restoreFocus) toggle.focus();

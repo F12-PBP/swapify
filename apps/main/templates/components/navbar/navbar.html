@@ -16,7 +16,7 @@
         <button type="button" class="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-primary-base hover:bg-primary-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-base xl:hidden" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navbar-mobile-menu" data-navbar-toggle>
             <img src="{% static 'main/icons/menu.svg' %}" alt="" width="24" height="24">
         </button>
-        <div id="navbar-mobile-menu" class="absolute inset-x-0 top-full hidden max-h-[calc(100svh-4rem)] overflow-y-auto border-b border-primary-20 bg-neutral-10 p-6 shadow-lg md:px-8 xl:hidden" data-navbar-menu>
+        <div id="navbar-mobile-menu" class="navbar-mobile-menu absolute inset-x-0 top-full max-h-[calc(100svh-4rem)] overflow-y-auto border-b border-primary-20 bg-neutral-10 p-6 shadow-lg md:px-8 xl:hidden" data-navbar-menu aria-hidden="true" inert>
             <ul class="menu flex w-full flex-col gap-2 p-0 font-sans text-s7 font-semibold text-neutral-70">
                 {% include "components/navbar/navbar-links.html" %}
             </ul>
