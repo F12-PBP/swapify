@@ -1,0 +1,13 @@
+{% extends "components/card-ds.html" %}
+
+{% block title %}Chips{% endblock %}
+
+{% block preview %}
+<div class="flex flex-wrap gap-3">
+    <button class="badge swap-chip" type="button" aria-pressed="false" onclick="this.setAttribute('aria-pressed', this.getAttribute('aria-pressed') !== 'true')">Primary</button>
+    <button class="badge swap-chip swap-chip-secondary" type="button" aria-pressed="false" onclick="this.setAttribute('aria-pressed', this.getAttribute('aria-pressed') !== 'true')">Secondary</button>
+</div>
+{% endblock %}
+
+{% block code %}&lt;button class="badge swap-chip" type="button" aria-pressed="false"&gt;Primary&lt;/button&gt;
+&lt;button class="badge swap-chip swap-chip-secondary" type="button" aria-pressed="true"&gt;Secondary&lt;/button&gt;{% endblock %}

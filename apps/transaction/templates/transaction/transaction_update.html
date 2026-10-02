@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="min-h-screen bg-neutral-20 py-10 px-4">
+    <div class="max-w-2xl mx-auto">
+
+        <div class="mb-6">
+            <p class="text-sm font-semibold text-primary-base uppercase tracking-wide">
+                Transaction
+            </p>
+
+            <h1 class="text-3xl font-bold text-neutral-120 mt-1">
+                Update Transaction
+            </h1>
+
+            <p class="text-sm text-neutral-80 mt-2">
+                Update the information for Transaction #{{ transaction.id }}.
+            </p>
+        </div>
+
+        <div class="card bg-neutral-10 border border-neutral-40 rounded-2xl shadow-sm">
+            <div class="card-body p-6 md:p-8">
+
+                <form method="post" class="space-y-6">
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="rounded-xl bg-red-10 border border-red-30 px-4 py-3">
+                            <p class="text-sm text-red-80">
+                                {{ form.non_field_errors }}
+                            </p>
+                        </div>
+                    {% endif %}
+
+
+                    {% if transaction.method == "Delivery" %}
+
+                        <div>
+                            <h2 class="text-lg font-bold text-neutral-120">
+                                Delivery Information
+                            </h2>
+
+                            <p class="text-sm text-neutral-70 mt-1 mb-5">
+                                Update the tracking and estimated delivery information.
+                            </p>
+                        </div>
+
+
+                        <div class="rounded-2xl bg-neutral-30 border border-neutral-40 p-5 space-y-5">
+
+                            <h3 class="font-bold text-neutral-120">
+                                Requester
+                            </h3>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                    {{ form.requester_resi.label }}
+                                </label>
+
+                                {{ form.requester_resi }}
+
+                                {% for error in form.requester_resi.errors %}
+                                    <p class="text-sm text-red-base mt-2">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                    {{ form.requester_delivery_estimate.label }}
+                                </label>
+
+                                {{ form.requester_delivery_estimate }}
+
+                                {% for error in form.requester_delivery_estimate.errors %}
+                                    <p class="text-sm text-red-base mt-2">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+
+                        <div class="rounded-2xl bg-neutral-30 border border-neutral-40 p-5 space-y-5">
+
+                            <h3 class="font-bold text-neutral-120">
+                                Owner
+                            </h3>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                    {{ form.owner_resi.label }}
+                                </label>
+
+                                {{ form.owner_resi }}
+
+                                {% for error in form.owner_resi.errors %}
+                                    <p class="text-sm text-red-base mt-2">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                    {{ form.owner_delivery_estimate.label }}
+                                </label>
+
+                                {{ form.owner_delivery_estimate }}
+
+                                {% for error in form.owner_delivery_estimate.errors %}
+                                    <p class="text-sm text-red-base mt-2">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                    {% if transaction.method == "Meetup" %}
+
+                        <div>
+                            <h2 class="text-lg font-bold text-neutral-120">
+                                Meetup Information
+                            </h2>
+
+                            <p class="text-sm text-neutral-70 mt-1 mb-5">
+                                Update the agreed meetup details.
+                            </p>
+                        </div>
+
+                        <div class="rounded-2xl bg-secondary-10 border border-secondary-30 p-5 space-y-5">
+
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                    {{ form.meetup_date.label }}
+                                </label>
+
+                                {{ form.meetup_date }}
+
+                                {% for error in form.meetup_date.errors %}
+                                    <p class="text-sm text-red-base mt-2">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                    {{ form.meetup_location.label }}
+                                </label>
+
+                                {{ form.meetup_location }}
+
+                                {% for error in form.meetup_location.errors %}
+                                    <p class="text-sm text-red-base mt-2">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+
+                        <a
+                            href="{% url 'transaction_detail' transaction.pk %}"
+                            class="btn flex-1 bg-neutral-30 text-neutral-110 border-neutral-40 hover:bg-neutral-40"
+                        >
+                            Cancel
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="btn flex-1 bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60"
+                        >
+                            Save Changes
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

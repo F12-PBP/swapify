@@ -1,0 +1,55 @@
+{% extends "components/card-ds.html" %}
+{% load static %}
+
+{% block title %}Dropdown{% endblock %}
+
+{% block preview %}
+<div class="grid w-full max-w-sm gap-5">
+    <div>
+        <span id="ds-category-label" class="swap-field-label mb-2 block">Pilih kategori</span>
+        <details id="ds-dropdown" class="swap-dropdown">
+            <summary class="swap-dropdown-trigger" aria-labelledby="ds-category-label ds-dropdown-value">
+                <span id="ds-dropdown-value" class="swap-dropdown-value">Pilih X</span>
+                <img class="swap-dropdown-chevron-default" src="{% static 'icons/select-chevron-default.svg' %}" alt="" width="16" height="16">
+                <img class="swap-dropdown-chevron-filled" src="{% static 'icons/select-chevron-filled.svg' %}" alt="" width="16" height="16">
+            </summary>
+            <div class="swap-dropdown-menu" role="listbox" aria-labelledby="ds-category-label">
+                <button class="swap-dropdown-option" type="button" role="option" aria-selected="false" data-value="choice-1">Choice 1</button>
+                <button class="swap-dropdown-option" type="button" role="option" aria-selected="false" data-value="choice-2">Choice 2</button>
+                <button class="swap-dropdown-option" type="button" role="option" aria-selected="false" data-value="choice-3">Choice 3</button>
+            </div>
+            <input type="hidden" name="category" value="">
+        </details>
+    </div>
+
+    <details class="swap-dropdown is-filled" aria-label="Contoh dropdown terisi">
+        <summary class="swap-dropdown-trigger" aria-label="Kategori: Choice 1">
+            <span class="swap-dropdown-value">Choice 1</span>
+            <img class="swap-dropdown-chevron-default" src="{% static 'icons/select-chevron-default.svg' %}" alt="" width="16" height="16">
+            <img class="swap-dropdown-chevron-filled" src="{% static 'icons/select-chevron-filled.svg' %}" alt="" width="16" height="16">
+        </summary>
+        <div class="swap-dropdown-menu" role="listbox" aria-label="Contoh dropdown terisi">
+            <button class="swap-dropdown-option" type="button" role="option" aria-selected="true" data-value="choice-1">Choice 1</button>
+            <button class="swap-dropdown-option" type="button" role="option" aria-selected="false" data-value="choice-2">Choice 2</button>
+            <button class="swap-dropdown-option" type="button" role="option" aria-selected="false" data-value="choice-3">Choice 3</button>
+        </div>
+        <input type="hidden" name="example_category" value="choice-1">
+    </details>
+
+    <div class="swap-dropdown is-disabled">
+        <div class="swap-dropdown-trigger" aria-disabled="true">
+            <span class="swap-dropdown-value">Pilih X</span>
+            <img src="{% static 'icons/select-chevron-default.svg' %}" alt="" width="16" height="16">
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/design-system-dropdown.js' %}" defer></script>
+{% endblock %}
+
+{% block code %}&lt;details class="swap-dropdown"&gt;
+  &lt;summary class="swap-dropdown-trigger"&gt;Pilih X&lt;/summary&gt;
+  &lt;div class="swap-dropdown-menu"&gt;
+    &lt;button class="swap-dropdown-option" type="button" data-value="choice-1"&gt;Choice 1&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;input type="hidden" name="category" value=""&gt;
+&lt;/details&gt;{% endblock %}

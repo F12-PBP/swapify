@@ -25,7 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-b+j_uy_@4a1v7u+gc!c-ybwnx9r58$xz2^$vyipbrq+$=$vf-z"
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY env must be set")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
@@ -46,6 +49,11 @@ INSTALLED_APPS = [
     "apps.main",
     "tailwind",
     "theme",
+    "apps.clothing_catalog",
+    "apps.design_system",
+    "apps.swap_request",
+    "apps.transaction",
+    "apps.chat",
 ]
 
 if DEBUG:
@@ -147,6 +155,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "/static/"
+
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 

@@ -1,0 +1,17 @@
+{% load static %}
+{% url 'user_profile:login' as sign_in_url %}
+{% url 'user_profile:register' as sign_up_url %}
+{% if sign_in_url %}
+<a href="{{ sign_in_url }}" class="btn btn-primary-ghost w-37 gap-3 border-[1.6px]">
+{% else %}
+<button type="button" aria-disabled="true" title="Sign In will be available when authentication is connected" class="btn btn-primary-ghost cursor-default w-37 gap-3 border-[1.6px]">
+{% endif %}
+    <span>Sign In</span>
+{% if sign_in_url %}</a>{% else %}</button>{% endif %}
+{% if sign_up_url %}
+<a href="{{ sign_up_url }}" class="btn btn-primary w-36 gap-3 text-neutral-20">
+{% else %}
+<button type="button" aria-disabled="true" title="Sign Up will be available when authentication is connected" class="btn btn-primary cursor-default w-36 gap-3 text-neutral-20">
+{% endif %}
+    <span>Sign Up</span>
+{% if sign_up_url %}</a>{% else %}</button>{% endif %}

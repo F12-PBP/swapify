@@ -1,0 +1,40 @@
+{% load static %}
+<section id="about-us" class="mx-auto w-full max-w-[1440px] scroll-mt-20 px-8 pb-25 xl:scroll-mt-28 xl:px-20 xl:pb-50" aria-labelledby="about-title">
+    <div class="flex flex-col items-center gap-10 xl:gap-25">
+        <div class="flex w-full max-w-[923px] flex-col items-center gap-4 text-center xl:gap-5">
+            <h2 id="about-title" class="font-display text-h4 font-bold text-primary-base md:text-h3 xl:text-h2">
+                <span class="xl:block">Your closet's best friend<span class="hidden xl:inline">,</span></span>
+                <span class="xl:block">and the planet's too.</span>
+            </h2>
+            <p class="text-b8 text-neutral-90 md:text-b7 xl:text-b6">
+                Swapify is a peer-to-peer platform where you list the items gathering dust in your wardrobe and exchange them for something you'll actually love. All without spending a rupiah.
+            </p>
+        </div>
+
+        <div class="flex w-full max-w-lg flex-col gap-3 lg:max-w-none lg:flex-row lg:items-stretch lg:gap-6 xl:gap-13">
+            <article class="card flex min-w-0 flex-1 flex-row items-center gap-6 rounded-[20px] border border-primary-30 p-5 lg:flex-col lg:rounded-3xl lg:p-7">
+                <img src="{% static 'images/landing_page/about/leaf.svg' %}" alt="" width="32" height="32" class="shrink-0">
+                <div class="flex min-w-0 flex-1 flex-col gap-3 lg:w-full lg:text-center">
+                    <h3 class="text-s8 font-semibold text-primary-base xl:text-s6">Sustainable by Design</h3>
+                    <p class="text-b8 text-neutral-90">Every swap extends the life of a garment and keeps it out of landfill. Fashion that's good for you and for the Earth.</p>
+                </div>
+            </article>
+
+            <article class="card flex min-w-0 flex-1 flex-row items-center gap-6 rounded-[20px] border border-primary-30 p-5 lg:flex-col lg:rounded-3xl lg:p-7">
+                <img src="{% static 'images/landing_page/about/cash.svg' %}" alt="" width="32" height="32" class="shrink-0">
+                <div class="flex min-w-0 flex-1 flex-col gap-3 lg:w-full lg:text-center">
+                    <h3 class="text-s8 font-semibold text-primary-base xl:text-s6">Zero Cash Required</h3>
+                    <p class="text-b8 text-neutral-90">Trade item for item. No wallet needed, just something to offer and something to discover.</p>
+                </div>
+            </article>
+
+            <article class="card flex min-w-0 flex-1 flex-row items-center gap-6 rounded-[20px] border border-primary-30 p-5 lg:flex-col lg:rounded-3xl lg:p-7">
+                <img src="{% static 'images/landing_page/about/community.svg' %}" alt="" width="32" height="32" class="shrink-0">
+                <div class="flex min-w-0 flex-1 flex-col gap-3 lg:w-full lg:text-center">
+                    <h3 class="text-s8 font-semibold text-primary-base xl:text-s6">A Community You Can Trust</h3>
+                    <p class="text-b8 text-neutral-90">Verified profiles, two-way reviews, and a moderation team that keeps every swap fair and safe.</p>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
