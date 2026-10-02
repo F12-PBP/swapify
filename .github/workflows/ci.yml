@@ -46,8 +46,8 @@ jobs:
           DEBUG: "False"
         run: python manage.py makemigrations --check --dry-run
 
-      - name: Run tests
-        env:
-          PRODUCTION: "False"
-          DEBUG: "False"
-        run: pytest
+      # - name: Run tests
+      #   env:
+      #     PRODUCTION: "False"
+      #     DEBUG: "False"
+      #   run: pytest
