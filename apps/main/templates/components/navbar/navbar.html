@@ -1,0 +1,32 @@
+{% load static %}
+<header class="fixed inset-x-0 top-0 z-50 border-b border-primary-20 bg-neutral-10/90 backdrop-blur-md xl:border-0 xl:bg-neutral-10 xl:backdrop-blur-none">
+    <nav class="navbar relative mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between gap-6 px-6 py-0 md:px-8 xl:h-24 xl:px-20 xl:py-6" aria-label="Main navigation" data-navbar>
+        <a href="{% url 'main:home' %}" class="flex shrink-0 items-center gap-3 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-base" aria-label="Swapify home">
+            <span class="relative block h-[19.43px] w-[80.149px] overflow-hidden xl:h-[25.344px] xl:w-[104.544px]" aria-hidden="true">
+                <picture>
+                    <source media="(min-width: 1280px)" srcset="{% static 'static/images/landing_page/swapify-logo.svg' %}">
+                    <img src="{% static 'static/images/landing_page/swapify-logo.svg' %}" alt="" class="pointer-events-none absolute -top-[269.79%] -left-[21.21%] h-[639.59%] w-[141.36%] max-w-none">
+                </picture>
+            </span>
+            <span class="hidden font-display text-h5 font-bold text-primary-base xl:block">Swapify</span>
+        </a>
+        <ul class="hidden items-center gap-10 font-sans text-s7 font-semibold text-neutral-70 xl:flex">
+            {% include "components/navbar/navbar-links.html" %}
+        </ul>
+        <div class="hidden shrink-0 items-center gap-5 xl:flex">
+            {% include "components/navbar/navbar-actions.html" %}
+        </div>
+        <button type="button" class="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-primary-base hover:bg-primary-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-base xl:hidden" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navbar-mobile-menu" data-navbar-toggle>
+            <img src="{% static 'main/icons/menu.svg' %}" alt="" width="24" height="24">
+        </button>
+        <div id="navbar-mobile-menu" class="absolute inset-x-0 top-full hidden max-h-[calc(100svh-4rem)] overflow-y-auto border-b border-primary-20 bg-neutral-10 p-6 shadow-lg md:px-8 xl:hidden" data-navbar-menu>
+            <ul class="menu flex w-full flex-col gap-2 p-0 font-sans text-s7 font-semibold text-neutral-70">
+                {% include "components/navbar/navbar-links.html" %}
+            </ul>
+            <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-primary-20 pt-6">
+                {% include "components/navbar/navbar-actions.html" %}
+            </div>
+        </div>
+    </nav>
+</header>
+<script src="{% static 'main/js/navbar.js' %}" defer></script>
