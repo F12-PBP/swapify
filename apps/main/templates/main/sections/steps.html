@@ -1,0 +1,75 @@
+{% load static %}
+<section id="how-it-works" class="mx-auto w-full max-w-[1440px] scroll-mt-20 px-8 pb-25 xl:scroll-mt-28 xl:px-20 xl:pb-50" aria-labelledby="steps-title">
+    <div class="flex flex-col items-center gap-10 xl:gap-25">
+        <div class="flex w-full max-w-[973px] flex-col items-center gap-4 text-center xl:gap-5">
+            <h2 id="steps-title" class="font-display text-h4 font-bold text-primary-base md:text-h3 xl:text-h2">Four steps to a brand new favourite.</h2>
+            <p class="text-b8 text-neutral-90 md:text-b7 xl:text-b6">Swapping is simpler than you think. Here's how a Swapify trade works from first post to happy unboxing.</p>
+        </div>
+
+        <ol class="flex w-full max-w-lg flex-col gap-10 md:max-w-none md:flex-row md:flex-wrap md:items-start xl:flex-nowrap xl:gap-18">
+            <li class="flex w-full min-w-0 flex-col items-center gap-5 text-center md:w-[calc(50%_-_1.25rem)] xl:w-auto xl:flex-1 xl:gap-6">
+                <div class="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-base xl:size-18">
+                    <picture class="flex shrink-0">
+                        <source media="(min-width: 1280px)" srcset="{% static 'images/landing_page/steps/list-desktop.svg' %}">
+                        <img src="{% static 'images/landing_page/steps/list-mobile.svg' %}" alt="" class="block max-w-none">
+                    </picture>
+                </div>
+                <div class="flex w-full flex-col gap-2 xl:gap-3">
+                    <div class="flex items-center justify-center gap-3">
+                        <span class="badge size-6 shrink-0 rounded-full border-0 bg-secondary-base p-0 text-b9 font-bold text-neutral-10" aria-hidden="true">1</span>
+                        <h3 class="text-s7 font-semibold text-primary-base xl:text-s6">List Your Item</h3>
+                    </div>
+                    <p class="text-b8 text-neutral-90">Snap a few photos, write a quick description, and post your item to the Swapify marketplace in under 3 minutes.</p>
+                </div>
+            </li>
+
+            <li class="flex w-full min-w-0 flex-col items-center gap-5 text-center md:w-[calc(50%_-_1.25rem)] xl:w-auto xl:flex-1 xl:gap-6">
+                <div class="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-base xl:size-18">
+                    <picture class="flex shrink-0">
+                        <source media="(min-width: 1280px)" srcset="{% static 'images/landing_page/steps/browse-desktop.svg' %}">
+                        <img src="{% static 'images/landing_page/steps/browse-mobile.svg' %}" alt="" class="block max-w-none">
+                    </picture>
+                </div>
+                <div class="flex w-full flex-col gap-2 xl:gap-3">
+                    <div class="flex items-center justify-center gap-3">
+                        <span class="badge size-6 shrink-0 rounded-full border-0 bg-secondary-base p-0 text-b9 font-bold text-neutral-10" aria-hidden="true">2</span>
+                        <h3 class="text-s7 font-semibold text-primary-base xl:text-s6">Browse &amp; Match</h3>
+                    </div>
+                    <p class="text-b8 text-neutral-90">Scroll through thousands of listings. When something catches your eye, send a swap proposal to its owner.</p>
+                </div>
+            </li>
+
+            <li class="flex w-full min-w-0 flex-col items-center gap-5 text-center md:w-[calc(50%_-_1.25rem)] xl:w-auto xl:flex-1 xl:gap-6">
+                <div class="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-base xl:size-18">
+                    <picture class="flex shrink-0">
+                        <source media="(min-width: 1280px)" srcset="{% static 'images/landing_page/steps/chat-desktop.svg' %}">
+                        <img src="{% static 'images/landing_page/steps/chat-mobile.svg' %}" alt="" class="block max-w-none">
+                    </picture>
+                </div>
+                <div class="flex w-full flex-col gap-2 xl:gap-3">
+                    <div class="flex items-center justify-center gap-3">
+                        <span class="badge size-6 shrink-0 rounded-full border-0 bg-secondary-base p-0 text-b9 font-bold text-neutral-10" aria-hidden="true">3</span>
+                        <h3 class="text-s7 font-semibold text-primary-base xl:text-s6">Agree &amp; Arrange</h3>
+                    </div>
+                    <p class="text-b8 text-neutral-90">Chat in-app, confirm the swap terms, and choose how to exchange — local meetup or shipping.</p>
+                </div>
+            </li>
+
+            <li class="flex w-full min-w-0 flex-col items-center gap-5 text-center md:w-[calc(50%_-_1.25rem)] xl:w-auto xl:flex-1 xl:gap-6">
+                <div class="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-base xl:size-18">
+                    <picture class="flex shrink-0">
+                        <source media="(min-width: 1280px)" srcset="{% static 'images/landing_page/steps/swap-desktop.svg' %}">
+                        <img src="{% static 'images/landing_page/steps/swap-mobile.svg' %}" alt="" class="block max-w-none">
+                    </picture>
+                </div>
+                <div class="flex w-full flex-col gap-2 xl:gap-3">
+                    <div class="flex items-center justify-center gap-3">
+                        <span class="badge size-6 shrink-0 rounded-full border-0 bg-secondary-base p-0 text-b9 font-bold text-neutral-10" aria-hidden="true">4</span>
+                        <h3 class="text-s7 font-semibold text-primary-base xl:text-s6">Swap &amp; Enjoy</h3>
+                    </div>
+                    <p class="text-b8 text-neutral-90">Both parties confirm receipt, leave reviews, and repeat. Your wardrobe stays fresh without the spend.</p>
+                </div>
+            </li>
+        </ol>
+    </div>
+</section>

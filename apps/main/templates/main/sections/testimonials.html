@@ -1,0 +1,45 @@
+{% load static %}
+<section id="testimonials" class="w-full scroll-mt-24 bg-primary-10 md:scroll-mt-40 xl:scroll-mt-60" aria-labelledby="testimonials-title">
+    <div class="relative mx-auto h-30 w-full max-w-[1440px] md:h-20 xl:h-15">
+        <div data-swapy-stage class="pointer-events-none absolute right-8 bottom-0 h-[204px] w-[263px] origin-bottom-right scale-75 overflow-hidden xl:right-[114px] xl:scale-100" aria-hidden="true">
+            <div data-swapy class="relative h-[310px] w-[263px]">
+                <img src="{% static 'images/landing_page/testimonials/swapy-body.svg' %}" alt="" class="absolute top-32 left-[62px] block max-w-none">
+                <img data-swapy-hand src="{% static 'images/landing_page/testimonials/swapy-left-hand.svg' %}" alt="" class="absolute top-[155.12px] left-[5.12px] block max-w-none">
+                <div data-swapy-head class="absolute top-[38px] left-[57px] h-[183px] w-[161px]">
+                    <img data-swapy-eyes-open src="{% static 'images/landing_page/testimonials/swapy-head.svg' %}" alt="" class="absolute top-0 left-0 block max-w-none">
+                    <img data-swapy-eyes-closed src="{% static 'images/landing_page/testimonials/swapy-head-wink.svg' %}" alt="" class="absolute top-0 left-0 block max-w-none opacity-0">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="relative bg-primary-base">
+        <div class="mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-8 py-15 md:gap-15 xl:flex-row xl:items-center xl:gap-20 xl:px-20 xl:py-30">
+            <div class="flex min-w-0 flex-1 flex-col gap-6 xl:gap-[51px]">
+                <h2 id="testimonials-title" class="w-full font-display text-h4 font-bold text-primary-10 md:text-h3 xl:max-w-[436px] xl:text-h2 xl:leading-15">
+                    <span class="block">Your next favourite piece</span>
+                    <em class="block text-primary-40">is someone else's</em>
+                    <span class="block">forgotten gem.</span>
+                </h2>
+                <p class="text-b7 text-primary-20 xl:text-b6">Join over 12,000 swappers who've already discovered that the best way to refresh your style isn't buying — it's sharing. Sign up free and make your first swap today.</p>
+            </div>
+
+            <div class="flex w-full min-w-0 flex-1 flex-col gap-4 md:gap-8">
+                <figure class="card flex min-h-[131.5px] flex-col items-start gap-2 rounded-2xl border border-neutral-10/20 bg-neutral-10/10 p-4">
+                    <span class="text-b8 text-primary-40" role="img" aria-label="5 out of 5 stars">★★★★★</span>
+                    <blockquote class="w-full max-w-[350px] text-b8 leading-relaxed italic text-primary-20">
+                        <p>"I swapped my old blazer for a vintage denim jacket I absolutely love. Zero rupiah spent!"</p>
+                    </blockquote>
+                    <figcaption class="text-s9 font-semibold text-primary-40">— Rahel Meilinda</figcaption>
+                </figure>
+                <figure class="card flex min-h-[131.5px] flex-col items-start gap-2 rounded-2xl border border-neutral-10/20 bg-neutral-10/10 p-4">
+                    <span class="text-b8 text-primary-40" role="img" aria-label="5 out of 5 stars">★★★★★</span>
+                    <blockquote class="w-full max-w-[350px] text-b8 leading-relaxed italic text-primary-20">
+                        <p>"The matching is actually smart. Found my exact size and style within 10 minutes of browsing."</p>
+                    </blockquote>
+                    <figcaption class="text-s9 font-semibold text-primary-40">— Muhammad Dawoood</figcaption>
+                </figure>
+            </div>
+        </div>
+    </div>
+</section>
