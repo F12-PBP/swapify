@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Page not found — Swapify{% endblock %}
+
+{% block main_class %}w-full pt-16 xl:pt-24{% endblock %}
+
+{% block content %}
+    <section class="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-7xl flex-col items-center justify-center gap-8 px-6 py-12 md:flex-row md:gap-12 md:px-8 md:py-20 xl:min-h-[calc(100svh-6rem)] xl:px-20" aria-labelledby="not-found-title">
+
+        <div class="relative isolate flex h-[300px] w-full max-w-[360px] shrink-0 items-end justify-center sm:h-[360px] md:w-[320px] lg:h-[400px] lg:w-[400px] lg:max-w-none" role="img" aria-label="Swapy looks sad because this page could not be found">
+             <img src="{% static 'images/errors/swapy-sad.svg' %}" alt="" width="160" height="220" class="relative mb-5 h-auto w-40 sm:w-52 lg:w-60">
+            <div class="absolute bottom-3 left-1/2 h-4 w-36 -translate-x-1/2 rounded-[50%] bg-primary-20/70 sm:w-44 lg:w-52" aria-hidden="true"></div>
+
+        </div>
+
+        <div class="flex w-full max-w-md flex-col items-center gap-6 text-center md:items-start md:text-left">
+            <div class="flex flex-col gap-4 max-w-2xl w-full">
+                <h1 id="not-found-title" class="font-display text-h5 font-bold text-primary-base sm:text-h3 lg:text-h2">Sorry, Swapy can't find your request</h1>
+                <p class="text-b7 text-neutral-80 sm:text-b6">Even Swapy couldn't find this page. The link may be incorrect, or the page may have moved. Let's get you back to something good.</p>
+            </div>
+            <div class="flex w-full flex-col gap-3 sm:flex-row justify-center">
+                <a href="{% url 'main:home' %}" class="btn btn-ghost btn-primary h-12! min-h-12! flex-1 text-b7! w-fit! mx-auto">Back to home</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}
