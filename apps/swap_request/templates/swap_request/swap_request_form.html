@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Ajukan swap{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-2xl px-4 py-10 md:px-6">
+    <h1 class="font-display text-h3">Ajukan swap</h1>
+    <p class="mt-2 text-base-content/70">
+        Pakaian yang kamu minta:
+        <a class="font-medium link" href="{{ requested_clothing.get_absolute_url }}">{{ requested_clothing.name }}</a>
+        milik {{ requested_clothing.owner.username }}
+    </p>
+
+    {% if has_offerable_clothing %}
+        <form method="post" class="card mt-6 border border-base-300 bg-base-100 shadow-sm">
+            {% csrf_token %}
+            <div class="card-body gap-5">
+                {% for error in form.non_field_errors %}
+                    <div class="alert swap-alert swap-alert-error" role="alert">
+                        <p class="swap-alert-body">{{ error }}</p>
+                    </div>
+                {% endfor %}
+                {% for field in form %}
+                    <label class="w-full" for="{{ field.id_for_label }}">
+                        <span class="swap-field-label mb-2 block">{{ field.label }}</span>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <span class="swap-field-error mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </label>
+                {% endfor %}
+                <div class="card-actions justify-end pt-3">
+                    <a class="btn btn-ghost" href="{{ requested_clothing.get_absolute_url }}">Batal</a>
+                    <button class="btn btn-primary" type="submit">Kirim swap request</button>
+                </div>
+            </div>
+        </form>
+    {% else %}
+        <div class="mt-6 rounded-box border border-dashed border-base-300 p-8 text-center">
+            <p class="text-base-content/70">Kamu belum punya pakaian yang tersedia untuk ditawarkan.</p>
+            <a class="btn btn-primary mt-4" href="{% url 'clothing_catalog:create' %}">Tambah pakaian</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
