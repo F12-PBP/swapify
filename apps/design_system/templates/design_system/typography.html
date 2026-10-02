@@ -3,12 +3,12 @@
         {{ typography.title }}
     </h3>
 
-    <div class="flex gap-3 w-full">
+    <div class="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
         {% for style in typography.styles %}
-            <article class="min-w-0 rounded-xl bg-neutral-20 p-4 justify-between gap-3 flex flex-col flex-1">
+            <article class="min-w-0 rounded-xl bg-neutral-20 p-3 sm:p-4 justify-between gap-3 flex flex-col">
                <code class="font-semibold">{{ style.class_name }}</code>
                 <p class="{{ typography.font_class }} {{ style.class_name }} text-primary-base">Aa</p>
-               <span>{{ style.px }}/{{ style.line_height }} px</span>
+               <span class="text-xs sm:text-sm">{{ style.px }}/{{ style.line_height }} px</span>
             </article>
         {% endfor %}
     </div>

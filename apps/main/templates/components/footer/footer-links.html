@@ -3,35 +3,13 @@
 {% url 'clothing_catalog:create' as create_url %}
 <div class="flex w-full flex-col gap-10 md:flex-row xl:w-[779.75px]">
     <nav class="flex min-h-46 min-w-0 flex-1 flex-col items-start gap-3" aria-label="Product">
-        <h2 class="text-s8 font-semibold text-neutral-30">Product</h2>
+        <h2 class="text-s8 font-semibold text-neutral-30"><Links></Links></h2>
         <ul class="flex flex-col gap-2">
             <li><a href="{{ home_url }}#how-it-works" class="link link-hover rounded-sm text-b8 transition-colors hover:text-neutral-30 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-30">How It Works</a></li>
             <li><a href="{{ catalog_url }}" class="link link-hover rounded-sm text-b8 transition-colors hover:text-neutral-30 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-30">Browse Items</a></li>
             <li><a href="{{ create_url }}" class="link link-hover rounded-sm text-b8 transition-colors hover:text-neutral-30 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-30">List an Item</a></li>
             <li><span class="text-b8" aria-disabled="true" title="Pricing is not available yet">Pricing</span></li>
             <li><span class="text-b8" aria-disabled="true" title="Mobile App is not available yet">Mobile App</span></li>
-        </ul>
-    </nav>
-
-    <nav class="flex min-h-46 min-w-0 flex-1 flex-col items-start gap-3" aria-label="Company">
-        <h2 class="text-s8 font-semibold text-neutral-30">Company</h2>
-        <ul class="flex flex-col gap-2">
-            <li><a href="{{ home_url }}#about-us" class="link link-hover rounded-sm text-b8 transition-colors hover:text-neutral-30 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-30">About Us</a></li>
-            <li><span class="text-b8" aria-disabled="true" title="Blog is not available yet">Blog</span></li>
-            <li><span class="text-b8" aria-disabled="true" title="Careers is not available yet">Careers</span></li>
-            <li><span class="text-b8" aria-disabled="true" title="Press Kit is not available yet">Press Kit</span></li>
-            <li><span class="text-b8" aria-disabled="true" title="Contact is not available yet">Contact</span></li>
-        </ul>
-    </nav>
-
-    <nav class="flex min-h-46 min-w-0 flex-1 flex-col items-start gap-3" aria-label="Support">
-        <h2 class="text-s8 font-semibold text-neutral-30">Support</h2>
-        <ul class="flex flex-col gap-2">
-            <li><a href="{{ home_url }}#faq" class="link link-hover rounded-sm text-b8 transition-colors hover:text-neutral-30 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-30">Help Center</a></li>
-            <li><span class="text-b8" aria-disabled="true" title="Safety Tips is not available yet">Safety Tips</span></li>
-            <li><span class="text-b8" aria-disabled="true" title="Community Guidelines is not available yet">Community Guidelines</span></li>
-            <li><span class="text-b8" aria-disabled="true" title="Privacy Policy is not available yet">Privacy Policy</span></li>
-            <li><span class="text-b8" aria-disabled="true" title="Terms of Service is not available yet">Terms of Service</span></li>
         </ul>
     </nav>
 </div>

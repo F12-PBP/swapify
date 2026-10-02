@@ -4,14 +4,14 @@
 {% if sign_in_url %}
 <a href="{{ sign_in_url }}" class="btn btn-primary-ghost w-37 gap-3 border-[1.6px]">
 {% else %}
-<button type="button" aria-disabled="true" title="Sign In will be available when authentication is connected" class="btn btn-primary-ghost cursor-default w-37 gap-3 border-[1.6px]">
+<button type="button" title="Sign In will be available when authentication is connected" class="btn btn-primary-ghost cursor-default w-37 gap-3 border-[1.6px] disabled:">
 {% endif %}
-    <span>Sign In</span>
+    Sign In
 {% if sign_in_url %}</a>{% else %}</button>{% endif %}
 {% if sign_up_url %}
 <a href="{{ sign_up_url }}" class="btn btn-primary w-36 gap-3 text-neutral-20">
 {% else %}
-<button type="button" aria-disabled="true" title="Sign Up will be available when authentication is connected" class="btn btn-primary cursor-default w-36 gap-3 text-neutral-20">
+<button type="button"  title="Sign Up will be available when authentication is connected" class="btn btn-primary cursor-default w-36 gap-3 text-neutral-20">
 {% endif %}
-    <span>Sign Up</span>
+    Sign Up
 {% if sign_up_url %}</a>{% else %}</button>{% endif %}
