@@ -1,4 +1,4 @@
-{% load tailwind_tags %}
+{% load tailwind_tags static %}
 <!DOCTYPE html>
 <html lang="en" data-theme="swapify">
 <head>
@@ -8,12 +8,16 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
-
     <title>
         {% block title %}
             Swapify
         {% endblock %}
     </title>
+
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/landing_page/swapify-logo.svg' %}">
+
+
+
 </head>
 
 <body class="font-sans">
@@ -23,6 +27,6 @@
         {% block content %}
         {% endblock %}
     </main>
-    {% include "components/footer.html" %}
+    {% include "components/footer/footer.html" %}
 </body>
 </html>
