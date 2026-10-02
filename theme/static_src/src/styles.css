@@ -767,6 +767,29 @@ button.btn:disabled {
   @apply flex items-center justify-center rounded-box bg-base-200 p-6;
 }
 
+.navbar-mobile-menu {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-0.75rem);
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms ease, visibility 0s linear 220ms;
+}
+
+.navbar-mobile-menu[aria-hidden="false"] {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar-mobile-menu {
+    transition: none;
+    transform: none;
+  }
+}
+
 .ds-code {
   @apply overflow-x-auto rounded-box bg-neutral p-4 text-xs leading-6 text-neutral-content;
 }
