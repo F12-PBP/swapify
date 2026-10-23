@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}{% if clothing %}Ubah pakaian{% else %}Tambah pakaian{% endif %}{% endblock %}
+{% block title %}{% if clothing %}Edit pakaian{% else %}Add clothing{% endif %}{% endblock %}
 
 {% block content %}
 <section class="mx-auto max-w-2xl px-4 py-10 md:px-6">
     <div class="mb-8">
-        <h1 class="font-display text-h3">{% if clothing %}Ubah pakaian{% else %}Tambah pakaian{% endif %}</h1>
-        <p class="mt-2 text-base-content/70">Lengkapi informasi pakaian yang ingin kamu tukarkan.</p>
+        <h1 class="font-display text-h3">{% if clothing %}Edit pakaian{% else %}Add clothing{% endif %}</h1>
+        <p class="mt-2 text-base-content/70">Enter details for the clothing you want to swap.</p>
     </div>
 
-    <form method="post" class="card border border-base-300 bg-base-100 shadow-sm">
+    <form method="post" enctype="multipart/form-data" class="rounded-box border border-neutral-40 bg-base-100 p-5 shadow-[0_4px_24px_rgb(115_20_29_/_6%)] md:p-8">
         {% csrf_token %}
-        <div class="card-body gap-5">
+        <div class="space-y-5">
             {% for field in form %}
                 <label class="w-full" for="{{ field.id_for_label }}">
                     <span class="swap-field-label mb-2 block">{{ field.label }}</span>
@@ -22,8 +22,8 @@
                 </label>
             {% endfor %}
             <div class="card-actions justify-end pt-3">
-                <a class="btn btn-ghost" href="{% if clothing %}{{ clothing.get_absolute_url }}{% else %}{% url 'clothing_catalog:list' %}{% endif %}">Batal</a>
-                <button class="btn btn-primary" type="submit">Simpan</button>
+                <a class="btn btn-ghost" href="{% if clothing %}{{ clothing.get_absolute_url }}{% else %}{% url 'clothing_catalog:list' %}{% endif %}">Cancel</a>
+                <button class="btn btn-primary" type="submit">Save</button>
             </div>
         </div>
     </form>
