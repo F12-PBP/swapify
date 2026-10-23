@@ -73,7 +73,10 @@ MIDDLEWARE = [
 ]
 
 if DEBUG:
-    MIDDLEWARE += ["django_browser_reload.middleware.BrowserReloadMiddleware"]
+    MIDDLEWARE += [
+        "django_browser_reload.middleware.BrowserReloadMiddleware",
+        "apps.main.middleware.AutoLoginMiddleware",
+    ]
 
 ROOT_URLCONF = "config.urls"
 
@@ -167,3 +170,7 @@ WHITENOISE_USE_FINDERS = True
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Media files
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
