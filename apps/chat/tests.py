@@ -5,9 +5,10 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.clothing_catalog.models import Clothing
+from apps.swap_request.models import SwapRequest
 
 from . import services
-from .models import ChatMessage, ChatRoom, SwapRequest
+from .models import ChatMessage, ChatRoom
 
 User = get_user_model()
 PASSWORD = "pw12345!"

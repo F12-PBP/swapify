@@ -1,82 +1,8 @@
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import Q
 
-
-class SwapRequestQuerySet(models.QuerySet):
-    def for_user(self, user):
-        """Swap request di mana user adalah pengaju atau pemilik pakaian."""
-        return self.filter(Q(requester=user) | Q(requested_clothing__owner=user))
-
-
-class SwapRequest(models.Model):
-    """Entitas `swap_request` di ERD.
-
-    Didefinisikan di app chat karena app swap belum ada di repo. Field dan
-    nilai status mengikuti ERD persis, jadi model ini bisa dipindahkan ke app
-    swap tanpa mengubah kontrak dengan modul chat.
-    """
-
-    class Status(models.TextChoices):
-        PENDING = "Pending", "Pending"
-        ACCEPTED = "Accepted", "Accepted"
-        REJECTED = "Rejected", "Rejected"
-        CANCELLED = "Cancelled", "Cancelled"
-
-    requester = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="swap_requests_sent",
-    )
-    requested_clothing = models.ForeignKey(
-        "clothing_catalog.Clothing",
-        on_delete=models.CASCADE,
-        related_name="swap_requests_received",
-    )
-    offered_clothing = models.ForeignKey(
-        "clothing_catalog.Clothing",
-        on_delete=models.CASCADE,
-        related_name="swap_requests_offered",
-    )
-    message = models.TextField(blank=True)
-    status = models.CharField(
-        max_length=20, choices=Status.choices, default=Status.PENDING
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    objects = SwapRequestQuerySet.as_manager()
-
-    class Meta:
-        ordering = ["-created_at"]
-        constraints = [
-            models.CheckConstraint(
-                condition=~Q(requested_clothing=F("offered_clothing")),
-                name="swap_request_distinct_clothing",
-            ),
-        ]
-
-    def __str__(self):
-        return f"SwapRequest #{self.pk} ({self.status})"
-
-    @property
-    def owner(self):
-        """Pemilik pakaian yang diminta (penerima request)."""
-        return self.requested_clothing.owner
-
-    def is_participant(self, user):
-        return user.pk in (self.requester_id, self.requested_clothing.owner_id)
-
-    def clean(self):
-        if not (self.requested_clothing_id and self.offered_clothing_id):
-            return
-        if self.requested_clothing_id == self.offered_clothing_id:
-            raise ValidationError("Pakaian yang diminta dan ditawarkan harus berbeda.")
-        if self.requested_clothing.owner_id == self.requester_id:
-            raise ValidationError("Tidak bisa meminta pakaian milik sendiri.")
-        if self.offered_clothing.owner_id != self.requester_id:
-            raise ValidationError("Pakaian yang ditawarkan harus milik pengaju.")
+from apps.swap_request.models import SwapRequest
 
 
 class ChatRoomQuerySet(models.QuerySet):
@@ -99,7 +25,7 @@ class ChatRoom(models.Model):
     """Entitas `chat_room`: satu room per swap request (relasi `opens`)."""
 
     swap_request = models.OneToOneField(
-        SwapRequest,
+        "swap_request.SwapRequest",
         on_delete=models.CASCADE,
         related_name="chat_room",
     )
@@ -109,6 +35,8 @@ class ChatRoom(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        verbose_name = "swap request"
+        verbose_name_plural = "swap request"
 
     def __str__(self):
         return f"ChatRoom #{self.pk} (swap request #{self.swap_request_id})"

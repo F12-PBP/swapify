@@ -1,20 +1,6 @@
 from django.contrib import admin
 
-from .models import ChatMessage, ChatRoom, SwapRequest
-
-
-@admin.register(SwapRequest)
-class SwapRequestAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "requester",
-        "requested_clothing",
-        "offered_clothing",
-        "status",
-        "created_at",
-    )
-    list_filter = ("status",)
-    raw_id_fields = ("requester", "requested_clothing", "offered_clothing")
+from .models import ChatMessage, ChatRoom
 
 
 @admin.register(ChatRoom)

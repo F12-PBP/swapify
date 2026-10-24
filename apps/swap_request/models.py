@@ -1,8 +1,15 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import F, Q
 from django.urls import reverse
 
 from apps.clothing_catalog.models import Clothing
+
+
+class SwapRequestQuerySet(models.QuerySet):
+    def for_user(self, user):
+        return self.filter(Q(requester=user) | Q(requested_clothing__owner=user))
 
 
 class SwapRequest(models.Model):
@@ -45,6 +52,13 @@ class SwapRequest(models.Model):
         verbose_name = "swap request"
         verbose_name_plural = "swap request"
 
+        constraints = [
+            models.CheckConstraint(
+                condition=~Q(requested_clothing=F("offered_clothing")),
+                name="canonical_swap_distinct_clothing",
+            ),
+        ]
+
     def __str__(self):
         return f"{self.offered_clothing} -> {self.requested_clothing}"
 
@@ -54,3 +68,26 @@ class SwapRequest(models.Model):
     @property
     def owner(self):
         return self.requested_clothing.owner
+
+    objects = SwapRequestQuerySet.as_manager()
+
+    def is_participant(self, user):
+        return user.is_authenticated and user.pk in (
+            self.requester_id,
+            self.requested_clothing.owner_id,
+        )
+
+    def clean(self):
+        super().clean()
+
+        if not (self.requested_clothing_id and self.offered_clothing_id):
+            return
+
+        if self.requested_clothing_id == self.offered_clothing_id:
+            raise ValidationError("Requested and offered clothing must be different.")
+
+        if self.requested_clothing.owner_id == self.requester_id:
+            raise ValidationError("You cannot request your own clothing.")
+
+        if self.offered_clothing.owner_id != self.requester_id:
+            raise ValidationError("Offered clothing must belong to the requester.")
