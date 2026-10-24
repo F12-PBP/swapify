@@ -54,7 +54,7 @@ class SwapRequestCreateView(LoginRequiredMixin, CreateView):
     def requested_clothing(self):
         other_available_clothing = (
             Clothing.objects.select_related("owner")
-            .filter(availability=Clothing.Availability.AVAILABLE)
+            .filter(status=Clothing.Status.AVAILABLE)
             .exclude(owner=self.request.user)
         )
         return get_object_or_404(
@@ -121,9 +121,9 @@ class SwapRequestAcceptView(OwnerActionView):
                 swap_request.requested_clothing_id,
                 swap_request.offered_clothing_id,
             ],
-            availability=Clothing.Availability.AVAILABLE,
+            status=Clothing.Status.AVAILABLE,
         ).update(
-            availability=Clothing.Availability.UNAVAILABLE,
+            status=Clothing.Status.RESERVED,
             updated_at=timezone.now(),
         )
         return reserved == 2 and super().update_status(swap_request)

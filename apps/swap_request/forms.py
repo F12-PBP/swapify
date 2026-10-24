@@ -29,7 +29,7 @@ class SwapRequestForm(forms.ModelForm):
         offered_field = self.fields["offered_clothing"]
         offered_field.queryset = Clothing.objects.filter(
             owner=requester,
-            availability=Clothing.Availability.AVAILABLE,
+            status=Clothing.Status.AVAILABLE,
         )
         offered_field.empty_label = "Pilih pakaianmu"
 

@@ -12,7 +12,7 @@ def make_clothing(owner, name):
         owner=owner,
         name=name,
         description="Masih bagus",
-        category=Clothing.Category.TOP,
+        type=Clothing.Type.TOP,
         size=Clothing.Size.M,
         condition=Clothing.Condition.GOOD,
     )
@@ -103,7 +103,7 @@ class SwapRequestCreateTests(SwapRequestTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_cannot_request_unavailable_clothing(self):
-        self.requested.availability = Clothing.Availability.UNAVAILABLE
+        self.requested.status = Clothing.Status.RESERVED
         self.requested.save()
         self.client.force_login(self.requester)
         response = self.client.get(self.create_url(self.requested))
@@ -141,17 +141,17 @@ class SwapRequestActionTests(SwapRequestTestCase):
         self.assertEqual(self.swap.status, SwapRequest.Status.ACCEPTED)
         for item in (self.offered, self.requested):
             item.refresh_from_db()
-            self.assertEqual(item.availability, Clothing.Availability.UNAVAILABLE)
+            self.assertEqual(item.status, Clothing.Status.RESERVED)
 
     def test_accept_fails_when_an_item_is_unavailable(self):
-        self.offered.availability = Clothing.Availability.UNAVAILABLE
+        self.offered.status = Clothing.Status.RESERVED
         self.offered.save()
 
         self.post_action(self.owner, "accept")
 
         self.assertEqual(self.swap.status, SwapRequest.Status.PENDING)
         self.requested.refresh_from_db()
-        self.assertEqual(self.requested.availability, Clothing.Availability.AVAILABLE)
+        self.assertEqual(self.requested.status, Clothing.Status.AVAILABLE)
 
     def test_owner_can_reject(self):
         self.post_action(self.owner, "reject")

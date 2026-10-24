@@ -18,7 +18,7 @@ def make_clothing(owner, name):
         owner=owner,
         name=name,
         description="deskripsi",
-        category=Clothing.Category.TOP,
+        type=Clothing.Type.TOP,
         size=Clothing.Size.M,
         condition=Clothing.Condition.GOOD,
     )
