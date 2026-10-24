@@ -5,6 +5,12 @@
 <div class="min-h-screen bg-neutral-20 py-10 px-4">
     <div class="max-w-3xl mx-auto">
 
+        {% for message in messages %}
+            <div role="alert" class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %} mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+
         <div class="mb-6">
             <p class="text-sm font-semibold text-primary-base uppercase tracking-wide">
                 Transaction
@@ -339,12 +345,33 @@
                 {% endif %}
 
 
+                <div class="py-6 border-b border-neutral-40">
+                    <h3 class="text-base font-bold text-neutral-120 mb-4">Receipt confirmations</h3>
+                    <p class="text-sm text-neutral-80">
+                        {{ transaction.requester.username }}:
+                        {% if transaction.requester_received %}
+                            Received{% if transaction.requester_received_at %} · {{ transaction.requester_received_at|date:"d M Y, H:i" }}{% endif %}
+                        {% else %}
+                            Not confirmed
+                        {% endif %}
+                    </p>
+                    <p class="text-sm text-neutral-80 mt-2">
+                        {{ transaction.owner.username }}:
+                        {% if transaction.owner_received %}
+                            Received{% if transaction.owner_received_at %} · {{ transaction.owner_received_at|date:"d M Y, H:i" }}{% endif %}
+                        {% else %}
+                            Not confirmed
+                        {% endif %}
+                    </p>
+                </div>
+
                 <div class="pt-6">
 
                     <h3 class="text-base font-bold text-neutral-120 mb-4">
                         Actions
                     </h3>
 
+                    {% if transaction.status == "Waiting" and transaction.swap_request.status == "accepted" %}
                     <div class="flex flex-col sm:flex-row gap-3">
 
                         <a
@@ -354,22 +381,29 @@
                             Update Information
                         </a>
 
-                        <form method="post" action="{% url 'transaction_received' transaction.pk %}">
+                        <form method="post" action="{% url 'transaction_start' transaction.pk %}">
                             {% csrf_token %}
-
-                            <button
-                                type="submit"
-                                class="btn flex-1 bg-green-base text-neutral-10 border-green-base hover:bg-green-70 hover:border-green-70"
-                            >
-                                Confirm Clothes Received
-                            </button>
+                            <button type="submit" class="btn btn-primary">Start Exchange</button>
                         </form>
-
                     </div>
-
-                    <p class="text-xs text-neutral-70 mt-3 text-center">
-                        Each participant can update their own delivery information and confirm their own receipt.
+                    <p class="text-sm text-neutral-70 mt-3">
+                        Fill in the meetup date and location, or both participants' tracking numbers and delivery estimates. Starting locks these details for both participants.
                     </p>
+                    {% elif transaction.status == "InProgress" and transaction.swap_request.status == "accepted" %}
+                        {% if my_received %}
+                            <p class="text-sm text-neutral-80">Your receipt is confirmed. Waiting for your partner to confirm.</p>
+                        {% else %}
+                            <form method="post" action="{% url 'transaction_received' transaction.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Confirm Clothes Received</button>
+                            </form>
+                            <p class="text-sm text-neutral-70 mt-3">Confirm only after you receive the other participant's clothing. The exchange completes when both participants confirm.</p>
+                        {% endif %}
+                    {% elif transaction.status == "Completed" %}
+                        <p class="text-sm text-green-80">Both participants confirmed receipt. This exchange is complete and its details are locked.</p>
+                    {% else %}
+                        <p class="text-sm text-neutral-80">Actions are unavailable for this exchange.</p>
+                    {% endif %}
 
                 </div>
 

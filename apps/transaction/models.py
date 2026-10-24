@@ -118,34 +118,31 @@ class Transaction(models.Model):
     def clean(self):
         super().clean()
 
-        if self.status == self.Status.WAITING:
+        if self.status not in (self.Status.IN_PROGRESS, self.Status.COMPLETED):
             return
 
+        errors = {}
         if self.method == self.Method.DELIVERY:
-            if not self.requester_resi:
-                raise ValidationError(
-                    {"requester_resi": ("Requester resi is required for delivery.")}
-                )
-
-            if not self.requester_delivery_estimate:
-                raise ValidationError(
-                    {
-                        "requester_delivery_estimate": (
-                            "Delivery estimate is required for delivery."
-                        )
-                    }
-                )
+            for party in ("requester", "owner"):
+                if not (getattr(self, f"{party}_resi") or "").strip():
+                    errors[f"{party}_resi"] = (
+                        f"{party.capitalize()} tracking number is required "
+                        "for delivery."
+                    )
+                if not getattr(self, f"{party}_delivery_estimate"):
+                    errors[f"{party}_delivery_estimate"] = (
+                        f"{party.capitalize()} delivery estimate is required."
+                    )
 
         elif self.method == self.Method.MEETUP:
             if not self.meetup_date:
-                raise ValidationError(
-                    {"meetup_date": ("Meetup date is required for meetup.")}
-                )
+                errors["meetup_date"] = "Meetup date is required for meetup."
 
-            if not self.meetup_location:
-                raise ValidationError(
-                    {"meetup_location": ("Meetup location is required for meetup.")}
-                )
+            if not (self.meetup_location or "").strip():
+                errors["meetup_location"] = "Meetup location is required for meetup."
+
+        if errors:
+            raise ValidationError(errors)
 
     @property
     def is_overdue(self):

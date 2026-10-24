@@ -22,7 +22,7 @@
         <div class="card bg-neutral-10 border border-neutral-40 rounded-2xl shadow-sm">
             <div class="card-body p-6 md:p-8">
 
-                <form method="post" class="space-y-6">
+                <form method="post" class="space-y-6" id="transaction-update-form">
 
                     {% csrf_token %}
 
@@ -35,7 +35,20 @@
                     {% endif %}
 
 
-                    {% if transaction.method == "Delivery" %}
+                    <div>
+                        <label for="{{ form.method.id_for_label }}" class="block text-sm font-semibold text-neutral-110 mb-2">
+                            {{ form.method.label }}
+                        </label>
+                        {{ form.method }}
+                        {% for error in form.method.errors %}
+                            <p class="text-sm text-red-base mt-2">{{ error }}</p>
+                        {% endfor %}
+                        <p class="text-sm text-neutral-70 mt-2">
+                            Save your details first. Either participant can start the exchange once all required information is ready. Starting locks the method and details.
+                        </p>
+                    </div>
+
+                    <div data-method-fields="Delivery">
 
                         <div>
                             <h2 class="text-lg font-bold text-neutral-120">
@@ -125,9 +138,9 @@
                         </div>
 
                         {% endif %}
-                    {% endif %}
+                    </div>
 
-                    {% if transaction.method == "Meetup" %}
+                    <div data-method-fields="Meetup">
 
                         <div>
                             <h2 class="text-lg font-bold text-neutral-120">
@@ -171,7 +184,7 @@
 
                         </div>
 
-                    {% endif %}
+                    </div>
 
                     <div class="flex flex-col sm:flex-row gap-3 pt-2">
 
@@ -198,5 +211,20 @@
 
     </div>
 </div>
+
+<script>
+(function () {
+    "use strict";
+    var form = document.getElementById("transaction-update-form");
+    var method = form.querySelector('[name="method"]');
+    function showMethodFields() {
+        form.querySelectorAll("[data-method-fields]").forEach(function (section) {
+            section.hidden = section.dataset.methodFields !== method.value;
+        });
+    }
+    method.addEventListener("change", showMethodFields);
+    showMethodFields();
+})();
+</script>
 
 {% endblock %}

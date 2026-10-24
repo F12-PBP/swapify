@@ -95,10 +95,16 @@ class UpdateTransactionForm(forms.ModelForm):
         for field in other_party_fields:
             self.fields.pop(field, None)
 
+        # Drafts can be saved before the other participant supplies their details.
+        for field in self.fields.values():
+            field.required = False
+        self.fields["method"].required = True
+
     class Meta:
         model = Transaction
 
         fields = [
+            "method",
             "requester_resi",
             "requester_delivery_estimate",
             "owner_resi",
@@ -108,6 +114,7 @@ class UpdateTransactionForm(forms.ModelForm):
         ]
 
         widgets = {
+            "method": forms.Select(attrs={"class": "select swap-input w-full"}),
             "requester_resi": forms.TextInput(
                 attrs={
                     "class": ("select w-full border border-neutral-30 rounded-xl p-2"),
@@ -115,10 +122,11 @@ class UpdateTransactionForm(forms.ModelForm):
                 }
             ),
             "requester_delivery_estimate": forms.DateTimeInput(
+                format="%Y-%m-%dT%H:%M",
                 attrs={
                     "class": ("input w-full"),
                     "type": "datetime-local",
-                }
+                },
             ),
             "owner_resi": forms.TextInput(
                 attrs={
@@ -127,16 +135,18 @@ class UpdateTransactionForm(forms.ModelForm):
                 }
             ),
             "owner_delivery_estimate": forms.DateTimeInput(
+                format="%Y-%m-%dT%H:%M",
                 attrs={
                     "class": ("input w-full"),
                     "type": "datetime-local",
-                }
+                },
             ),
             "meetup_date": forms.DateTimeInput(
+                format="%Y-%m-%dT%H:%M",
                 attrs={
                     "class": ("input w-full"),
                     "type": "datetime-local",
-                }
+                },
             ),
             "meetup_location": forms.TextInput(
                 attrs={
@@ -147,6 +157,7 @@ class UpdateTransactionForm(forms.ModelForm):
         }
 
         labels = {
+            "method": "Exchange method",
             "requester_resi": "Requester Tracking Number",
             "requester_delivery_estimate": "Requester Estimated Delivery",
             "owner_resi": "Owner Tracking Number",
