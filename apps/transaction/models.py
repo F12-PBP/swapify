@@ -6,6 +6,12 @@ from django.utils import timezone
 
 
 class Transaction(models.Model):
+    swap_request = models.OneToOneField(
+        "swap_request.SwapRequest",
+        on_delete=models.PROTECT,
+        related_name="transaction",
+    )
+
     class Method(models.TextChoices):
         MEETUP = "Meetup", "Meetup"
         DELIVERY = "Delivery", "Delivery"
@@ -157,3 +163,14 @@ class Transaction(models.Model):
         )
 
         return requester_waiting or owner_waiting
+
+    @property
+    def requester(self):
+        return self.swap_request.requester
+
+    @property
+    def owner(self):
+        return self.swap_request.owner
+
+    def is_participant(self, user):
+        return self.swap_request.is_participant(user)
