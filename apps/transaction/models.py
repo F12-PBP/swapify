@@ -116,6 +116,11 @@ class Transaction(models.Model):
         return f"Transaction {self.id} - {self.status}"
 
     def clean(self):
+        super().clean()
+
+        if self.status == self.status.WAITING:
+            return
+
         if self.method == self.Method.DELIVERY:
             if not self.requester_resi:
                 raise ValidationError(

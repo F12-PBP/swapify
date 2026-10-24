@@ -143,6 +143,19 @@ class SwapRequestActionTests(SwapRequestTestCase):
             item.refresh_from_db()
             self.assertEqual(item.status, Clothing.Status.RESERVED)
 
+        self.assertEqual(
+            self.swap.chat_room.swap_request_id,
+            self.swap.pk,
+        )
+        self.assertEqual(
+            self.swap.transaction.swap_request_id,
+            self.swap.pk,
+        )
+        self.assertEqual(
+            self.swap.transaction.status,
+            "Waiting",
+        )
+
     def test_accept_fails_when_an_item_is_unavailable(self):
         self.offered.status = Clothing.Status.RESERVED
         self.offered.save()
@@ -152,6 +165,9 @@ class SwapRequestActionTests(SwapRequestTestCase):
         self.assertEqual(self.swap.status, SwapRequest.Status.PENDING)
         self.requested.refresh_from_db()
         self.assertEqual(self.requested.status, Clothing.Status.AVAILABLE)
+
+        self.assertFalse(hasattr(self.swap, "chat_room"))
+        self.assertFalse(hasattr(self.swap, "transaction"))
 
     def test_owner_can_reject(self):
         self.post_action(self.owner, "reject")

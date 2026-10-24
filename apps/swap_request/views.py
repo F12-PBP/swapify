@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
@@ -13,6 +14,7 @@ from apps.clothing_catalog.models import Clothing
 
 from .forms import SwapRequestForm
 from .models import SwapRequest
+from .services import SwapAcceptanceError, accept_swap_request
 
 RELATED_FIELDS = (
     "requester",
@@ -116,17 +118,15 @@ class SwapRequestAcceptView(OwnerActionView):
     )
 
     def update_status(self, swap_request):
-        reserved = Clothing.objects.filter(
-            pk__in=[
-                swap_request.requested_clothing_id,
-                swap_request.offered_clothing_id,
-            ],
-            status=Clothing.Status.AVAILABLE,
-        ).update(
-            status=Clothing.Status.RESERVED,
-            updated_at=timezone.now(),
-        )
-        return reserved == 2 and super().update_status(swap_request)
+        try:
+            accept_swap_request(
+                request_id=swap_request.pk,
+                acting_user=self.request.user,
+            )
+        except (SwapAcceptanceError, ValidationError):
+            return False
+
+        return True
 
 
 class SwapRequestRejectView(OwnerActionView):
