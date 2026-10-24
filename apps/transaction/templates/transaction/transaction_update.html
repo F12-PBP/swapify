@@ -48,6 +48,7 @@
                         </div>
 
 
+                        {% if form.requester_resi %}
                         <div class="rounded-2xl bg-neutral-30 border border-neutral-40 p-5 space-y-5">
 
                             <h3 class="font-bold text-neutral-120">
@@ -84,6 +85,9 @@
 
                         </div>
 
+                        {% endif %}
+
+                        {% if form.owner_resi %}
                         <div class="rounded-2xl bg-neutral-30 border border-neutral-40 p-5 space-y-5">
 
                             <h3 class="font-bold text-neutral-120">
@@ -120,6 +124,7 @@
 
                         </div>
 
+                        {% endif %}
                     {% endif %}
 
                     {% if transaction.method == "Meetup" %}

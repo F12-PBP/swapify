@@ -84,6 +84,17 @@ class CreateTransactionForm(forms.ModelForm):
 
 
 class UpdateTransactionForm(forms.ModelForm):
+    def __init__(self, *args, user, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if user.pk == self.instance.swap_request.requester_id:
+            other_party_fields = ("owner_resi", "owner_delivery_estimate")
+        else:
+            other_party_fields = ("requester_resi", "requester_delivery_estimate")
+
+        for field in other_party_fields:
+            self.fields.pop(field, None)
+
     class Meta:
         model = Transaction
 

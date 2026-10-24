@@ -357,8 +357,6 @@
                         <form method="post" action="{% url 'transaction_received' transaction.pk %}">
                             {% csrf_token %}
 
-                            <input type="hidden" name="party" value="requester">
-
                             <button
                                 type="submit"
                                 class="btn flex-1 bg-green-base text-neutral-10 border-green-base hover:bg-green-70 hover:border-green-70"
@@ -370,7 +368,7 @@
                     </div>
 
                     <p class="text-xs text-neutral-70 mt-3 text-center">
-                        These actions will be connected to their respective flows later.
+                        Each participant can update their own delivery information and confirm their own receipt.
                     </p>
 
                 </div>

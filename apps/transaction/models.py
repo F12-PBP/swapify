@@ -118,7 +118,7 @@ class Transaction(models.Model):
     def clean(self):
         super().clean()
 
-        if self.status == self.status.WAITING:
+        if self.status == self.Status.WAITING:
             return
 
         if self.method == self.Method.DELIVERY:
