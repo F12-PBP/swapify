@@ -137,9 +137,10 @@
 
     {% else %}
         <div class="rounded-box border border-dashed border-base-300 p-10 text-center">
-            <p class="text-base-content/70">No clothing in the catalog yet.</p>
-            {% if user.is_authenticated %}
-                <a class="btn btn-primary mt-4" href="{% url 'clothing_catalog:create' %}">Add the first clothing item</a>
+            <p class="text-base-content/70 text-lg">No clothing found.</p>
+            <p class="text-base-content/50 text-sm mt-1">Try adjusting your search or filter parameters.</p>
+            {% if user.is_authenticated and not is_personal_view %}
+                <a class="btn btn-primary mt-4" href="{% url 'clothing_catalog:create' %}">Add a clothing item</a>
             {% endif %}
         </div>
     {% endif %}

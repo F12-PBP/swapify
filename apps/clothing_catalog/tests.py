@@ -117,6 +117,14 @@ class ClothingViewTests(TestCase):
         self.assertContains(response, "Linen Shirt")
         self.assertNotContains(response, "Other Item")
 
+    def test_catalog_shows_empty_state(self):
+        self.clothing.delete()
+
+        response = self.client.get(reverse("clothing_catalog:list"))
+
+        self.assertContains(response, "No clothing found.")
+        self.assertContains(response, "Try adjusting your search or filter parameters.")
+
     def test_catalog_and_detail_are_public(self):
         list_response = self.client.get(reverse("clothing_catalog:list"))
         detail_response = self.client.get(
