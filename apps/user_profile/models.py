@@ -18,3 +18,11 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.display_name
+
+
+class GeocodingCacheEntry(models.Model):
+    """Shared lookup cache and request gate across application workers."""
+
+    key = models.CharField(max_length=80, primary_key=True)
+    value = models.JSONField(default=dict)
+    expires_at = models.DateTimeField(db_index=True)

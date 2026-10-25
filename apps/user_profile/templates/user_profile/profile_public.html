@@ -31,6 +31,9 @@
             <p class="text-base-content/60">
                 @{{ profile.user.username }}
             </p>
+            {% if profile.city and profile.province %}
+                <p class="text-sm text-base-content/60">{{ profile.city }}, {{ profile.province }}</p>
+            {% endif %}
 
             <p class="whitespace-pre-line">
                 {{ profile.bio|default:"No bio yet." }}

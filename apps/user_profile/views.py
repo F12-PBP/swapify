@@ -2,14 +2,24 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core import signing
 from django.db import transaction
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DetailView, UpdateView
 
 from apps.clothing_catalog.models import Clothing
 
-from .forms import LoginForm, ProfileLocationForm, ProfileUpdateForm, RegisterForm
+from .forms import (
+    LocationCoordinatesForm,
+    LoginForm,
+    ProfileLocationForm,
+    ProfileUpdateForm,
+    RegisterForm,
+)
+from .geocoding import GeocodingError, reverse_geocode
 from .models import Profile
 from .services import ProfilePhotoUploadError, upload_profile_picture
 
@@ -93,6 +103,39 @@ class MyProfileLocationUpdateView(LoginRequiredMixin, SuccessMessageMixin, Updat
 
     def get_object(self, queryset=None):
         return self.request.user.profile
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "user_id": self.request.user.pk}
+
+
+class LocationResolveView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = LocationCoordinatesForm(request.POST)
+        if not form.is_valid():
+            return JsonResponse(
+                {"error": "Please provide valid latitude and longitude."}, status=400
+            )
+        try:
+            location = reverse_geocode(**form.cleaned_data)
+        except GeocodingError as error:
+            response = JsonResponse({"error": str(error)}, status=error.status_code)
+            if error.status_code == 429:
+                response["Retry-After"] = "2"
+        else:
+            token = signing.dumps(
+                {**location, "user_id": request.user.pk}, salt="user_profile.location"
+            )
+            response = JsonResponse(
+                {
+                    **{
+                        field: location[field]
+                        for field in ProfileLocationForm.Meta.fields
+                    },
+                    "location_token": token,
+                }
+            )
+        response["Cache-Control"] = "no-store"
+        return response
 
 
 class PublicProfileDetailView(DetailView):

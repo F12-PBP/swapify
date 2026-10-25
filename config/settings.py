@@ -187,3 +187,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_URL = "user_profile:login"
 LOGIN_REDIRECT_URL = "user_profile:detail"
 LOGOUT_REDIRECT_URL = "main:home"
+
+NOMINATIM_BASE_URL = os.getenv(
+    "NOMINATIM_BASE_URL", "https://nominatim.openstreetmap.org"
+)
+NOMINATIM_USER_AGENT = os.getenv(
+    "NOMINATIM_USER_AGENT", "Swapify/1.0 (+https://github.com/F12-PBP/swapify)"
+)

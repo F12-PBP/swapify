@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    LocationResolveView,
     LoginUserView,
     LogoutUserView,
     MyProfileDetailView,
@@ -23,5 +24,6 @@ urlpatterns = [
         MyProfileLocationUpdateView.as_view(),
         name="location_edit",
     ),
+    path("location/resolve/", LocationResolveView.as_view(), name="location_resolve"),
     path("users/<str:username>/", PublicProfileDetailView.as_view(), name="public"),
 ]

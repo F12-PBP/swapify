@@ -1,12 +1,20 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.core import signing
 
 from common.images import validate_uploaded_image
 
 from .models import Profile
 
 
+class LocationCoordinatesForm(forms.Form):
+    latitude = forms.FloatField(min_value=-90, max_value=90)
+    longitude = forms.FloatField(min_value=-180, max_value=180)
+
+
 class ProfileLocationForm(forms.ModelForm):
+    location_token = forms.CharField(required=False, widget=forms.HiddenInput)
+
     class Meta:
         model = Profile
         fields = ("district", "city", "province")
@@ -16,17 +24,41 @@ class ProfileLocationForm(forms.ModelForm):
             "province": "Province",
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user_id=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.user_id = user_id
+        self.resolved_location = None
         for field in self.fields.values():
             field.widget.attrs["class"] = "input swap-input w-full"
         self.fields["district"].help_text = "Optional."
         self.fields["city"].required = True
         self.fields["province"].required = True
 
+    def clean(self):
+        cleaned = super().clean()
+        token = cleaned.get("location_token")
+        if token:
+            try:
+                location = signing.loads(
+                    token, salt="user_profile.location", max_age=1800
+                )
+            except signing.BadSignature:
+                raise forms.ValidationError(
+                    "Your detected location has expired or is invalid. "
+                    "Please detect it again or enter your area manually."
+                ) from None
+            if location["user_id"] != self.user_id:
+                raise forms.ValidationError("Please detect your location again.")
+            if all(cleaned.get(field) == location[field] for field in self.Meta.fields):
+                self.resolved_location = location
+        return cleaned
+
     def save(self, commit=True):
         profile = super().save(commit=False)
-        if self.changed_data:
+        if self.resolved_location:
+            profile.latitude = self.resolved_location["latitude"]
+            profile.longitude = self.resolved_location["longitude"]
+        elif any(field in self.changed_data for field in self.Meta.fields):
             # Manually entered area names cannot establish exact coordinates.
             profile.latitude = None
             profile.longitude = None

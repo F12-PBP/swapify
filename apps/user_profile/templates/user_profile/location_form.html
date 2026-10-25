@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Edit Location | Swapify{% endblock %}
 
@@ -12,12 +13,22 @@
                 Your exact coordinates will not appear on your public profile.
             </p>
 
-            <form method="post" class="space-y-4">
+            <form method="post" class="space-y-4" id="location-form" data-resolve-url="{% url 'user_profile:location_resolve' %}">
                 {% csrf_token %}
+                {{ form.location_token }}
+                <div>
+                    <button type="button" id="detect-location" class="btn btn-primary-ghost">Use My Location</button>
+                    <p class="mt-2 text-sm text-base-content/60">
+                        With your permission, we’ll send an approximate position to OpenStreetMap’s Nominatim service to find your area.
+                        Review the result before saving, or enter your area below.
+                    </p>
+                    <p id="location-status" class="mt-2 text-sm" role="status" aria-live="polite"></p>
+                    <noscript><p class="text-sm">Location detection needs JavaScript. You can still enter your area below.</p></noscript>
+                </div>
                 {% if form.non_field_errors %}
                     <div class="alert alert-error" role="alert">{{ form.non_field_errors }}</div>
                 {% endif %}
-                {% for field in form %}
+                {% for field in form.visible_fields %}
                     <div>
                         <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-semibold">
                             {{ field.label }}
@@ -32,11 +43,12 @@
                     </div>
                 {% endfor %}
                 <div class="flex flex-wrap gap-3 pt-4">
-                    <button type="submit" class="btn btn-primary">Save Location</button>
+                    <button type="submit" class="btn btn-primary" id="save-location">Save Location</button>
                     <a href="{% url 'user_profile:detail' %}" class="btn btn-primary-ghost">Cancel</a>
                 </div>
             </form>
         </div>
     </div>
 </section>
+<script src="{% static 'user_profile/js/location.js' %}" defer></script>
 {% endblock %}
