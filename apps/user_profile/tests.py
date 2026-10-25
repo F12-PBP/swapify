@@ -306,3 +306,74 @@ class AuthenticatedExchangeFlowTests(TestCase):
             Clothing.objects.filter(status=Clothing.Status.SWAPPED).count(), 2
         )
         self.assertEqual(Profile.objects.count(), 2)
+
+
+class ProfileEditingTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = get_user_model().objects.create_user(username="profile_owner")
+        cls.other = get_user_model().objects.create_user(username="other_profile")
+
+    def test_anonymous_users_cannot_edit(self):
+        url = reverse("user_profile:edit")
+
+        for method in ("get", "post"):
+            response = getattr(self.client, method)(url)
+            self.assertEqual(response.status_code, 302)
+
+    def test_edit_changes_only_current_users_allowed_fields(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.post(
+            reverse("user_profile:edit"),
+            {
+                "display_name": "Nama Baru",
+                "bio": "Suka bertukar pakaian.",
+                "user": self.other.pk,
+                "user_id": self.other.pk,
+                "latitude": "10",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("user_profile:detail"),
+        )
+
+        self.owner.profile.refresh_from_db()
+        self.other.profile.refresh_from_db()
+
+        self.assertEqual(
+            self.owner.profile.display_name,
+            "Nama Baru",
+        )
+        self.assertEqual(
+            self.owner.profile.user_id,
+            self.owner.pk,
+        )
+        self.assertIsNone(self.owner.profile.latitude)
+        self.assertEqual(
+            self.other.profile.display_name,
+            self.other.username,
+        )
+
+    def test_invalid_name_does_not_change_profile(self):
+        self.client.force_login(self.owner)
+
+        for name in ("   ", "a" * 226):
+            response = self.client.post(
+                reverse("user_profile:edit"),
+                {"display_name": name, "bio": "Percobaan"},
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(
+                "display_name",
+                response.context["form"].errors,
+            )
+
+            self.owner.profile.refresh_from_db()
+            self.assertEqual(
+                self.owner.profile.display_name,
+                self.owner.username,
+            )

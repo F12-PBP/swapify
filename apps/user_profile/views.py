@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db import transaction
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView
+from django.views.generic import CreateView, DetailView, UpdateView
 
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, ProfileUpdateForm, RegisterForm
 from .models import Profile
 
 
@@ -42,6 +43,18 @@ class MyProfileDetailView(LoginRequiredMixin, DetailView):
     model = Profile
     template_name = "user_profile/profile_detail.html"
     context_object_name = "profile"
+
+    def get_object(self, queryset=None):
+        return self.request.user.profile
+
+
+class MyProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Profile
+    form_class = ProfileUpdateForm
+    template_name = "user_profile/profile_form.html"
+    context_object_name = "profile"
+    success_url = reverse_lazy("user_profile:detail")
+    success_message = "Profile Updated"
 
     def get_object(self, queryset=None):
         return self.request.user.profile
