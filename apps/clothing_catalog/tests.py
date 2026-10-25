@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
+from .forms import ClothingForm
 from .models import Clothing
 
 
@@ -48,6 +49,9 @@ class ClothingViewTests(TestCase):
                 self.clothing.refresh_from_db()
                 self.assertEqual(self.clothing.name, "Linen Shirt")
                 self.assertTrue(Clothing.objects.filter(pk=self.clothing.pk).exists())
+
+    def test_clothing_form_does_not_expose_status(self):
+        self.assertNotIn("status", ClothingForm().fields)
 
     def test_catalog_and_detail_are_public(self):
         list_response = self.client.get(reverse("clothing_catalog:list"))
