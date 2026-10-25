@@ -1,0 +1,31 @@
+{% load static %}
+<footer class="footer flex w-full flex-col items-stretch bg-neutral-120 py-16 font-sans text-b8 text-neutral-70">
+    <div class="mx-auto flex w-full max-w-[1440px] flex-col items-stretch gap-0 px-6 md:px-8 xl:px-20">
+        <div class="flex w-full flex-col gap-10 xl:flex-row xl:items-start xl:justify-between">
+            <div class="flex w-full flex-col items-start gap-4 xl:min-h-46 xl:w-[233.25px] xl:shrink-0">
+                <a href="{% url 'main:home' %}" class="relative block h-10 w-full rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-30 md:w-[354px] xl:w-full" aria-label="Swapify home">
+                    <picture>
+                        <source media="(min-width: 1280px)" srcset="{% static 'images/landing_page/footer-logo.png' %}">
+                        <img src="{% static 'images/landing_page/footer-logo-mobile.png' %}" alt="" class="pointer-events-none absolute inset-0 h-full w-full object-cover">
+                    </picture>
+                </a>
+                <div class="text-b8 leading-relaxed">
+                    <p>Swap Smartly, Wear Happily.</p>
+                    <p>A sustainable way to refresh your wardrobe without the spend.</p>
+                </div>
+                <div class="flex items-center gap-3" aria-label="Social media">
+                    <span class="flex size-8 items-center justify-center rounded-full bg-neutral-110 text-b9 font-bold text-neutral-60" aria-label="X (coming soon)" title="X account coming soon">𝕏</span>
+                    <span class="flex size-8 items-center justify-center rounded-full bg-neutral-110 text-b9 font-bold text-neutral-60" aria-label="Instagram (coming soon)" title="Instagram account coming soon">IG</span>
+                    <span class="flex size-8 items-center justify-center rounded-full bg-neutral-110 text-b9 font-bold text-neutral-60" aria-label="TikTok (coming soon)" title="TikTok account coming soon">TT</span>
+                    <span class="flex size-8 items-center justify-center rounded-full bg-neutral-110 text-b9 font-bold text-neutral-60" aria-label="YouTube (coming soon)" title="YouTube account coming soon">YT</span>
+                </div>
+            </div>
+            {% include "components/footer/footer-links.html" %}
+        </div>
+        <div class="mt-12 flex w-full flex-col items-center gap-4 border-t border-neutral-110 pt-6 text-center text-b9 text-neutral-80 md:flex-row md:justify-between md:text-left">
+            <p>© {% now "Y" %} Swapify. All rights reserved.</p>
+            <p>Made for a more sustainable future.</p>
+        </div>
+
+    </div>
+</footer>

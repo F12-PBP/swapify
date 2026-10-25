@@ -1,0 +1,15 @@
+{% url 'main:home' as home_url %}
+{% url 'clothing_catalog:list' as catalog_url %}
+{% url 'clothing_catalog:create' as create_url %}
+<div class="flex w-full flex-col gap-10 md:flex-row xl:w-[779.75px]">
+    <nav class="flex min-h-46 min-w-0 flex-1 flex-col items-start gap-3" aria-label="Product">
+        <h2 class="text-s8 font-semibold text-neutral-30"><Links></Links></h2>
+        <ul class="flex flex-col gap-2">
+            <li><a href="{{ home_url }}#how-it-works" class="link link-hover rounded-sm text-b8 transition-colors hover:text-neutral-30 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-30">How It Works</a></li>
+            <li><a href="{{ catalog_url }}" class="link link-hover rounded-sm text-b8 transition-colors hover:text-neutral-30 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-30">Browse Items</a></li>
+            <li><a href="{{ create_url }}" class="link link-hover rounded-sm text-b8 transition-colors hover:text-neutral-30 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-30">List an Item</a></li>
+            <li><span class="text-b8" aria-disabled="true" title="Pricing is not available yet">Pricing</span></li>
+            <li><span class="text-b8" aria-disabled="true" title="Mobile App is not available yet">Mobile App</span></li>
+        </ul>
+    </nav>
+</div>

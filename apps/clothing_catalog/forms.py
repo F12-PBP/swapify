@@ -9,27 +9,29 @@ class ClothingForm(forms.ModelForm):
         fields = (
             "name",
             "description",
-            "category",
+            "image",
+            "type",
             "size",
             "condition",
-            "availability",
+            "status",
         )
         widgets = {
             "name": forms.TextInput(
                 attrs={
                     "class": "input swap-input w-full",
-                    "placeholder": "Contoh: Kemeja Linen",
+                    "placeholder": "Example: Linen Shirt",
                 }
             ),
             "description": forms.Textarea(
                 attrs={
                     "class": "textarea swap-input w-full",
-                    "placeholder": "Jelaskan kondisi dan detail pakaian.",
+                    "placeholder": "Describe condition and details of clothing.",
                     "rows": 5,
                 }
             ),
-            "category": forms.Select(attrs={"class": "select swap-input w-full"}),
+            "image": forms.FileInput(attrs={"class": "file-input swap-input w-full"}),
+            "type": forms.Select(attrs={"class": "select swap-input w-full"}),
             "size": forms.Select(attrs={"class": "select swap-input w-full"}),
             "condition": forms.Select(attrs={"class": "select swap-input w-full"}),
-            "availability": forms.Select(attrs={"class": "select swap-input w-full"}),
+            "status": forms.Select(attrs={"class": "select swap-input w-full"}),
         }

@@ -15,9 +15,9 @@ class ClothingViewTests(TestCase):
         )
         self.clothing = Clothing.objects.create(
             owner=self.owner,
-            name="Kemeja Linen",
-            description="Kemeja linen berwarna krem.",
-            category=Clothing.Category.TOP,
+            name="Linen Shirt",
+            description="Cream-colored linen shirt.",
+            type=Clothing.Type.TOP,
             size=Clothing.Size.M,
             condition=Clothing.Condition.GOOD,
         )
@@ -37,16 +37,16 @@ class ClothingViewTests(TestCase):
         response = self.client.post(
             reverse("clothing_catalog:create"),
             {
-                "name": "Jaket Denim",
-                "description": "Jaket denim biru.",
-                "category": Clothing.Category.OUTERWEAR,
+                "name": "Denim Jacket",
+                "description": "Blue denim jacket.",
+                "type": Clothing.Type.OUTERWEAR,
                 "size": Clothing.Size.L,
                 "condition": Clothing.Condition.GOOD,
-                "availability": Clothing.Availability.AVAILABLE,
+                "status": Clothing.Status.AVAILABLE,
             },
         )
 
-        clothing = Clothing.objects.get(name="Jaket Denim")
+        clothing = Clothing.objects.get(name="Denim Jacket")
         self.assertRedirects(response, clothing.get_absolute_url())
         self.assertEqual(clothing.owner, self.owner)
 

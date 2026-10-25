@@ -4,13 +4,13 @@ from django.urls import reverse
 
 
 class Clothing(models.Model):
-    class Category(models.TextChoices):
-        TOP = "top", "Atasan"
-        BOTTOM = "bottom", "Bawahan"
+    class Type(models.TextChoices):
+        TOP = "top", "Top"
+        BOTTOM = "bottom", "Bottom"
         DRESS = "dress", "Dress"
         OUTERWEAR = "outerwear", "Outerwear"
-        FOOTWEAR = "footwear", "Alas kaki"
-        OTHER = "other", "Lainnya"
+        FOOTWEAR = "footwear", "Footwear"
+        OTHER = "other", "Other"
 
     class Size(models.TextChoices):
         XS = "XS", "XS"
@@ -19,42 +19,44 @@ class Clothing(models.Model):
         L = "L", "L"
         XL = "XL", "XL"
         XXL = "XXL", "XXL"
-        OTHER = "other", "Lainnya"
+        OTHER = "other", "Other"
 
     class Condition(models.TextChoices):
-        NEW = "new", "Baru"
-        LIKE_NEW = "like_new", "Seperti baru"
-        GOOD = "good", "Baik"
-        FAIR = "fair", "Cukup baik"
+        NEW = "new", "New"
+        LIKE_NEW = "like_new", "Like New"
+        GOOD = "good", "Good"
+        FAIR = "fair", "Fair"
 
-    class Availability(models.TextChoices):
-        AVAILABLE = "available", "Tersedia"
-        UNAVAILABLE = "unavailable", "Tidak tersedia"
+    class Status(models.TextChoices):
+        AVAILABLE = "available", "Available"
+        RESERVED = "reserved", "Reserved"
+        SWAPPED = "swapped", "Swapped"
 
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="clothing_items",
-        verbose_name="pemilik",
+        verbose_name="owner",
     )
-    name = models.CharField("nama pakaian", max_length=150)
-    description = models.TextField("deskripsi")
-    category = models.CharField("kategori", max_length=20, choices=Category.choices)
-    size = models.CharField("ukuran", max_length=10, choices=Size.choices)
-    condition = models.CharField("kondisi", max_length=20, choices=Condition.choices)
-    availability = models.CharField(
-        "status ketersediaan",
+    name = models.CharField("clothing name", max_length=150)
+    description = models.TextField("description")
+    image = models.ImageField("image", upload_to="clothing/", blank=True, null=True)
+    type = models.CharField("type", max_length=20, choices=Type.choices)
+    size = models.CharField("size", max_length=10, choices=Size.choices)
+    condition = models.CharField("condition", max_length=20, choices=Condition.choices)
+    status = models.CharField(
+        "status",
         max_length=20,
-        choices=Availability.choices,
-        default=Availability.AVAILABLE,
+        choices=Status.choices,
+        default=Status.AVAILABLE,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "pakaian"
-        verbose_name_plural = "pakaian"
+        verbose_name = "clothing"
+        verbose_name_plural = "clothing"
 
     def __str__(self):
         return self.name

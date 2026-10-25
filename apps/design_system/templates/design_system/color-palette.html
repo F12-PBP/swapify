@@ -5,11 +5,11 @@
           </h3>
      </div>
 
-     <div class="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0" role="region" aria-label="Token warna {{ palette.title }}" tabindex="0">
-          <div class="flex w-max gap-2 sm:w-full">
+     <div role="region" aria-label="Token warna {{ palette.title }}">
+          <div class="grid grid-cols-2 gap-2 min-[375px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-9">
                {% for swatch in palette.swatches %}
                     <div
-                         class="flex h-28 w-24 shrink-0 flex-col justify-end rounded-xl border border-neutral-120/5 p-2.5 text-xs sm:min-w-0 sm:flex-1 {% if swatch.light_text %}text-neutral-10{% else %}text-neutral-120{% endif %}"
+                         class="flex h-28 min-w-0 flex-col justify-end rounded-xl border border-neutral-120/5 p-2.5 text-xs {% if swatch.light_text %}text-neutral-10{% else %}text-neutral-120{% endif %}"
                          style="background-color: var(--color-{{ palette.name }}-{{ swatch.token }});"
                     >
                          <span class="font-semibold">{{ swatch.token|title }}</span>

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Swap Request{% endblock %}
+
+{% block content %}
+<section class="px-4 py-10 md:px-6">
+    <h1 class="font-display text-h3">Swap Request</h1>
+    <p class="mt-2 text-base-content/70">Tawaran tukar yang kamu terima dan yang kamu ajukan.</p>
+
+    <h2 class="mt-8 mb-4 font-display text-h5">Diterima ({{ incoming_requests|length }})</h2>
+    {% include "swap_request/partials/request_list.html" with swap_requests=incoming_requests empty_text="Belum ada swap request yang masuk." %}
+
+    <h2 class="mt-10 mb-4 font-display text-h5">Diajukan ({{ outgoing_requests|length }})</h2>
+    {% include "swap_request/partials/request_list.html" with swap_requests=outgoing_requests empty_text="Kamu belum mengajukan swap request." %}
+</section>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% if swap_requests %}
+    <div class="grid gap-3">
+        {% for swap_request in swap_requests %}
+            <div class="card border border-base-300 bg-base-100 shadow-sm">
+                <div class="card-body flex-row flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p class="font-medium">{{ swap_request.offered_clothing.name }} ⇄ {{ swap_request.requested_clothing.name }}</p>
+                        <p class="mt-1 text-sm text-base-content/60">
+                            {% if swap_request.requester == user %}Ke {{ swap_request.owner.username }}{% else %}Dari {{ swap_request.requester.username }}{% endif %}
+                            · {{ swap_request.created_at|date:"j M Y" }}
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        {% include "swap_request/partials/status_badge.html" %}
+                        <a class="btn btn-outline btn-sm" href="{{ swap_request.get_absolute_url }}">Lihat detail</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="rounded-box border border-dashed border-base-300 p-8 text-center">
+        <p class="text-base-content/70">{{ empty_text }}</p>
+    </div>
+{% endif %}
