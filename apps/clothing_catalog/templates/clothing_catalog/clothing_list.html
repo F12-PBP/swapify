@@ -21,8 +21,8 @@
                 <article class="group overflow-hidden rounded-box border border-neutral-40 bg-base-100 shadow-[0_4px_24px_rgb(115_20_29_/_6%)] transition hover:-translate-y-1 hover:shadow-[0_8px_32px_rgb(115_20_29_/_12%)]">
                     <a href="{{ clothing.get_absolute_url }}" aria-label="View {{ clothing.name }}">
                         <figure class="h-64 overflow-hidden bg-neutral-30">
-                            {% if clothing.image %}
-                                <img src="{{ clothing.image.url }}" alt="{{ clothing.name }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
+                            {% if clothing.image_url %}
+                                <img src="{{ clothing.image_url }}" alt="{{ clothing.name }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
                             {% else %}
                                 <div class="flex h-full items-center justify-center font-display text-h5 text-neutral-60">No image</div>
                             {% endif %}

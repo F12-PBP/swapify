@@ -41,6 +41,10 @@ class TransactionDetailView(TransactionParticipantMixin, DetailView):
         context["my_received"] = (
             exchange.requester_received if is_requester else exchange.owner_received
         )
+        context["has_reviewed"] = exchange.reviews.filter(
+            author=self.request.user,
+        ).exists()
+
         return context
 
 

@@ -4,9 +4,31 @@
 
 {% block content %}
 <section class="mx-auto max-w-2xl px-4 py-10 md:px-6" aria-labelledby="profile-title">
+     {% for message in messages %}
+     <div class="alert alert-success mb-4" role="status">
+          {{ message }}
+     </div>
+     {% endfor %}
     <div class="card border border-neutral-40 bg-base-100 shadow-sm">
         <div class="card-body gap-6">
             <header>
+               {% if profile.profile_picture %}
+               <img
+                    src="{{ profile.profile_picture.url }}"
+                    alt="Profile photo of {{ profile.display_name }}"
+                    width="96"
+                    height="96"
+                    class="rounded-full object-cover"
+                    style="width: 96px; height: 96px;"
+               >
+               {% else %}
+               <div
+                    class="flex size-24 items-center justify-center rounded-full bg-primary text-primary-content"
+                    aria-hidden="true"
+               >
+                    {{ profile.display_name|slice:":1"|upper }}
+               </div>
+               {% endif %}
                 <h1 id="profile-title" class="font-display text-h3">My Profile</h1>
                 <p class="mt-2 text-base-content/60">@{{ profile.user.username }}</p>
             </header>
@@ -19,11 +41,36 @@
                     <dt class="text-sm text-base-content/60">Bio</dt>
                     <dd class="mt-1 whitespace-pre-line">{{ profile.bio|default:"No bio yet." }}</dd>
                 </div>
+                <div>
+                    <dt class="text-sm text-base-content/60">Location</dt>
+                    <dd class="mt-1">
+                        {% if profile.city and profile.province %}
+                            {{ profile.city }}, {{ profile.province }}
+                        {% else %}
+                            No location added yet.
+                        {% endif %}
+                    </dd>
+                </div>
             </dl>
             <div class="flex flex-wrap gap-3 border-t border-neutral-40 pt-5">
                 <a href="{% url 'clothing_catalog:list' %}" class="btn btn-primary">Browse Clothing</a>
                 <a href="{% url 'swap_request:list' %}" class="btn btn-primary-ghost">My Swap Requests</a>
             </div>
+          <a
+               href="{% url 'user_profile:edit' %}"
+               class="btn btn-primary-ghost"
+               >
+               Edit Profile
+          </a>
+          <a href="{% url 'user_profile:location_edit' %}" class="btn btn-primary-ghost">
+               Edit Location
+          </a>
+          <a
+               href="{% url 'user_profile:public' profile.user.username %}"
+               class="btn btn-primary-ghost"
+               >
+               View Public Profile
+          </a>
         </div>
     </div>
 </section>
