@@ -39,12 +39,15 @@ class ClothingCreateView(LoginRequiredMixin, ClothingImageUploadMixin, CreateVie
 
 class OwnerRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
-        return self.get_object().owner == self.request.user
+        obj = self.get_object()
+        return (
+            obj.owner == self.request.user and obj.status == Clothing.Status.AVAILABLE
+        )
 
 
 class AvailableClothingMixin:
     def get_queryset(self):
-        queryset = super().get_queryset().filter(status=Clothing.Status.AVAILABLE)
+        queryset = super().get_queryset()
         if getattr(self, "_lock_for_update", False):
             queryset = queryset.select_for_update(of=("self",))
         return queryset

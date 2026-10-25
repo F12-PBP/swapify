@@ -22,6 +22,33 @@ class ClothingViewTests(TestCase):
             condition=Clothing.Condition.GOOD,
         )
 
+    def test_owner_cannot_update_or_delete_reserved_or_swapped_clothing(self):
+        self.client.force_login(self.owner)
+
+        for status in (Clothing.Status.RESERVED, Clothing.Status.SWAPPED):
+            with self.subTest(status=status):
+                self.clothing.status = status
+                self.clothing.save()
+                update_response = self.client.post(
+                    reverse("clothing_catalog:update", args=[self.clothing.pk]),
+                    {
+                        "name": "Changed name",
+                        "description": "Changed description",
+                        "type": Clothing.Type.TOP,
+                        "size": Clothing.Size.M,
+                        "condition": Clothing.Condition.GOOD,
+                    },
+                )
+                delete_response = self.client.post(
+                    reverse("clothing_catalog:delete", args=[self.clothing.pk])
+                )
+
+                self.assertEqual(update_response.status_code, 403)
+                self.assertEqual(delete_response.status_code, 403)
+                self.clothing.refresh_from_db()
+                self.assertEqual(self.clothing.name, "Linen Shirt")
+                self.assertTrue(Clothing.objects.filter(pk=self.clothing.pk).exists())
+
     def test_catalog_and_detail_are_public(self):
         list_response = self.client.get(reverse("clothing_catalog:list"))
         detail_response = self.client.get(
