@@ -1,6 +1,10 @@
 # Create your models here.
 from django.conf import settings
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    MaxLengthValidator,
+    MaxValueValidator,
+    MinValueValidator,
+)
 from django.db import models
 from django.db.models import F, Q
 
@@ -22,7 +26,9 @@ class Review(models.Model):
     rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
-    comment = models.TextField(max_length=1000, blank=True)
+    comment = models.TextField(
+        max_length=1000, blank=True, validators=[MaxLengthValidator(1000)]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -1,22 +1,56 @@
+import json
+import time
+from datetime import timedelta
 from importlib import import_module
+from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import patch
+from urllib.error import HTTPError, URLError
+from urllib.parse import parse_qs, urlparse
 
+from cloudinary import CloudinaryImage
+from cloudinary.exceptions import AuthorizationRequired, NotAllowed
+from cloudinary.exceptions import Error as CloudinaryError
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core import signing
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
+from django.http import Http404
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
 from apps.clothing_catalog.models import Clothing
+from apps.review_rating.models import Review
 from apps.swap_request.models import SwapRequest
 from apps.transaction.models import Transaction
+from common.images import MAX_IMAGE_BYTES, ImageUploadError, upload_image
 
-from .models import Profile
+from .forms import ProfileLocationForm
+from .geocoding import (
+    GATE_KEY,
+    AreaNotFound,
+    GeocodingBusy,
+    GeocodingError,
+    reverse_geocode,
+)
+from .models import GeocodingCacheEntry, Profile
+from .services import ProfilePhotoUploadError, upload_profile_picture
+from .views import PublicProfileDetailView
 
 PASSWORD = "Swapify-Check!2026-audit"
+
+
+def image_upload(image_format="PNG", byte_size=None):
+    stream = BytesIO()
+    Image.new("RGB", (8, 8), "blue").save(stream, format=image_format)
+    contents = stream.getvalue()
+    if byte_size:
+        contents = contents.ljust(byte_size, b"0")
+    return SimpleUploadedFile(f"photo.{image_format.lower()}", contents)
 
 
 class AuthenticationTests(TestCase):
@@ -306,6 +340,21 @@ class AuthenticatedExchangeFlowTests(TestCase):
             Clothing.objects.filter(status=Clothing.Status.SWAPPED).count(), 2
         )
         self.assertEqual(Profile.objects.count(), 2)
+        review_url = reverse("review_rating:create", args=[exchange.pk])
+        for client, rating in ((requester, 5), (owner, 4)):
+            response = client.post(
+                review_url,
+                {"rating": rating, "comment": "Great exchange!"},
+                follow=True,
+            )
+            self.assertContains(response, "Your review has been submitted.")
+            self.assertNotContains(response, "Write a Review")
+        self.assertEqual(Review.objects.filter(transaction=exchange).count(), 2)
+        for username, average in (("alice", 4), ("bob", 5)):
+            response = Client().get(reverse("user_profile:public", args=[username]))
+            self.assertEqual(
+                response.context["rating_summary"], {"average": average, "count": 1}
+            )
 
 
 class ProfileEditingTests(TestCase):
@@ -515,3 +564,690 @@ class PublicProfileTests(TestCase):
         response = self.client.get(self.public_url())
         self.assertNotContains(response, "-6.123456789")
         self.assertNotContains(response, "106.987654321")
+
+
+class ProfileLocationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = get_user_model().objects.create_user(username="location_owner")
+        cls.other = get_user_model().objects.create_user(username="location_other")
+        cls.url = reverse("user_profile:location_edit")
+        cls.data = {"district": "Beji", "city": "Depok", "province": "West Java"}
+
+    def setUp(self):
+        self.client.force_login(self.owner)
+
+    def test_location_requires_login_for_read_and_write(self):
+        self.client.logout()
+        for method in (self.client.get, self.client.post):
+            response = method(self.url)
+            self.assertRedirects(
+                response, reverse("user_profile:login") + "?next=" + self.url
+            )
+
+    def test_save_and_reopen_location(self):
+        response = self.client.post(self.url, self.data, follow=True)
+        self.assertContains(response, "Your location has been updated.")
+        self.assertContains(response, "Depok, West Java")
+        response = self.client.get(self.url)
+        self.assertEqual(response.context["form"]["district"].value(), "Beji")
+        self.assertEqual(response.context["form"]["city"].value(), "Depok")
+        self.assertEqual(response.context["form"]["province"].value(), "West Java")
+
+    def test_city_and_province_are_required_but_district_is_optional(self):
+        response = self.client.post(self.url, {"city": "   ", "province": ""})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("city", response.context["form"].errors)
+        self.assertIn("province", response.context["form"].errors)
+        self.owner.profile.refresh_from_db()
+        self.assertFalse(self.owner.profile.city)
+        response = self.client.post(self.url, {**self.data, "district": ""})
+        self.assertRedirects(response, reverse("user_profile:detail"))
+
+    def test_submitted_owner_and_unrelated_fields_are_ignored(self):
+        profile = self.owner.profile
+        profile.bio = "Original bio"
+        profile.profile_picture = "image/upload/v1/profile-picture"
+        profile.save()
+        self.client.post(
+            self.url + f"?user_id={self.other.pk}",
+            {
+                **self.data,
+                "user": self.other.pk,
+                "display_name": "Changed",
+                "bio": "Changed",
+                "profile_picture": "Changed",
+                "latitude": "12.34",
+                "longitude": "56.78",
+            },
+        )
+        profile.refresh_from_db()
+        self.other.profile.refresh_from_db()
+        self.assertEqual(profile.user_id, self.owner.pk)
+        self.assertEqual(profile.display_name, self.owner.username)
+        self.assertEqual(profile.bio, "Original bio")
+        self.assertEqual(profile.profile_picture.public_id, "profile-picture")
+        self.assertIsNone(profile.latitude)
+        self.assertIsNone(profile.longitude)
+        self.assertFalse(self.other.profile.city)
+
+    def test_changing_manual_area_clears_stale_coordinates(self):
+        profile = self.owner.profile
+        profile.latitude = -6.1
+        profile.longitude = 106.8
+        profile.save()
+        self.client.post(self.url, self.data)
+        profile.refresh_from_db()
+        self.assertIsNone(profile.latitude)
+        self.assertIsNone(profile.longitude)
+
+    def test_location_form_requires_csrf(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.owner)
+        self.assertEqual(client.post(self.url, self.data).status_code, 403)
+
+    def test_profile_shows_location_link_and_empty_state(self):
+        response = self.client.get(reverse("user_profile:detail"))
+        self.assertContains(response, f'href="{self.url}"')
+        self.assertContains(response, "No location added yet.")
+
+
+AREA = {
+    "district": "Beji",
+    "city": "Depok",
+    "province": "West Java",
+    "latitude": -6.36,
+    "longitude": 106.83,
+}
+PAYLOAD = {"address": {"suburb": "Beji", "city": "Depok", "state": "West Java"}}
+
+
+class GeocodingServiceTests(TestCase):
+    def response(self, opener, payload):
+        opener.return_value.__enter__.return_value.read.return_value = json.dumps(
+            payload
+        ).encode()
+
+    @patch("apps.user_profile.geocoding.urlopen")
+    def test_jakarta_province_level_city_is_mapped_to_province(self, opener):
+        self.response(
+            opener,
+            {
+                "address": {
+                    "suburb": "Gambir",
+                    "city_district": "Central Jakarta",
+                    "city": "Special Capital Region of Jakarta",
+                    "ISO3166-2-lvl4": "ID-JK",
+                }
+            },
+        )
+        result = reverse_geocode(-6.18, 106.83)
+        self.assertEqual(result["district"], "Gambir")
+        self.assertEqual(result["city"], "Central Jakarta")
+        self.assertEqual(result["province"], "Special Capital Region of Jakarta")
+
+    @patch("apps.user_profile.geocoding.urlopen")
+    def test_lookup_rounds_coordinates_identifies_app_and_caches_result(self, opener):
+        self.response(opener, PAYLOAD)
+        result = reverse_geocode(-6.361234, 106.831234)
+        self.assertEqual(result, AREA)
+        self.assertEqual(reverse_geocode(-6.361235, 106.831235), AREA)
+        opener.assert_called_once()
+        request = opener.call_args.args[0]
+        query = parse_qs(urlparse(request.full_url).query)
+        self.assertEqual(query["lat"], ["-6.36"])
+        self.assertEqual(query["lon"], ["106.83"])
+        self.assertEqual(query["zoom"], ["12"])
+        self.assertIn("Swapify", request.get_header("User-agent"))
+        self.assertEqual(opener.call_args.kwargs["timeout"], 5)
+
+    @patch("apps.user_profile.geocoding.urlopen")
+    def test_gate_throttles_different_users_and_locations_until_cooldown(self, opener):
+        self.response(opener, PAYLOAD)
+        reverse_geocode(-6.36, 106.83)
+        with self.assertRaises(GeocodingBusy):
+            reverse_geocode(-6.37, 106.83)
+        opener.assert_called_once()
+        GeocodingCacheEntry.objects.filter(pk=GATE_KEY).update(
+            expires_at=timezone.now() - timedelta(seconds=1)
+        )
+        reverse_geocode(-6.37, 106.83)
+        self.assertEqual(opener.call_count, 2)
+
+    @patch("apps.user_profile.geocoding.urlopen")
+    def test_provider_failure_is_safe_and_does_not_cache_a_result(self, opener):
+        for error in (TimeoutError(), URLError("private network detail")):
+            with self.subTest(error=type(error).__name__):
+                GeocodingCacheEntry.objects.all().delete()
+                opener.side_effect = error
+                with self.assertRaises(GeocodingError) as raised:
+                    reverse_geocode(-6.36, 106.83)
+                self.assertNotIn("private network detail", str(raised.exception))
+                self.assertEqual(GeocodingCacheEntry.objects.count(), 1)
+
+    @patch("apps.user_profile.geocoding.urlopen")
+    def test_upstream_429_applies_a_shared_one_minute_backoff(self, opener):
+        opener.side_effect = HTTPError("https://example.com", 429, "Busy", {}, None)
+        with self.assertRaises(GeocodingError):
+            reverse_geocode(-6.36, 106.83)
+        gate = GeocodingCacheEntry.objects.get(pk=GATE_KEY)
+        self.assertGreater(gate.expires_at, timezone.now() + timedelta(seconds=58))
+        with self.assertRaises(GeocodingBusy):
+            reverse_geocode(-6.37, 106.83)
+        opener.assert_called_once()
+
+    @patch("apps.user_profile.geocoding.urlopen")
+    def test_incomplete_or_invalid_responses_are_not_cached(self, opener):
+        for payload in ({"address": {}}, {"error": "Unable to geocode"}, []):
+            with self.subTest(payload=payload):
+                GeocodingCacheEntry.objects.all().delete()
+                self.response(opener, payload)
+                with self.assertRaises(AreaNotFound):
+                    reverse_geocode(-6.36, 106.83)
+                self.assertEqual(GeocodingCacheEntry.objects.count(), 1)
+        GeocodingCacheEntry.objects.all().delete()
+        opener.return_value.__enter__.return_value.read.return_value = b"not json"
+        with self.assertRaises(GeocodingError):
+            reverse_geocode(-6.36, 106.83)
+
+    @patch("apps.user_profile.geocoding.urlopen")
+    def test_expired_cache_is_refreshed_and_city_fallbacks_work(self, opener):
+        self.response(opener, PAYLOAD)
+        reverse_geocode(-6.36, 106.83)
+        GeocodingCacheEntry.objects.all().update(
+            expires_at=timezone.now() - timedelta(days=1)
+        )
+        self.response(
+            opener,
+            {
+                "address": {
+                    "district": "Beji",
+                    "county": "Depok",
+                    "province": "West Java",
+                }
+            },
+        )
+        self.assertEqual(reverse_geocode(-6.36, 106.83), AREA)
+        self.assertEqual(opener.call_count, 2)
+
+    @patch("apps.user_profile.geocoding.urlopen")
+    def test_non_rate_limit_http_failure_uses_normal_cooldown(self, opener):
+        opener.side_effect = HTTPError("https://example.com", 503, "Down", {}, None)
+        with self.assertRaises(GeocodingError):
+            reverse_geocode(-6.36, 106.83)
+        gate = GeocodingCacheEntry.objects.get(pk=GATE_KEY)
+        self.assertGreater(gate.expires_at, timezone.now())
+        self.assertLess(gate.expires_at, timezone.now() + timedelta(seconds=3))
+        self.assertEqual(GeocodingCacheEntry.objects.count(), 1)
+
+
+class DetectedLocationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(username="detected_owner")
+        cls.other = get_user_model().objects.create_user(username="detected_other")
+        cls.resolve_url = reverse("user_profile:location_resolve")
+        cls.save_url = reverse("user_profile:location_edit")
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def token(self, user=None):
+        return signing.dumps(
+            {**AREA, "user_id": (user or self.user).pk}, salt="user_profile.location"
+        )
+
+    def save_data(self, token):
+        return {**AREA, "location_token": token}
+
+    @patch("apps.user_profile.views.reverse_geocode", return_value=AREA)
+    def test_resolve_previews_without_saving_then_confirmation_saves(self, lookup):
+        response = self.client.post(
+            self.resolve_url,
+            {
+                "latitude": -6.36,
+                "longitude": 106.83,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Cache-Control"], "no-store")
+        result = response.json()
+        self.user.profile.refresh_from_db()
+        self.assertFalse(self.user.profile.city)
+        self.assertNotIn("latitude", result)
+        response = self.client.post(self.save_url, result)
+        self.assertRedirects(response, reverse("user_profile:detail"))
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.city, "Depok")
+        self.assertEqual(self.user.profile.latitude, -6.36)
+        self.assertEqual(self.user.profile.longitude, 106.83)
+        public = self.client.get(
+            reverse("user_profile:public", args=[self.user.username])
+        )
+        self.assertContains(public, "Depok, West Java")
+        self.assertNotContains(public, "-6.36")
+        self.assertNotContains(public, "106.83")
+
+    @patch("apps.user_profile.views.reverse_geocode")
+    def test_invalid_and_nonfinite_coordinates_do_not_contact_provider(self, lookup):
+        for lat, lon in ((91, 0), (0, -181), ("nan", 0), (0, "inf"), ("", 1)):
+            with self.subTest(lat=lat, lon=lon):
+                response = self.client.post(
+                    self.resolve_url,
+                    {
+                        "latitude": lat,
+                        "longitude": lon,
+                    },
+                )
+                self.assertEqual(response.status_code, 400)
+        lookup.assert_not_called()
+
+    def test_resolve_requires_authentication_post_and_csrf(self):
+        self.assertEqual(self.client.get(self.resolve_url).status_code, 405)
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.user)
+        self.assertEqual(csrf_client.post(self.resolve_url, {}).status_code, 403)
+        self.client.logout()
+        self.assertEqual(self.client.post(self.resolve_url, {}).status_code, 302)
+
+    def test_changed_area_drops_detected_coordinates_and_raw_coordinates_are_ignored(
+        self,
+    ):
+        data = {**self.save_data(self.token()), "city": "Jakarta", "latitude": 85}
+        response = self.client.post(self.save_url, data)
+        self.assertEqual(response.status_code, 302)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.city, "Jakarta")
+        self.assertIsNone(self.user.profile.latitude)
+
+    def test_foreign_tampered_and_expired_tokens_cannot_save_coordinates(self):
+        old_time = time.time() - 3600
+        with patch("django.core.signing.time.time", return_value=old_time):
+            expired = self.token()
+        for token in (self.token(self.other), self.token() + "tampered", expired):
+            with self.subTest(token=token[-10:]):
+                response = self.client.post(self.save_url, self.save_data(token))
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.context["form"].non_field_errors())
+                self.user.profile.refresh_from_db()
+                self.assertFalse(self.user.profile.city)
+
+    @patch("apps.user_profile.views.reverse_geocode")
+    def test_busy_and_unavailable_errors_are_returned_as_json(self, lookup):
+        for error, status in (
+            (GeocodingBusy("Try again shortly."), 429),
+            (GeocodingError("Unavailable."), 503),
+        ):
+            lookup.side_effect = error
+            response = self.client.post(
+                self.resolve_url,
+                {
+                    "latitude": -6.36,
+                    "longitude": 106.83,
+                },
+            )
+            self.assertEqual(response.status_code, status)
+            self.assertEqual(response.json()["error"], str(error))
+
+
+class ProfilePhotoTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = get_user_model().objects.create_user(username="photo_owner")
+        cls.other = get_user_model().objects.create_user(username="photo_other")
+        profile = cls.owner.profile
+        profile.bio = "Original bio"
+        profile.profile_picture = CloudinaryImage("original-photo", version=1)
+        profile.save()
+
+    def setUp(self):
+        self.client.force_login(self.owner)
+        self.url = reverse("user_profile:edit")
+        self.data = {"display_name": "New name", "bio": "New bio"}
+
+    @patch("apps.user_profile.views.upload_profile_picture")
+    def test_uploaded_photo_belongs_to_authenticated_user_and_is_public(self, upload):
+        upload.return_value = CloudinaryImage("new-photo", version=2)
+        response = self.client.post(
+            self.url,
+            {
+                **self.data,
+                "new_profile_picture": image_upload(),
+                "user": self.other.pk,
+                "profile_picture": "forged-photo",
+            },
+            follow=True,
+        )
+        self.assertContains(response, "Your profile has been updated.")
+        self.owner.profile.refresh_from_db()
+        self.other.profile.refresh_from_db()
+        self.assertEqual(self.owner.profile.profile_picture.public_id, "new-photo")
+        self.assertEqual(self.other.profile.display_name, self.other.username)
+        self.assertEqual(upload.call_args.kwargs["user_id"], self.owner.pk)
+        public = self.client.get(
+            reverse("user_profile:public", args=[self.owner.username])
+        )
+        self.assertContains(public, self.owner.profile.profile_picture.url)
+
+    @patch("apps.user_profile.views.upload_profile_picture")
+    def test_no_new_upload_preserves_existing_photo(self, upload):
+        self.assertRedirects(
+            self.client.post(self.url, self.data), reverse("user_profile:detail")
+        )
+        upload.assert_not_called()
+        self.owner.profile.refresh_from_db()
+        self.assertEqual(self.owner.profile.profile_picture.public_id, "original-photo")
+
+    @patch("apps.user_profile.views.upload_profile_picture")
+    def test_failed_upload_preserves_photo_and_other_profile_fields(self, upload):
+        upload.side_effect = ProfilePhotoUploadError("Please try again later.")
+        response = self.client.post(
+            self.url,
+            {
+                **self.data,
+                "new_profile_picture": image_upload(),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("new_profile_picture", response.context["form"].errors)
+        self.owner.profile.refresh_from_db()
+        self.assertEqual(self.owner.profile.display_name, self.owner.username)
+        self.assertEqual(self.owner.profile.bio, "Original bio")
+        self.assertEqual(self.owner.profile.profile_picture.public_id, "original-photo")
+
+    @patch("apps.user_profile.views.upload_profile_picture")
+    def test_supported_image_formats_and_size_boundary(self, upload):
+        upload.return_value = CloudinaryImage("valid-photo", version=1)
+        for image in (
+            image_upload("PNG"),
+            image_upload("JPEG"),
+            image_upload("WEBP"),
+            image_upload(byte_size=MAX_IMAGE_BYTES),
+        ):
+            with self.subTest(name=image.name, size=image.size):
+                response = self.client.post(
+                    self.url,
+                    {
+                        **self.data,
+                        "new_profile_picture": image,
+                    },
+                )
+                self.assertEqual(response.status_code, 302)
+        self.assertEqual(upload.call_count, 4)
+
+    @patch("apps.user_profile.views.upload_profile_picture")
+    def test_invalid_unsupported_and_oversized_images_never_upload(self, upload):
+        for image in (
+            SimpleUploadedFile("fake.png", b"invalid"),
+            image_upload("GIF"),
+            image_upload(byte_size=MAX_IMAGE_BYTES + 1),
+        ):
+            with self.subTest(name=image.name, size=image.size):
+                response = self.client.post(
+                    self.url,
+                    {
+                        **self.data,
+                        "new_profile_picture": image,
+                    },
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("new_profile_picture", response.context["form"].errors)
+        upload.assert_not_called()
+
+    @patch("apps.user_profile.views.upload_profile_picture")
+    def test_photo_changes_require_csrf(self, upload):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.owner)
+        self.assertEqual(client.post(self.url, self.data).status_code, 403)
+        upload.assert_not_called()
+
+
+class ImageUploadServiceTests(TestCase):
+    def setUp(self):
+        config = patch(
+            "common.images.cloudinary.config",
+            return_value=SimpleNamespace(
+                cloud_name="test-cloud",
+                api_key="test-key",
+                api_secret="test-secret",
+            ),
+        )
+        self.config = config.start()
+        self.addCleanup(config.stop)
+
+    @patch("common.images.uploader.upload_image")
+    def test_missing_credentials_fail_without_contacting_provider(self, upload):
+        for key in ("cloud_name", "api_key", "api_secret"):
+            config = {"cloud_name": "cloud", "api_key": "key", "api_secret": "secret"}
+            config[key] = ""
+            self.config.return_value = SimpleNamespace(**config)
+            with self.assertRaises(ImageUploadError):
+                upload_image(image_upload(), folder="test")
+        upload.assert_not_called()
+
+    @patch("common.images.uploader.upload_image")
+    def test_file_is_rewound_and_uploaded_with_bounded_timeout(self, upload):
+        image = image_upload()
+        image.read()
+        resource = CloudinaryImage("result", version=1)
+
+        def receive_image(file, **options):
+            self.assertEqual(file.tell(), 0)
+            self.assertEqual(options["folder"], "swapify/profile-pictures/1")
+            self.assertEqual(options["timeout"], 30)
+            self.assertFalse(options["overwrite"])
+            return resource
+
+        upload.side_effect = receive_image
+        self.assertIs(
+            upload_image(image, folder="swapify/profile-pictures/1"), resource
+        )
+
+    @patch("common.images.uploader.upload_image")
+    def test_provider_failures_do_not_expose_credentials_in_logs_or_errors(
+        self, upload
+    ):
+        for error in (
+            AuthorizationRequired("PRIVATE-CREDENTIAL"),
+            NotAllowed("PRIVATE-CREDENTIAL"),
+            CloudinaryError("PRIVATE-CREDENTIAL"),
+        ):
+            with self.subTest(error=type(error).__name__):
+                upload.side_effect = error
+                with self.assertLogs("common.images", level="WARNING") as logs:
+                    with self.assertRaises(ImageUploadError) as raised:
+                        upload_image(image_upload(), folder="test")
+                self.assertNotIn("PRIVATE-CREDENTIAL", str(raised.exception))
+                self.assertNotIn("PRIVATE-CREDENTIAL", str(logs.output))
+
+    @patch("apps.user_profile.services.upload_image")
+    def test_profile_wrapper_selects_folder_and_returns_uploaded_resource(self, upload):
+        resource = CloudinaryImage("profile-result", version=1)
+        upload.return_value = resource
+        image = image_upload()
+        self.assertIs(upload_profile_picture(image, user_id=42), resource)
+        upload.assert_called_once_with(image, folder="swapify/profile-pictures/42")
+
+    @patch("apps.user_profile.services.upload_image")
+    def test_profile_wrapper_translates_upload_errors(self, upload):
+        upload.side_effect = ImageUploadError("Temporarily unavailable.")
+        with self.assertRaisesMessage(
+            ProfilePhotoUploadError, "Temporarily unavailable."
+        ):
+            upload_profile_picture(image_upload(), user_id=42)
+
+
+class LocationFormBoundaryTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="location_boundary")
+        self.profile = self.user.profile
+        self.profile.district = "Beji"
+        self.profile.city = "Depok"
+        self.profile.province = "West Java"
+        self.profile.latitude = -6.36
+        self.profile.longitude = 106.83
+        self.profile.save()
+        self.data = {"district": "Beji", "city": "Depok", "province": "West Java"}
+
+    def test_unchanged_manual_area_preserves_existing_coordinates(self):
+        form = ProfileLocationForm(
+            self.data, instance=self.profile, user_id=self.user.pk
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        form.save()
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.latitude, -6.36)
+        self.assertEqual(self.profile.longitude, 106.83)
+
+    def test_commit_false_does_not_write_changes_to_database(self):
+        form = ProfileLocationForm(
+            {**self.data, "city": "Bogor"}, instance=self.profile, user_id=self.user.pk
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        result = form.save(commit=False)
+        self.assertEqual(result.city, "Bogor")
+        self.assertIsNone(result.latitude)
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.city, "Depok")
+        self.assertEqual(self.profile.latitude, -6.36)
+
+    def test_profile_string_uses_display_name(self):
+        self.assertEqual(str(self.profile), self.user.username)
+
+    def test_public_profile_lookup_honors_an_explicit_queryset(self):
+        view = PublicProfileDetailView()
+        view.kwargs = {"username": self.user.username}
+        queryset = Profile.objects.filter(user=self.user)
+        self.assertEqual(view.get_object(queryset=queryset), self.profile)
+        with self.assertRaises(Http404):
+            view.get_object(queryset=queryset.exclude(user=self.user))
+
+
+class ProfileReviewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.member = get_user_model().objects.create_user(username="rated_member")
+        cls.author = get_user_model().objects.create_user(username="rating_author")
+        cls.other = get_user_model().objects.create_user(username="different_recipient")
+        cls.url = reverse("user_profile:public", args=[cls.member.username])
+
+    def add_review(self, rating=5, comment="", recipient=None, author=None):
+        recipient = recipient or self.member
+        author = author or self.author
+        data = {
+            "name": "Review fixture shirt",
+            "description": "Good condition",
+            "type": "top",
+            "size": "M",
+            "condition": "good",
+            "status": Clothing.Status.SWAPPED,
+        }
+        requested = Clothing.objects.create(owner=recipient, **data)
+        offered = Clothing.objects.create(owner=author, **data)
+        swap = SwapRequest.objects.create(
+            requester=author,
+            requested_clothing=requested,
+            offered_clothing=offered,
+            status=SwapRequest.Status.ACCEPTED,
+        )
+        exchange = Transaction.objects.create(
+            swap_request=swap,
+            status=Transaction.Status.COMPLETED,
+            meetup_date=timezone.now(),
+            meetup_location="Private meetup",
+            requester_received=True,
+            owner_received=True,
+            completed_at=timezone.now(),
+        )
+        return Review.objects.create(
+            transaction=exchange,
+            author=author,
+            recipient=recipient,
+            rating=rating,
+            comment=comment,
+        )
+
+    def test_empty_profile_has_no_fabricated_rating(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, "No reviews yet.")
+        self.assertContains(
+            response, "Reviews will appear here after completed exchanges."
+        )
+        self.assertEqual(
+            response.context["rating_summary"], {"average": None, "count": 0}
+        )
+        self.assertEqual(list(response.context["reviews_page"]), [])
+        self.assertNotContains(response, "0.0 / 5")
+
+    def test_summary_only_includes_received_reviews_for_this_profile(self):
+        self.add_review(rating=4, comment="First received review")
+        self.add_review(rating=5, comment="Second received review")
+        self.add_review(rating=1, recipient=self.other, comment="Another recipient")
+        self.add_review(
+            rating=2,
+            author=self.member,
+            recipient=self.other,
+            comment="Written by this member",
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.context["rating_summary"], {"average": 4.5, "count": 2}
+        )
+        self.assertContains(response, "4.5 / 5")
+        self.assertContains(response, "First received review")
+        self.assertContains(response, "Second received review")
+        self.assertNotContains(response, "Another recipient")
+        self.assertNotContains(response, "Written by this member")
+
+    def test_public_reviews_escape_comments_and_do_not_expose_transaction(self):
+        review = self.add_review(comment="<script>alert('unsafe')</script>")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "&lt;script&gt;")
+        self.assertNotContains(response, "<script>alert")
+        self.assertContains(
+            response, reverse("user_profile:public", args=[self.author.username])
+        )
+        self.assertNotContains(response, "Private meetup")
+        self.assertNotContains(
+            response, reverse("transaction_detail", args=[review.transaction_id])
+        )
+
+    def test_optional_comment_and_review_count_are_displayed(self):
+        self.add_review()
+        response = self.client.get(self.url)
+        self.assertContains(response, "No written comment.")
+        self.assertEqual(response.context["rating_summary"]["count"], 1)
+
+    def test_pagination_is_newest_first_with_summary_over_all_reviews(self):
+        reviews = [
+            self.add_review(
+                rating=1 if index == 0 else 5, comment=f"Review item {index}"
+            )
+            for index in range(11)
+        ]
+        # Identical timestamps must still produce stable pagination via the primary key.
+        Review.objects.all().update(created_at=timezone.now())
+        first = self.client.get(self.url)
+        self.assertEqual(len(first.context["reviews_page"]), 10)
+        self.assertEqual(
+            [review.pk for review in first.context["reviews_page"]],
+            [review.pk for review in reversed(reviews[1:])],
+        )
+        self.assertContains(first, "?reviews_page=2#reviews")
+        second = self.client.get(self.url, {"reviews_page": 2})
+        self.assertEqual(
+            [review.pk for review in second.context["reviews_page"]], [reviews[0].pk]
+        )
+        self.assertEqual(second.context["rating_summary"]["count"], 11)
+        self.assertAlmostEqual(second.context["rating_summary"]["average"], 51 / 11)
+        self.assertEqual(
+            first.context["rating_summary"], second.context["rating_summary"]
+        )
+        self.assertContains(second, "?reviews_page=1#reviews")
+
+        for value, expected_page in (("invalid", 1), ("999", 2), ("-1", 2)):
+            with self.subTest(page=value):
+                response = self.client.get(self.url, {"reviews_page": value})
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.context["reviews_page"].number, expected_page)
