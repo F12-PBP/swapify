@@ -41,6 +41,16 @@
                     <dt class="text-sm text-base-content/60">Bio</dt>
                     <dd class="mt-1 whitespace-pre-line">{{ profile.bio|default:"No bio yet." }}</dd>
                 </div>
+                <div>
+                    <dt class="text-sm text-base-content/60">Location</dt>
+                    <dd class="mt-1">
+                        {% if profile.city and profile.province %}
+                            {{ profile.city }}, {{ profile.province }}
+                        {% else %}
+                            No location added yet.
+                        {% endif %}
+                    </dd>
+                </div>
             </dl>
             <div class="flex flex-wrap gap-3 border-t border-neutral-40 pt-5">
                 <a href="{% url 'clothing_catalog:list' %}" class="btn btn-primary">Browse Clothing</a>
@@ -51,6 +61,9 @@
                class="btn btn-primary-ghost"
                >
                Edit Profile
+          </a>
+          <a href="{% url 'user_profile:location_edit' %}" class="btn btn-primary-ghost">
+               Edit Location
           </a>
           <a
                href="{% url 'user_profile:public' profile.user.username %}"

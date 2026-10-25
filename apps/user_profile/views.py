@@ -9,7 +9,7 @@ from django.views.generic import CreateView, DetailView, UpdateView
 
 from apps.clothing_catalog.models import Clothing
 
-from .forms import LoginForm, ProfileUpdateForm, RegisterForm
+from .forms import LoginForm, ProfileLocationForm, ProfileUpdateForm, RegisterForm
 from .models import Profile
 from .services import ProfilePhotoUploadError, upload_profile_picture
 
@@ -81,6 +81,18 @@ class MyProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             form.instance.profile_picture = picture
 
         return super().form_valid(form)
+
+
+class MyProfileLocationUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Profile
+    form_class = ProfileLocationForm
+    template_name = "user_profile/location_form.html"
+    context_object_name = "profile"
+    success_url = reverse_lazy("user_profile:detail")
+    success_message = "Your location has been updated."
+
+    def get_object(self, queryset=None):
+        return self.request.user.profile
 
 
 class PublicProfileDetailView(DetailView):
