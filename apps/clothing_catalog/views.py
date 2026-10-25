@@ -59,6 +59,16 @@ class ClothingListView(ListView):
         return context
 
 
+class MyClothingListView(LoginRequiredMixin, ClothingListView):
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["is_personal_view"] = True
+        return context
+
+
 class ClothingDetailView(DetailView):
     model = Clothing
     context_object_name = "clothing"

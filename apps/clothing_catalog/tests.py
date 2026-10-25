@@ -99,6 +99,24 @@ class ClothingViewTests(TestCase):
         self.assertContains(response, "search=linen")
         self.assertContains(response, "type=top")
 
+    def test_my_clothing_requires_login_and_lists_only_owners_items(self):
+        response = self.client.get(reverse("clothing_catalog:my_list"))
+        self.assertEqual(response.status_code, 302)
+
+        self.client.force_login(self.owner)
+        Clothing.objects.create(
+            owner=self.other_user,
+            name="Other Item",
+            description="Not mine.",
+            type=Clothing.Type.TOP,
+            size=Clothing.Size.S,
+            condition=Clothing.Condition.FAIR,
+        )
+        response = self.client.get(reverse("clothing_catalog:my_list"))
+
+        self.assertContains(response, "Linen Shirt")
+        self.assertNotContains(response, "Other Item")
+
     def test_catalog_and_detail_are_public(self):
         list_response = self.client.get(reverse("clothing_catalog:list"))
         detail_response = self.client.get(
