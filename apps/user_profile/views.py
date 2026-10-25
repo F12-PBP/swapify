@@ -3,9 +3,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import transaction
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, UpdateView
+
+from apps.clothing_catalog.models import Clothing
 
 from .forms import LoginForm, ProfileUpdateForm, RegisterForm
 from .models import Profile
@@ -58,3 +60,30 @@ class MyProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user.profile
+
+
+class PublicProfileDetailView(DetailView):
+    model = Profile
+    template_name = "user_profile/profile_public.html"
+    context_object_name = "profile"
+
+    def get_queryset(self):
+        return Profile.objects.select_related("user").filter(user__is_active=True)
+
+    def get_object(self, queryset=None):
+        if queryset is None:
+            queryset = self.get_queryset()
+        return get_object_or_404(
+            queryset,
+            user__username=self.kwargs["username"],
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["clothing_items"] = Clothing.objects.filter(
+            owner_id=self.object.user_id,
+            status=Clothing.Status.AVAILABLE,
+        ).order_by("-created_at")
+
+        return context

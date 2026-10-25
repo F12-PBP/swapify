@@ -377,3 +377,141 @@ class ProfileEditingTests(TestCase):
                 self.owner.profile.display_name,
                 self.owner.username,
             )
+
+
+class PublicProfileTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.member = get_user_model().objects.create_user(
+            username="public_member",
+            email="private-address@example.com",
+        )
+
+        profile = cls.member.profile
+        profile.display_name = "Nama Publik"
+        profile.bio = "Suka pakaian vintage."
+        profile.save()
+
+    def public_url(self):
+        return reverse(
+            "user_profile:public",
+            kwargs={"username": self.member.username},
+        )
+
+    def test_public_profile_can_be_opened_without_login(self):
+        response = self.client.get(self.public_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Nama Publik")
+        self.assertContains(response, "Suka pakaian vintage.")
+        self.assertNotContains(
+            response,
+            "private-address@example.com",
+        )
+        self.assertNotContains(
+            response,
+            reverse("user_profile:edit"),
+        )
+
+    def test_owner_sees_edit_link(self):
+        self.client.force_login(self.member)
+
+        response = self.client.get(self.public_url())
+
+        self.assertContains(
+            response,
+            reverse("user_profile:edit"),
+        )
+
+    def test_inactive_account_is_not_public(self):
+        self.member.is_active = False
+        self.member.save()
+
+        response = self.client.get(self.public_url())
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_public_profile_does_not_accept_updates(self):
+        response = self.client.post(
+            self.public_url(),
+            {"display_name": "Changed"},
+        )
+
+        self.assertEqual(response.status_code, 405)
+
+        self.member.profile.refresh_from_db()
+        self.assertEqual(
+            self.member.profile.display_name,
+            "Nama Publik",
+        )
+
+    def test_unknown_username_returns_404(self):
+        response = self.client.get(
+            reverse("user_profile:public", kwargs={"username": "missing_member"})
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_other_member_does_not_see_edit_link(self):
+        other = get_user_model().objects.create_user(username="profile_visitor")
+        self.client.force_login(other)
+        response = self.client.get(self.public_url())
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, reverse("user_profile:edit"))
+
+    def test_username_lookup_supports_punctuation_unicode_and_numeric_names(self):
+        for username in ("member.name+swap@example.com", "pengguna_é", "123"):
+            with self.subTest(username=username):
+                member = get_user_model().objects.create_user(username=username)
+                response = self.client.get(
+                    reverse("user_profile:public", kwargs={"username": username})
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.context["profile"].user_id, member.pk)
+
+    def test_only_target_members_available_clothing_is_displayed(self):
+        other = get_user_model().objects.create_user(username="other_clothing_owner")
+        for owner, name, status in (
+            (self.member, "Public available shirt", Clothing.Status.AVAILABLE),
+            (self.member, "Private reserved shirt", Clothing.Status.RESERVED),
+            (self.member, "Private swapped shirt", Clothing.Status.SWAPPED),
+            (other, "Someone else's shirt", Clothing.Status.AVAILABLE),
+        ):
+            Clothing.objects.create(
+                owner=owner,
+                name=name,
+                description="Test clothing",
+                type=Clothing.Type.TOP,
+                size=Clothing.Size.M,
+                condition=Clothing.Condition.GOOD,
+                status=status,
+            )
+        response = self.client.get(self.public_url())
+        self.assertContains(response, "Public available shirt")
+        self.assertNotContains(response, "Private reserved shirt")
+        self.assertNotContains(response, "Private swapped shirt")
+        self.assertNotContains(response, "Someone else's shirt")
+        self.assertEqual(len(response.context["clothing_items"]), 1)
+
+    def test_private_profile_and_catalog_links_use_username(self):
+        self.client.force_login(self.member)
+        response = self.client.get(reverse("user_profile:detail"))
+        self.assertContains(response, f'href="{self.public_url()}"')
+        clothing = Clothing.objects.create(
+            owner=self.member,
+            name="Linked shirt",
+            description="Test clothing",
+            type=Clothing.Type.TOP,
+            size=Clothing.Size.M,
+            condition=Clothing.Condition.GOOD,
+        )
+        response = self.client.get(clothing.get_absolute_url())
+        self.assertContains(response, f'href="{self.public_url()}"')
+
+    def test_coordinates_are_not_exposed_on_public_profile(self):
+        profile = self.member.profile
+        profile.latitude = -6.123456789
+        profile.longitude = 106.987654321
+        profile.save()
+        response = self.client.get(self.public_url())
+        self.assertNotContains(response, "-6.123456789")
+        self.assertNotContains(response, "106.987654321")

@@ -36,6 +36,12 @@
                >
                Edit Profil
           </a>
+          <a
+               href="{% url 'user_profile:public' profile.user.username %}"
+               class="btn btn-primary-ghost"
+               >
+               View Public Profile
+          </a>
     </div>
 </section>
 {% endblock %}
