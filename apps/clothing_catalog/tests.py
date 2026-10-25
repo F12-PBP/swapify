@@ -53,6 +53,31 @@ class ClothingViewTests(TestCase):
     def test_clothing_form_does_not_expose_status(self):
         self.assertNotIn("status", ClothingForm().fields)
 
+    def test_catalog_filters_and_search(self):
+        Clothing.objects.create(
+            owner=self.owner,
+            name="Wool Coat",
+            description="Warm coat.",
+            type=Clothing.Type.OUTERWEAR,
+            size=Clothing.Size.L,
+            condition=Clothing.Condition.NEW,
+        )
+
+        response = self.client.get(
+            reverse("clothing_catalog:list"),
+            {
+                "search": "Linen",
+                "type": Clothing.Type.TOP,
+                "size": Clothing.Size.M,
+                "condition": Clothing.Condition.GOOD,
+                "status": Clothing.Status.AVAILABLE,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Linen Shirt")
+        self.assertNotContains(response, "Wool Coat")
+
     def test_catalog_and_detail_are_public(self):
         list_response = self.client.get(reverse("clothing_catalog:list"))
         detail_response = self.client.get(

@@ -15,6 +15,66 @@
         {% endif %}
     </div>
 
+    <!-- Search and Filters Form -->
+    <div class="mb-8 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+        <form method="get" class="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+            <!-- Search -->
+            <div class="lg:col-span-2">
+                <label class="label"><span class="label-text">Search</span></label>
+                <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Search name or description..." class="input input-bordered w-full" />
+            </div>
+
+            <!-- Type -->
+            <div>
+                <label class="label"><span class="label-text">Type</span></label>
+                <select name="type" class="select select-bordered w-full">
+                    <option value="">All Types</option>
+                    {% for key, val in types %}
+                        <option value="{{ key }}" {% if request.GET.type == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Size -->
+            <div>
+                <label class="label"><span class="label-text">Size</span></label>
+                <select name="size" class="select select-bordered w-full">
+                    <option value="">All Sizes</option>
+                    {% for key, val in sizes %}
+                        <option value="{{ key }}" {% if request.GET.size == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Condition -->
+            <div>
+                <label class="label"><span class="label-text">Condition</span></label>
+                <select name="condition" class="select select-bordered w-full">
+                    <option value="">All Conditions</option>
+                    {% for key, val in conditions %}
+                        <option value="{{ key }}" {% if request.GET.condition == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label class="label"><span class="label-text">Status</span></label>
+                <select name="status" class="select select-bordered w-full">
+                    <option value="">All Statuses</option>
+                    {% for key, val in statuses %}
+                        <option value="{{ key }}" {% if request.GET.status == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="md:col-span-2 lg:col-span-6 flex justify-end gap-2 mt-2">
+                <a href="{% if is_personal_view %}{% url 'clothing_catalog:my_list' %}{% else %}{% url 'clothing_catalog:list' %}{% endif %}" class="btn btn-ghost">Reset</a>
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+            </div>
+        </form>
+    </div>
+
     {% if clothing_items %}
         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {% for clothing in clothing_items %}
