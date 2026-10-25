@@ -105,6 +105,27 @@
                 </article>
             {% endfor %}
         </div>
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <div class="flex justify-center mt-8">
+                <div class="join">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.size %}&size={{ request.GET.size }}{% endif %}{% if request.GET.condition %}&condition={{ request.GET.condition }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="join-item btn">«</a>
+                    {% else %}
+                        <button class="join-item btn btn-disabled">«</button>
+                    {% endif %}
+
+                    <button class="join-item btn">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</button>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.size %}&size={{ request.GET.size }}{% endif %}{% if request.GET.condition %}&condition={{ request.GET.condition }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="join-item btn">»</a>
+                    {% else %}
+                        <button class="join-item btn btn-disabled">»</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
     {% else %}
         <div class="rounded-box border border-dashed border-base-300 p-10 text-center">
             <p class="text-base-content/70">No clothing in the catalog yet.</p>

@@ -78,6 +78,27 @@ class ClothingViewTests(TestCase):
         self.assertContains(response, "Linen Shirt")
         self.assertNotContains(response, "Wool Coat")
 
+    def test_pagination_preserves_filters(self):
+        for index in range(12):
+            Clothing.objects.create(
+                owner=self.owner,
+                name=f"Shirt {index}",
+                description="Another linen shirt.",
+                type=Clothing.Type.TOP,
+                size=Clothing.Size.M,
+                condition=Clothing.Condition.GOOD,
+            )
+
+        response = self.client.get(
+            reverse("clothing_catalog:list"),
+            {"search": "linen", "type": Clothing.Type.TOP, "page": 2},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["page_obj"].number, 2)
+        self.assertContains(response, "search=linen")
+        self.assertContains(response, "type=top")
+
     def test_catalog_and_detail_are_public(self):
         list_response = self.client.get(reverse("clothing_catalog:list"))
         detail_response = self.client.get(

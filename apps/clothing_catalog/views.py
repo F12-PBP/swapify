@@ -19,6 +19,7 @@ class ClothingListView(ListView):
     model = Clothing
     context_object_name = "clothing_items"
     template_name = "clothing_catalog/clothing_list.html"
+    paginate_by = 12
 
     def get_queryset(self):
         queryset = Clothing.objects.select_related("owner")
