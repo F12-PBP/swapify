@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
+from common.images import validate_uploaded_image
+
 from .models import Profile
 
 
@@ -52,27 +54,42 @@ class RegisterForm(UserCreationForm):
 
 
 class ProfileUpdateForm(forms.ModelForm):
+    new_profile_picture = forms.ImageField(
+        required=False,
+        label="Profile photo",
+        help_text=(
+            "JPG, PNG, or WebP, up to 5 MB. Leave blank to keep your current photo."
+        ),
+        validators=[validate_uploaded_image],
+        widget=forms.FileInput(
+            attrs={
+                "class": "file-input w-full",
+                "accept": "image/jpeg,image/png,image/webp",
+            }
+        ),
+    )
+
     class Meta:
         model = Profile
-        fields = ("display_name", "bio")
+        fields = ("display_name", "bio", "new_profile_picture")
 
         widgets = {
             "display_name": forms.TextInput(
                 attrs={
                     "class": "input swap-input w-full",
-                    "placeholder": "Enter you display name here...",
+                    "placeholder": "Enter your display name",
                 }
             ),
             "bio": forms.Textarea(
                 attrs={
                     "class": "textarea swap-input w-full",
-                    "placeholder": "Enter your bio here...",
+                    "placeholder": "Tell other swappers a little about yourself",
                     "rows": 4,
                 }
             ),
         }
 
         labels = {
-            "display_name": "Display Name",
+            "display_name": "Display name",
             "bio": "Bio",
         }

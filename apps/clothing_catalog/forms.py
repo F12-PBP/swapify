@@ -1,19 +1,35 @@
 from django import forms
 
+from common.images import validate_uploaded_image
+
 from .models import Clothing
 
 
 class ClothingForm(forms.ModelForm):
+    new_image = forms.ImageField(
+        required=False,
+        label="Clothing photo",
+        help_text=(
+            "JPG, PNG, or WebP, up to 5 MB. Leave blank to keep the current photo."
+        ),
+        validators=[validate_uploaded_image],
+        widget=forms.FileInput(
+            attrs={
+                "class": "file-input swap-input w-full",
+                "accept": "image/jpeg,image/png,image/webp",
+            }
+        ),
+    )
+
     class Meta:
         model = Clothing
         fields = (
             "name",
             "description",
-            "image",
+            "new_image",
             "type",
             "size",
             "condition",
-            "status",
         )
         widgets = {
             "name": forms.TextInput(
@@ -29,9 +45,7 @@ class ClothingForm(forms.ModelForm):
                     "rows": 5,
                 }
             ),
-            "image": forms.FileInput(attrs={"class": "file-input swap-input w-full"}),
             "type": forms.Select(attrs={"class": "select swap-input w-full"}),
             "size": forms.Select(attrs={"class": "select swap-input w-full"}),
             "condition": forms.Select(attrs={"class": "select swap-input w-full"}),
-            "status": forms.Select(attrs={"class": "select swap-input w-full"}),
         }

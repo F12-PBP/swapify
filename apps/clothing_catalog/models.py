@@ -1,3 +1,4 @@
+from cloudinary.models import CloudinaryField
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
@@ -40,7 +41,14 @@ class Clothing(models.Model):
     )
     name = models.CharField("clothing name", max_length=150)
     description = models.TextField("description")
-    image = models.ImageField("image", upload_to="clothing/", blank=True, null=True)
+    image = CloudinaryField("image", blank=True, null=True)
+    legacy_image = models.ImageField(
+        "legacy image",
+        upload_to="clothing/",
+        blank=True,
+        null=True,
+        editable=False,
+    )
     type = models.CharField("type", max_length=20, choices=Type.choices)
     size = models.CharField("size", max_length=10, choices=Size.choices)
     condition = models.CharField("condition", max_length=20, choices=Condition.choices)
@@ -63,3 +71,11 @@ class Clothing(models.Model):
 
     def get_absolute_url(self):
         return reverse("clothing_catalog:detail", kwargs={"pk": self.pk})
+
+    @property
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        if self.legacy_image:
+            return self.legacy_image.url
+        return ""

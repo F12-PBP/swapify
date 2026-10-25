@@ -6,6 +6,24 @@
 <section class="mx-auto max-w-3xl px-4 py-10 md:px-6">
     <div class="card border border-neutral-40 bg-base-100 shadow-sm">
         <div class="card-body gap-4">
+          {% if profile.profile_picture %}
+          <img
+               src="{{ profile.profile_picture.url }}"
+               alt="Profile photo of {{ profile.display_name }}"
+               width="96"
+               height="96"
+               class="rounded-full object-cover"
+               style="width: 96px; height: 96px;"
+          >
+          {% else %}
+          <div
+               class="flex size-24 items-center justify-center rounded-full bg-primary text-primary-content"
+               aria-hidden="true"
+          >
+               {{ profile.display_name|slice:":1"|upper }}
+          </div>
+          {% endif %}
+
             <h1 class="font-display text-h3">
                 {{ profile.display_name }}
             </h1>
@@ -15,7 +33,7 @@
             </p>
 
             <p class="whitespace-pre-line">
-                {{ profile.bio|default:"Belum ada bio." }}
+                {{ profile.bio|default:"No bio yet." }}
             </p>
 
             {% if user.is_authenticated and user.pk == profile.user_id %}
@@ -24,7 +42,7 @@
                         href="{% url 'user_profile:edit' %}"
                         class="btn btn-primary-ghost"
                     >
-                        Edit Profil
+                        Edit Profile
                     </a>
                 </div>
             {% endif %}
@@ -33,7 +51,7 @@
 
     <div class="mt-8">
         <h2 class="font-display text-h4 mb-4">
-            Displayed Clothes
+            Available Clothing
         </h2>
 
         <div class="grid gap-4 sm:grid-cols-2">
@@ -53,13 +71,13 @@
                             href="{{ clothing.get_absolute_url }}"
                             class="btn btn-primary-ghost"
                         >
-                            Show Clothing
+                            View Clothing
                         </a>
                     </div>
                 </article>
             {% empty %}
                 <p class="text-base-content/60">
-                    There's no Clothes to swap
+                    No clothing available to swap yet.
                 </p>
             {% endfor %}
         </div>

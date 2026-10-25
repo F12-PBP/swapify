@@ -11,6 +11,7 @@ from apps.clothing_catalog.models import Clothing
 
 from .forms import LoginForm, ProfileUpdateForm, RegisterForm
 from .models import Profile
+from .services import ProfilePhotoUploadError, upload_profile_picture
 
 
 class LoginUserView(LoginView):
@@ -56,10 +57,30 @@ class MyProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = "user_profile/profile_form.html"
     context_object_name = "profile"
     success_url = reverse_lazy("user_profile:detail")
-    success_message = "Profile Updated"
+    success_message = "Your profile has been updated."
 
     def get_object(self, queryset=None):
         return self.request.user.profile
+
+    def form_valid(self, form):
+        image = form.cleaned_data.get("new_profile_picture")
+
+        if image is not None:
+            try:
+                picture = upload_profile_picture(
+                    image=image,
+                    user_id=self.request.user.pk,
+                )
+            except ProfilePhotoUploadError as error:
+                form.add_error(
+                    "new_profile_picture",
+                    str(error),
+                )
+                return self.form_invalid(form)
+
+            form.instance.profile_picture = picture
+
+        return super().form_valid(form)
 
 
 class PublicProfileDetailView(DetailView):

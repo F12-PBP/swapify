@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db import transaction
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -9,6 +10,7 @@ from django.views.generic import (
 )
 
 from .forms import ClothingForm
+from .mixins import ClothingImageUploadMixin
 from .models import Clothing
 
 
@@ -26,7 +28,7 @@ class ClothingDetailView(DetailView):
     queryset = Clothing.objects.select_related("owner")
 
 
-class ClothingCreateView(LoginRequiredMixin, CreateView):
+class ClothingCreateView(LoginRequiredMixin, ClothingImageUploadMixin, CreateView):
     form_class = ClothingForm
     template_name = "clothing_catalog/clothing_form.html"
 
@@ -40,14 +42,29 @@ class OwnerRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
         return self.get_object().owner == self.request.user
 
 
-class ClothingUpdateView(OwnerRequiredMixin, UpdateView):
+class AvailableClothingMixin:
+    def get_queryset(self):
+        queryset = super().get_queryset().filter(status=Clothing.Status.AVAILABLE)
+        if getattr(self, "_lock_for_update", False):
+            queryset = queryset.select_for_update(of=("self",))
+        return queryset
+
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        self._lock_for_update = True
+        return super().post(request, *args, **kwargs)
+
+
+class ClothingUpdateView(
+    OwnerRequiredMixin, AvailableClothingMixin, ClothingImageUploadMixin, UpdateView
+):
     model = Clothing
     form_class = ClothingForm
     context_object_name = "clothing"
     template_name = "clothing_catalog/clothing_form.html"
 
 
-class ClothingDeleteView(OwnerRequiredMixin, DeleteView):
+class ClothingDeleteView(OwnerRequiredMixin, AvailableClothingMixin, DeleteView):
     model = Clothing
     context_object_name = "clothing"
     template_name = "clothing_catalog/clothing_confirm_delete.html"
