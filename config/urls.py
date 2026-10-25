@@ -28,6 +28,7 @@ urlpatterns = [
     path("swap-request/", include("apps.swap_request.urls")),
     path("transaction/", include("apps.transaction.urls")),
     path("chat/", include("apps.chat.urls")),
+    path("profile/", include("apps.user_profile.urls")),
 ]
 
 if settings.DEBUG:

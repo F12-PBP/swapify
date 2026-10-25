@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "apps.swap_request",
     "apps.transaction",
     "apps.chat",
+    "apps.user_profile.apps.UserProfileConfig",
 ]
 
 if DEBUG:
@@ -75,7 +76,6 @@ MIDDLEWARE = [
 if DEBUG:
     MIDDLEWARE += [
         "django_browser_reload.middleware.BrowserReloadMiddleware",
-        "apps.main.middleware.AutoLoginMiddleware",
     ]
 
 ROOT_URLCONF = "config.urls"
@@ -174,3 +174,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Media files
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+LOGIN_URL = "user_profile:login"
+LOGIN_REDIRECT_URL = "user_profile:detail"
+LOGOUT_REDIRECT_URL = "main:home"

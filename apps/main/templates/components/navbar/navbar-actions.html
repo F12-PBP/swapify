@@ -1,17 +1,10 @@
-{% load static %}
-{% url 'user_profile:login' as sign_in_url %}
-{% url 'user_profile:register' as sign_up_url %}
-{% if sign_in_url %}
-<a href="{{ sign_in_url }}" class="btn btn-primary-ghost w-37 gap-3 border-[1.6px]">
+{% if user.is_authenticated %}
+<a href="{% url 'user_profile:detail' %}" class="btn btn-primary-ghost w-37 gap-3 border-[1.6px]">My Profile</a>
+<form method="post" action="{% url 'user_profile:logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary w-36 gap-3 text-neutral-20">Log Out</button>
+</form>
 {% else %}
-<button type="button" title="Sign In will be available when authentication is connected" class="btn btn-primary-ghost cursor-default w-37 gap-3 border-[1.6px] disabled:">
+<a href="{% url 'user_profile:login' %}" class="btn btn-primary-ghost w-37 gap-3 border-[1.6px]">Sign In</a>
+<a href="{% url 'user_profile:register' %}" class="btn btn-primary w-36 gap-3 text-neutral-20">Sign Up</a>
 {% endif %}
-    Sign In
-{% if sign_in_url %}</a>{% else %}</button>{% endif %}
-{% if sign_up_url %}
-<a href="{{ sign_up_url }}" class="btn btn-primary w-36 gap-3 text-neutral-20">
-{% else %}
-<button type="button"  title="Sign Up will be available when authentication is connected" class="btn btn-primary cursor-default w-36 gap-3 text-neutral-20">
-{% endif %}
-    Sign Up
-{% if sign_up_url %}</a>{% else %}</button>{% endif %}
