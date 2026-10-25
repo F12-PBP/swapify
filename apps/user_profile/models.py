@@ -1,13 +1,9 @@
-# import uuid
 from cloudinary.models import CloudinaryField
 from django.conf import settings
 from django.db import models
 
-# Create your models here.
-
 
 class Profile(models.Model):
-    # id = models.UUIDField("id",default=uuid.uuid4, primary_key=True)
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
     )

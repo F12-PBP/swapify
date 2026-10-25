@@ -5,10 +5,14 @@ from django.dispatch import receiver
 from .models import Profile
 
 
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_user_profile(sender, instance, created, raw=False, **kwargs):
+@receiver(
+    post_save,
+    sender=settings.AUTH_USER_MODEL,
+    dispatch_uid="user_profile.create_profile",
+)
+def create_user_profile(sender, instance, created, raw=False, using=None, **kwargs):
     if raw or not created:
         return
-    Profile.objects.get_or_create(
+    Profile.objects.using(using).get_or_create(
         user=instance, defaults={"display_name": instance.get_username()}
     )
