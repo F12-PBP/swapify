@@ -3,7 +3,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core import signing
+from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Avg, Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -11,6 +13,7 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, UpdateView
 
 from apps.clothing_catalog.models import Clothing
+from apps.review_rating.models import Review
 
 from .forms import (
     LocationCoordinatesForm,
@@ -161,5 +164,19 @@ class PublicProfileDetailView(DetailView):
             owner_id=self.object.user_id,
             status=Clothing.Status.AVAILABLE,
         ).order_by("-created_at")
+
+        received_reviews = Review.objects.filter(
+            recipient_id=self.object.user_id,
+        ).select_related("author")
+
+        context["rating_summary"] = received_reviews.aggregate(
+            average=Avg("rating"),
+            count=Count("pk"),
+        )
+
+        paginator = Paginator(received_reviews, 10)
+        context["reviews_page"] = paginator.get_page(
+            self.request.GET.get("reviews_page")
+        )
 
         return context

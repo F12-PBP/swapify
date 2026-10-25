@@ -38,6 +38,21 @@
             <p class="whitespace-pre-line">
                 {{ profile.bio|default:"No bio yet." }}
             </p>
+            {% if rating_summary.count %}
+               <p class="text-sm">
+                    <span class="font-semibold">
+                         {{ rating_summary.average|floatformat:1 }} / 5
+                    </span>
+                    <span class="text-base-content/60">
+                         · {{ rating_summary.count }}
+                         review{{ rating_summary.count|pluralize }}
+                    </span>
+               </p>
+               {% else %}
+               <p class="text-sm text-base-content/60">
+                    No reviews yet.
+               </p>
+               {% endif %}
 
             {% if user.is_authenticated and user.pk == profile.user_id %}
                 <div>
@@ -85,5 +100,78 @@
             {% endfor %}
         </div>
     </div>
+    <div id="reviews" class="mt-8">
+          <h2 class="font-display text-h4 mb-4">Reviews</h2>
+
+          <div class="space-y-4">
+               {% for review in reviews_page %}
+                    <article class="card border border-neutral-40 bg-base-100">
+                         <div class="card-body gap-3">
+                              <div class="flex flex-wrap items-center justify-between gap-2">
+                              <a
+                                   href="{% url 'user_profile:public' review.author.username %}"
+                                   class="link font-semibold"
+                              >
+                                   @{{ review.author.username }}
+                              </a>
+
+                              <span class="badge badge-outline">
+                                   {{ review.rating }} / 5
+                              </span>
+                              </div>
+
+                              <time
+                              datetime="{{ review.created_at|date:'c' }}"
+                              class="text-sm text-base-content/60"
+                              >
+                              {{ review.created_at|date:"M j, Y" }}
+                              </time>
+
+                              {% if review.comment %}
+                              <p class="whitespace-pre-line">{{ review.comment }}</p>
+                              {% else %}
+                              <p class="text-sm text-base-content/60">
+                                   No written comment.
+                              </p>
+                              {% endif %}
+                         </div>
+                    </article>
+               {% empty %}
+                    <p class="text-base-content/60">
+                         Reviews will appear here after completed exchanges.
+                    </p>
+               {% endfor %}
+          </div>
+
+          {% if reviews_page.has_other_pages %}
+               <nav
+                    class="mt-5 flex flex-wrap items-center justify-between gap-3"
+                    aria-label="Review pages"
+               >
+                    {% if reviews_page.has_previous %}
+                         <a
+                              href="?reviews_page={{ reviews_page.previous_page_number }}#reviews"
+                              class="btn btn-primary-ghost"
+                         >
+                              Previous
+                         </a>
+                    {% endif %}
+
+                    <span class="text-sm text-base-content/60">
+                         Page {{ reviews_page.number }}
+                         of {{ reviews_page.paginator.num_pages }}
+                    </span>
+
+                    {% if reviews_page.has_next %}
+                         <a
+                              href="?reviews_page={{ reviews_page.next_page_number }}#reviews"
+                              class="btn btn-primary-ghost"
+                         >
+                              Next
+                         </a>
+                    {% endif %}
+               </nav>
+          {% endif %}
+          </div>
 </section>
 {% endblock %}
