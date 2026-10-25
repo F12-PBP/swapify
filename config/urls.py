@@ -29,6 +29,7 @@ urlpatterns = [
     path("transaction/", include("apps.transaction.urls")),
     path("chat/", include("apps.chat.urls")),
     path("profile/", include("apps.user_profile.urls")),
+    path("reviews/", include("apps.review_rating.urls")),
 ]
 
 if settings.DEBUG:

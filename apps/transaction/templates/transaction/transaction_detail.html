@@ -56,6 +56,18 @@
                         <span class="badge bg-green-10 text-green-80 border border-green-30 px-4 py-3">
                             Completed
                         </span>
+                        {% if has_reviewed %}
+                            <p class="mt-3 text-sm text-base-content/60">
+                                Review submitted. Thank you for sharing your experience.
+                            </p>
+                        {% else %}
+                            <a
+                                href="{% url 'review_rating:create' transaction.pk %}"
+                                class="btn btn-primary mt-3"
+                            >
+                                Write a Review
+                            </a>
+                        {% endif %}
 
                     {% elif transaction.status == "Disputed" %}
                         <span class="badge bg-red-10 text-red-80 border border-red-30 px-4 py-3">
