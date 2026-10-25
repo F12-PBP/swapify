@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "apps.transaction",
     "apps.chat",
     "apps.user_profile.apps.UserProfileConfig",
+    "apps.review_rating.apps.ReviewRatingConfig",
 ]
 
 if DEBUG:
