@@ -1,19 +1,31 @@
+{% load static %}
 <div class="{% if modal %}flex w-full flex-col gap-2{% endif %}">
   <label for="size-{{ suffix }}" class="{% if modal %}text-b7 font-semibold text-primary-base{% else %}sr-only{% endif %}">Size</label>
-  <select id="size-{{ suffix }}" name="size" class="{% if modal %}market-input{% else %}market-filter{% endif %}">
-    {% for value, label in filter_form.fields.size.choices %}<option value="{{ value }}" {% if filters.size == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-  </select>
-</div>
-<div class="{% if modal %}flex w-full flex-col gap-2{% endif %}">
-  <label for="distance-{{ suffix }}" class="{% if modal %}text-b7 font-semibold text-primary-base{% else %}sr-only{% endif %}">Distance</label>
-  <select id="distance-{{ suffix }}" name="distance" class="{% if modal %}market-input{% else %}market-filter{% endif %}" {% if not has_location %}disabled aria-describedby="distance-help-{{ suffix }}"{% endif %}>
-    {% for value, label in filter_form.fields.distance.choices %}<option value="{{ value }}" {% if filters.distance == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-  </select>
-  {% if not has_location %}<span id="distance-help-{{ suffix }}" class="{% if not modal %}sr-only{% else %}text-b9 text-neutral-80{% endif %}">Save your location to find pieces nearby.</span>{% endif %}
+  <div class="relative">
+    <select id="size-{{ suffix }}" name="size" {% if not modal %}data-auto-submit{% endif %} class="{% if modal %}market-input{% else %}market-filter{% endif %} appearance-none pr-10" >
+      {% for value, label in filter_form.fields.size.choices %}<option value="{{ value }}" {% if filters.size == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <span aria-hidden="true" class="pointer-events-none absolute inset-y-0 right-4 flex items-center"><img src="{% static 'main/images/discovery/imgIcon14.svg' %}" alt=""></span>
+  </div>
+
 </div>
 <div class="{% if modal %}flex w-full flex-col gap-2{% endif %}">
   <label for="condition-{{ suffix }}" class="{% if modal %}text-b7 font-semibold text-primary-base{% else %}sr-only{% endif %}">Condition</label>
-  <select id="condition-{{ suffix }}" name="condition" class="{% if modal %}market-input{% else %}market-filter{% endif %}">
-    {% for value, label in filter_form.fields.condition.choices %}<option value="{{ value }}" {% if filters.condition == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-  </select>
+  <div class="relative">
+    <select id="condition-{{ suffix }}" name="condition" {% if not modal %}data-auto-submit{% endif %} class="{% if modal %}market-input{% else %}market-filter{% endif %} appearance-none pr-10" >
+      {% for value, label in filter_form.fields.condition.choices %}<option value="{{ value }}" {% if filters.condition == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <span aria-hidden="true" class="pointer-events-none absolute inset-y-0 right-4 flex items-center"><img src="{% static 'main/images/discovery/imgIcon14.svg' %}" alt=""></span>
+  </div>
+
+</div>
+<div class="{% if modal %}flex w-full flex-col gap-2{% endif %}">
+  <label for="distance-{{ suffix }}" class="{% if modal %}text-b7 font-semibold text-primary-base{% else %}sr-only{% endif %}">Distance</label>
+  <div class="relative">
+    <select id="distance-{{ suffix }}" name="distance" {% if not modal %}data-auto-submit{% endif %} class="{% if modal %}market-input{% else %}market-filter{% endif %} appearance-none pr-10" {% if not has_location %}disabled aria-describedby="distance-help-{{ suffix }}"{% endif %}>
+      {% for value, label in filter_form.fields.distance.choices %}<option value="{{ value }}" {% if filters.distance == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <span aria-hidden="true" class="pointer-events-none absolute inset-y-0 right-4 flex items-center"><img src="{% static 'main/images/discovery/imgIcon14.svg' %}" alt=""></span>
+  </div>
+  {% if not has_location %}<span id="distance-help-{{ suffix }}" class="{% if not modal %}sr-only{% else %}text-b9 text-neutral-80{% endif %}">Save your location to find pieces nearby.</span>{% endif %}
 </div>

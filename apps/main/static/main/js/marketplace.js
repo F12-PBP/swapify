@@ -28,6 +28,7 @@
   document.querySelectorAll("[data-auto-submit]").forEach((select) => {
     select.addEventListener("change", () => select.form.requestSubmit());
   });
+  document.querySelectorAll("[data-filter-apply]").forEach((button) => { button.hidden = true; });
 
   const swapDialog = document.getElementById("propose-swap");
   if (!swapDialog) return;

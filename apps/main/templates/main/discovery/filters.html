@@ -7,7 +7,7 @@
   <input type="hidden" name="search" value="{{ filters.search }}">
   <input type="hidden" name="type" value="{{ filters.type }}">
   {% include "main/discovery/filter_fields.html" with suffix="inline" %}
-  <button class="market-secondary px-3 py-2 text-b9" type="submit">Apply</button>
+  <button class="market-secondary px-3 py-2 text-b9" type="submit" data-filter-apply>Apply</button>
   <button type="button" class="market-filter" data-dialog-open="catalog-filters" hidden>All filters</button>
   <div class="ml-auto flex items-center gap-2 text-b9 text-neutral-80">
     <label for="sort-finds">Sort by:</label>

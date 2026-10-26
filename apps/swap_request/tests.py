@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from apps.clothing_catalog.models import Clothing
@@ -143,6 +143,20 @@ class SwapRequestCreateTests(SwapRequestTestCase):
                 offered_clothing_id=self.offered.pk,
             )
         self.assertFalse(SwapRequest.objects.filter(requested_clothing=target).exists())
+
+    def test_dialog_submission_requires_csrf_token(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.requester)
+        target = make_clothing(self.stranger, "A CSRF-protected piece")
+        route = self.create_url(target)
+        headers = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
+        client.get(route, **headers)
+        data = {"offered_clothing": self.offered.pk}
+        self.assertEqual(client.post(route, data, **headers).status_code, 403)
+        response = client.post(
+            route, data, HTTP_X_CSRFTOKEN=client.cookies["csrftoken"].value, **headers
+        )
+        self.assertEqual(response.status_code, 201)
 
     def test_requester_can_offer_own_clothing(self):
         stranger_item = make_clothing(self.stranger, "Celana Carol")

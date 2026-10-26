@@ -1,4 +1,4 @@
-{% load static %}
+{% load static lucide %}
 <section aria-labelledby="discovery-title" class="relative isolate flex flex-col items-center gap-10 overflow-hidden rounded-[40px] bg-primary-10 p-6 py-10 sm:p-10 lg:min-h-[539px] lg:flex-row lg:gap-4 lg:p-[60px]">
   <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 overflow-hidden text-primary-base opacity-[0.06]">
     <span class="absolute -top-32 -left-20 rotate-[19deg] text-[360px] leading-none">✧</span>
@@ -15,8 +15,8 @@
       <p class="text-b8 text-neutral-80 sm:text-b7">Swap the pieces you no longer reach for.<br class="hidden sm:block"> Find something that feels like you. No price tags attached.</p>
     </div>
     <div class="flex flex-wrap items-center gap-4">
-      <a href="#finds" class="market-button">Find your next favourite <img src="{% static 'main/images/discovery/imgGroup.svg' %}" alt=""></a>
-      <a href="{% url 'main:home' %}#how-it-works" class="market-secondary text-b8">How it works <img src="{% static 'main/images/discovery/imgGroup1.svg' %}" alt=""></a>
+      <a href="#finds" class="market-button">Find your next favourite {% lucide "arrow-right" size=24 %}</a>
+      <a href="{% url 'main:home' %}#how-it-works" class="market-secondary text-b8">How it works {% lucide "arrow-right" size=16 %}</a>
     </div>
     <div class="flex items-center gap-3">
       <div class="flex -space-x-2" aria-hidden="true">
@@ -31,11 +31,11 @@
   <div class="relative aspect-[483/355] w-full max-w-[483px] shrink-0 lg:w-[42%]" aria-label="A fresh start for cream knitwear and a denim jacket">
     <figure class="absolute top-[5%] left-[5%] flex w-[46%] -rotate-[13deg] flex-col overflow-hidden rounded-lg border-x-[6px] border-t-[6px] border-neutral-10 bg-neutral-10">
       <img src="{% static 'main/images/discovery/imgImagePreLovedCreamKnitwear.png' %}" alt="Pre-loved cream knitwear on a hanger" width="208" height="264" class="aspect-[208/264] w-full object-cover">
-      <figcaption class="flex items-center justify-between gap-2 px-2 py-2 font-display text-b9 text-primary-base sm:text-[15px]">A little softer.<img src="{% static 'main/images/discovery/imgIcon11.svg' %}" alt=""></figcaption>
+      <figcaption class="flex items-center justify-between gap-1 px-1 py-2 font-display text-[10px] text-primary-base sm:gap-2 sm:px-2 sm:text-[15px]">A little softer.<img class="shrink-0" src="{% static 'main/images/discovery/imgIcon11.svg' %}" alt=""></figcaption>
     </figure>
     <figure class="absolute top-[3%] right-[2%] flex w-[46%] rotate-[11deg] flex-col overflow-hidden rounded-lg border-x-[6px] border-t-[6px] border-neutral-10 bg-neutral-10">
       <img src="{% static 'main/images/discovery/imgImageVintageBlueDenimJacket.png' %}" alt="Vintage blue denim jacket ready for a new chapter" width="208" height="264" class="aspect-[208/264] w-full object-cover">
-      <figcaption class="flex items-center justify-between gap-2 px-2 py-2 font-display text-b9 text-primary-base sm:text-[15px]">A new chapter.<img src="{% static 'main/images/discovery/imgIcon12.svg' %}" alt=""></figcaption>
+      <figcaption class="flex items-center justify-between gap-1 px-1 py-2 font-display text-[10px] text-primary-base sm:gap-2 sm:px-2 sm:text-[15px]">A new chapter.<img class="shrink-0" src="{% static 'main/images/discovery/imgIcon12.svg' %}" alt=""></figcaption>
     </figure>
     <div aria-hidden="true" class="absolute top-[44%] left-[45%] flex size-[62px] -rotate-12 items-center justify-center rounded-full border-4 border-primary-10 bg-primary-base"><img src="{% static 'main/images/discovery/imgIcon13.svg' %}" alt=""></div>
   </div>

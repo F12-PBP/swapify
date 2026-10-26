@@ -1,5 +1,6 @@
-{% load static %}
+{% load static lucide %}
 <header>
+  {% url 'user_profile:location_edit' as location_url %}
   <div class="relative flex min-h-8 items-center justify-center gap-2 bg-primary-base px-4 py-1.5 text-center text-b9 text-primary-20">
     <img src="{% static 'main/images/discovery/imgIcon.svg' %}" alt="">
     <p>Good for your wardrobe. Even better for the planet.</p>
@@ -11,11 +12,16 @@
       <button type="submit" aria-label="Search clothing" class="cursor-pointer p-1"><img src="{% static 'main/images/discovery/imgIcon2.svg' %}" alt=""></button>
       <label for="market-search" class="sr-only">Search clothing</label>
       <input id="market-search" name="search" type="search" value="{{ filters.search }}" placeholder="Find your next favourite..." maxlength="150" class="min-w-0 flex-1 bg-transparent text-b9 text-neutral-100 outline-none placeholder:text-neutral-70">
+      {% if filters.type %}<input type="hidden" name="type" value="{{ filters.type }}">{% endif %}
+      {% if filters.size %}<input type="hidden" name="size" value="{{ filters.size }}">{% endif %}
+      {% if filters.condition %}<input type="hidden" name="condition" value="{{ filters.condition }}">{% endif %}
+      {% if filters.distance %}<input type="hidden" name="distance" value="{{ filters.distance }}">{% endif %}
+      {% if filters.sort %}<input type="hidden" name="sort" value="{{ filters.sort }}">{% endif %}
     </form>
     <div class="flex shrink-0 items-center gap-4 lg:gap-8">
-      <a href="{% if user.is_authenticated %}{% url 'user_profile:location_edit' %}?next={% url 'main:discover' %}{% else %}{% url 'user_profile:login' %}?next={% url 'user_profile:location_edit' %}{% endif %}" class="flex items-center gap-2" aria-label="Choose your discovery location">
+      <a href="{% if user.is_authenticated %}{{ location_url }}?next={% url 'main:discover' %}{% else %}{% url 'user_profile:login' %}?next={{ location_url|add:'?next=/discover/'|urlencode }}{% endif %}" class="flex items-center gap-2" aria-label="Choose your discovery location">
         <img src="{% static 'main/images/discovery/imgIcon3.svg' %}" alt="">
-        <span class="hidden flex-col gap-1 text-left sm:flex"><span class="text-b9">{% if user.is_authenticated and user.profile.city %}{{ user.profile.city }}{% else %}Choose location{% endif %}</span><span class="text-b10 text-neutral-70">Discover near you</span></span>
+        <span class="hidden flex-col gap-1 text-left sm:flex"><span class="max-w-36 truncate text-b9">{% if user.is_authenticated and user.profile.city %}{{ user.profile.city }}{% else %}Choose location{% endif %}</span><span class="text-b10 text-neutral-70">Discover near you</span></span>
         <img class="hidden sm:block" src="{% static 'main/images/discovery/imgIcon4.svg' %}" alt="">
       </a>
       {% if user.is_authenticated %}
@@ -39,7 +45,7 @@
         <a href="{% url 'chat:list' %}" class="market-nav border-transparent"><img class="hidden sm:block" src="{% static 'main/images/discovery/imgIcon7.svg' %}" alt="">Messages</a>
         <a href="{% url 'clothing_catalog:my_list' %}" class="market-nav border-transparent"><img class="hidden sm:block" src="{% static 'main/images/discovery/imgIcon8.svg' %}" alt="">My wardrobe</a>
       </div>
-      <a class="market-button" href="{% url 'clothing_catalog:create' %}"><img src="{% static 'main/images/discovery/imgPlus.svg' %}" alt="">Add Item</a>
+      <a class="market-button" href="{% url 'clothing_catalog:create' %}">{% lucide "plus" size=20 %}Add Item</a>
     </nav>
   </div>
 </header>
