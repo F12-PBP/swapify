@@ -9,12 +9,12 @@ from django.db.models import Avg, Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.generic import CreateView, DetailView, UpdateView
 
 from apps.clothing_catalog.models import Clothing
 from apps.review_rating.models import Review
+from common.redirects import safe_return_url
 
 from .forms import (
     LocationCoordinatesForm,
@@ -113,14 +113,7 @@ class MyProfileLocationUpdateView(LoginRequiredMixin, SuccessMessageMixin, Updat
     success_message = "Your location has been updated."
 
     def get_success_url(self):
-        target = self.request.POST.get("next") or self.request.GET.get("next", "")
-        if target and url_has_allowed_host_and_scheme(
-            target,
-            allowed_hosts={self.request.get_host()},
-            require_https=self.request.is_secure(),
-        ):
-            return target
-        return str(self.success_url)
+        return safe_return_url(self.request, self.success_url)
 
     def get_context_data(self, **kwargs):
         return {

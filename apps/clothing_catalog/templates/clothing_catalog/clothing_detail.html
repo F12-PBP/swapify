@@ -58,4 +58,5 @@
 {% endif %}
 {% include "marketplace/listing_cta.html" %}
 {% endblock %}
+{% block dialogs %}{% include "swap_request/partials/propose_dialog.html" %}{% endblock %}
 {% block scripts %}<script src="{% static 'main/js/marketplace.js' %}" defer></script>{% endblock %}

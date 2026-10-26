@@ -83,6 +83,67 @@ class SwapRequestCreateTests(SwapRequestTestCase):
     def create_url(self, clothing):
         return reverse("swap_request:create", kwargs={"clothing_pk": clothing.pk})
 
+    def test_dialog_returns_fragment_and_inline_validation_errors(self):
+        target = make_clothing(self.stranger, "Another piece")
+        self.client.force_login(self.requester)
+        headers = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
+        response = self.client.get(self.create_url(target), **headers)
+        self.assertTemplateUsed(response, "swap_request/partials/propose_form.html")
+        self.assertNotContains(response, "<!DOCTYPE html>")
+        self.assertContains(response, "csrfmiddlewaretoken")
+        invalid = self.client.post(
+            self.create_url(target),
+            {"offered_clothing": self.requested.pk, "message": "Keep this draft"},
+            **headers,
+        )
+        self.assertEqual(invalid.status_code, 400)
+        self.assertContains(invalid, "Keep this draft", status_code=400)
+        self.assertFalse(SwapRequest.objects.filter(requested_clothing=target).exists())
+
+    def test_dialog_creates_pending_request_once_and_leaves_items_available(self):
+        target = make_clothing(self.stranger, "Another piece")
+        self.client.force_login(self.requester)
+        headers = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
+        data = {"offered_clothing": self.offered.pk, "message": "Hello!"}
+        response = self.client.post(self.create_url(target), data, **headers)
+        self.assertEqual(response.status_code, 201)
+        swap = SwapRequest.objects.get(requested_clothing=target)
+        self.assertEqual(response.json()["redirect"], swap.get_absolute_url())
+        self.assertEqual(swap.status, SwapRequest.Status.PENDING)
+        self.offered.refresh_from_db()
+        target.refresh_from_db()
+        self.assertEqual(target.status, Clothing.Status.AVAILABLE)
+        self.assertEqual(self.offered.status, Clothing.Status.AVAILABLE)
+        repeated = self.client.post(self.create_url(target), data, **headers)
+        self.assertEqual(repeated.status_code, 400)
+        self.assertEqual(
+            SwapRequest.objects.filter(requested_clothing=target).count(), 1
+        )
+
+    def test_dialog_without_available_clothing_links_to_add_and_return(self):
+        user = get_user_model().objects.create_user("no-items")
+        self.client.force_login(user)
+        response = self.client.get(
+            self.create_url(self.requested), HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        self.assertContains(response, "Add your first available piece")
+        self.assertContains(response, "next=" + self.create_url(self.requested))
+        self.assertNotContains(response, "data-swap-form")
+
+    def test_creation_rechecks_availability_after_form_validation(self):
+        from .services import SwapCreationError, create_swap_request
+
+        target = make_clothing(self.stranger, "Another piece")
+        self.offered.status = Clothing.Status.RESERVED
+        self.offered.save(update_fields=["status"])
+        with self.assertRaises(SwapCreationError):
+            create_swap_request(
+                requester=self.requester,
+                requested_clothing_id=target.pk,
+                offered_clothing_id=self.offered.pk,
+            )
+        self.assertFalse(SwapRequest.objects.filter(requested_clothing=target).exists())
+
     def test_requester_can_offer_own_clothing(self):
         stranger_item = make_clothing(self.stranger, "Celana Carol")
         self.client.force_login(self.requester)

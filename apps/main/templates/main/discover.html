@@ -13,5 +13,5 @@
 </section>
 {% include "marketplace/listing_cta.html" %}
 {% endblock %}
-{% block dialogs %}{% include "main/discovery/filter_dialog.html" %}{% endblock %}
+{% block dialogs %}{% include "main/discovery/filter_dialog.html" %}{% include "swap_request/partials/propose_dialog.html" %}{% endblock %}
 {% block scripts %}<script src="{% static 'main/js/marketplace.js' %}" defer></script>{% endblock %}

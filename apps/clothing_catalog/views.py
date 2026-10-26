@@ -10,6 +10,8 @@ from django.views.generic import (
     UpdateView,
 )
 
+from common.redirects import safe_return_url
+
 from .forms import ClothingForm
 from .mixins import ClothingImageUploadMixin
 from .models import Clothing
@@ -91,6 +93,9 @@ class ClothingDetailView(DetailView):
 class ClothingCreateView(LoginRequiredMixin, ClothingImageUploadMixin, CreateView):
     form_class = ClothingForm
     template_name = "clothing_catalog/clothing_form.html"
+
+    def get_success_url(self):
+        return safe_return_url(self.request, super().get_success_url())
 
     def form_valid(self, form):
         form.instance.owner = self.request.user

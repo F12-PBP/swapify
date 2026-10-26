@@ -1,0 +1,26 @@
+{% load static %}
+<h2 id="swap-title" class="pr-8 font-display text-h4 text-primary-base">Swap with others!</h2>
+<p class="mt-3 text-b7 text-neutral-80">Offer one of your available pieces for <strong>{{ requested_clothing.owner.profile.display_name|default:requested_clothing.owner.username }}’s {{ requested_clothing.name }}.</strong></p>
+{% if has_offerable_clothing %}
+<form method="post" action="{% url 'swap_request:create' requested_clothing.pk %}" class="mt-8 flex flex-col gap-5" data-swap-form>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="rounded-xl bg-red-10 p-4 text-b8 text-red-80" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="flex flex-col gap-2">
+    <label for="{{ form.offered_clothing.id_for_label }}" class="text-b7 font-semibold text-primary-base">Your piece to swap</label>
+    {{ form.offered_clothing }}
+    {% for error in form.offered_clothing.errors %}<p class="text-b9 text-red-70" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  <div class="flex flex-col gap-2">
+    <label for="{{ form.message.id_for_label }}" class="text-b7 font-semibold text-primary-base">Your message for {{ requested_clothing.owner.profile.display_name|default:requested_clothing.owner.username }} <span class="font-normal text-neutral-70">(optional)</span></label>
+    {{ form.message }}
+    {% for error in form.message.errors %}<p class="text-b9 text-red-70" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  <p class="flex items-center gap-3 rounded-lg border border-neutral-40 bg-neutral-30 p-4 text-b9 text-neutral-70"><img src="{% static 'swap_request/images/shield.svg' %}" alt="">Your item stays available until the swap is accepted.</p>
+  <button class="market-button mt-3 w-full text-b7" type="submit">Send Swap Request</button>
+</form>
+{% else %}
+<div class="mt-8 flex flex-col gap-4 rounded-2xl bg-secondary-10 p-5 text-b8">
+  <p>You don’t have an available piece to offer yet. Add one to start this swap.</p>
+  <a class="market-button" href="{% url 'clothing_catalog:create' %}?next={{ request.path|urlencode }}">Add your first available piece</a>
+</div>
+{% endif %}

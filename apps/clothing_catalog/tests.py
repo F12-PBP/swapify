@@ -70,7 +70,9 @@ class ClothingViewTests(TestCase):
         self.client.force_login(self.owner)
         own = self.client.get(self.clothing.get_absolute_url())
         self.assertContains(own, "Edit item")
-        self.assertNotContains(own, "Propose a swap")
+        self.assertNotContains(
+            own, reverse("swap_request:create", args=[self.clothing.pk])
+        )
 
     def test_authenticated_user_becomes_owner_when_creating_clothing(self):
         self.client.force_login(self.owner)
@@ -89,6 +91,25 @@ class ClothingViewTests(TestCase):
         clothing = Clothing.objects.get(name="Denim Jacket")
         self.assertRedirects(response, clothing.get_absolute_url())
         self.assertEqual(clothing.owner, self.owner)
+
+    def test_adding_an_offer_can_return_to_swap_and_rejects_external_return(self):
+        self.client.force_login(self.owner)
+        swap_url = reverse("swap_request:create", args=[self.clothing.pk])
+        data = {
+            "name": "New offer",
+            "description": "Ready to swap",
+            "type": "top",
+            "size": "M",
+            "condition": "good",
+        }
+        response = self.client.post(
+            reverse("clothing_catalog:create") + "?next=" + swap_url, data
+        )
+        self.assertEqual(response.url, swap_url)
+        external = self.client.post(
+            reverse("clothing_catalog:create") + "?next=https://example.com/", data
+        )
+        self.assertEqual(external.url, Clothing.objects.latest("pk").get_absolute_url())
 
     def test_create_form_prevents_repeated_submission(self):
         self.client.force_login(self.owner)
