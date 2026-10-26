@@ -1,0 +1,8 @@
+{% extends "marketplace/base.html" %}
+{% block content %}
+<section class="flex flex-col gap-4 py-12">
+  <h1 class="font-display text-h2 text-primary-base">Your next favourite. Already out there.</h1>
+  <p>Discover once-loved pieces waiting for their next chapter.</p>
+  <a class="market-button self-start" href="{% url 'clothing_catalog:list' %}">Explore the catalog</a>
+</section>
+{% endblock %}

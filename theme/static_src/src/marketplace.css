@@ -1,0 +1,8 @@
+@layer components {
+  .market-container { @apply mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-20; }
+  .market-button { @apply inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-primary-base px-5 py-3 text-b8 font-semibold text-neutral-20 transition-colors hover:bg-primary-60 disabled:cursor-wait disabled:opacity-60; }
+  .market-secondary { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-neutral-20 px-5 py-3 font-semibold text-primary-base transition-colors hover:bg-primary-20; }
+  .market-nav { @apply inline-flex items-center gap-3 border-b-2 pb-2 text-b8 text-neutral-80 transition-colors hover:text-primary-base; }
+  .marketplace a:focus-visible, .marketplace button:focus-visible, .marketplace summary:focus-visible { @apply outline-2 outline-offset-4 outline-primary-base; }
+  .marketplace form:has(#market-search:focus-visible) { @apply ring-2 ring-primary-base; }
+}
