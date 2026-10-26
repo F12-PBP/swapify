@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
-from django.db.models import Q
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -14,6 +13,7 @@ from django.views.generic import (
 from .forms import ClothingForm
 from .mixins import ClothingImageUploadMixin
 from .models import Clothing
+from .selectors import catalog_search
 
 
 class ClothingListView(ListView):
@@ -27,10 +27,7 @@ class ClothingListView(ListView):
 
         # Search
         search = self.request.GET.get("search")
-        if search:
-            queryset = queryset.filter(
-                Q(name__icontains=search) | Q(description__icontains=search)
-            )
+        queryset = catalog_search(queryset, search)
 
         # Filters
         clothing_type = self.request.GET.get("type")
