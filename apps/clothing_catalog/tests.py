@@ -40,6 +40,37 @@ class ClothingViewTests(TestCase):
         self.assertEqual(list_response.status_code, 200)
         self.assertContains(list_response, self.clothing.name)
         self.assertEqual(detail_response.status_code, 200)
+        self.assertTemplateUsed(detail_response, "marketplace/base.html")
+        self.assertContains(detail_response, self.clothing.description)
+
+    def test_item_detail_uses_its_owner_and_only_available_related_items(self):
+        related = Clothing.objects.create(
+            owner=self.owner,
+            name="Another linen shirt",
+            description="Linen",
+            type="top",
+            size="M",
+            condition="good",
+        )
+        Clothing.objects.create(
+            owner=self.owner,
+            name="A reserved shirt",
+            description="Reserved",
+            type="top",
+            size="M",
+            condition="good",
+            status="reserved",
+        )
+        response = self.client.get(self.clothing.get_absolute_url())
+        self.assertEqual(list(response.context["related_items"]), [related])
+        self.assertContains(
+            response, reverse("user_profile:public", args=[self.owner.username])
+        )
+        self.assertContains(response, "Propose a swap")
+        self.client.force_login(self.owner)
+        own = self.client.get(self.clothing.get_absolute_url())
+        self.assertContains(own, "Edit item")
+        self.assertNotContains(own, "Propose a swap")
 
     def test_authenticated_user_becomes_owner_when_creating_clothing(self):
         self.client.force_login(self.owner)

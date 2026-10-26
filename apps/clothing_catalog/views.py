@@ -13,7 +13,12 @@ from django.views.generic import (
 from .forms import ClothingForm
 from .mixins import ClothingImageUploadMixin
 from .models import Clothing
-from .selectors import catalog_search
+from .selectors import (
+    catalog_search,
+    discover_listings,
+    listings_with_owners,
+    with_distance,
+)
 
 
 class ClothingListView(ListView):
@@ -71,7 +76,16 @@ class ClothingDetailView(DetailView):
     model = Clothing
     context_object_name = "clothing"
     template_name = "clothing_catalog/clothing_detail.html"
-    queryset = Clothing.objects.select_related("owner")
+
+    def get_queryset(self):
+        return with_distance(listings_with_owners(), self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["related_items"] = discover_listings(
+            self.request.user, {"type": self.object.type}
+        ).exclude(pk=self.object.pk)[:4]
+        return context
 
 
 class ClothingCreateView(LoginRequiredMixin, ClothingImageUploadMixin, CreateView):
