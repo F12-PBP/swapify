@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
@@ -16,3 +17,13 @@ class HomeViewTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertTemplateUsed(response, "marketplace/base.html")
                 self.assertContains(response, reverse("clothing_catalog:my_list"))
+
+    def test_setup_reminder_only_appears_for_incomplete_profile(self):
+        route = reverse("main:discover")
+        self.assertNotContains(self.client.get(route), "Finish my setup")
+        user = get_user_model().objects.create_user(username="swapper")
+        self.client.force_login(user)
+        self.assertContains(self.client.get(route), "Finish my setup")
+        user.profile.onboarding_completed = True
+        user.profile.save(update_fields=["onboarding_completed"])
+        self.assertNotContains(self.client.get(route), "Finish my setup")

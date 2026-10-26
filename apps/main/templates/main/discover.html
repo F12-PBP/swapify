@@ -1,8 +1,13 @@
 {% extends "marketplace/base.html" %}
 {% block content %}
-<section class="flex flex-col gap-4 py-12">
-  <h1 class="font-display text-h2 text-primary-base">Your next favourite. Already out there.</h1>
-  <p>Discover once-loved pieces waiting for their next chapter.</p>
+<div class="flex flex-col gap-8">
+  {% include "main/discovery/onboarding_reminder.html" %}
+  {% include "main/discovery/hero.html" %}
+</div>
+<section id="finds" class="mt-14 flex scroll-mt-8 flex-col gap-4 lg:mt-20">
+  <h2 class="font-display text-h3 text-primary-base">Good finds. Great new beginnings.</h2>
+  <p class="text-b8 text-neutral-80">Someone else’s once-loved. Your soon-to-be favourite.</p>
   <a class="market-button self-start" href="{% url 'clothing_catalog:list' %}">Explore the catalog</a>
 </section>
+{% include "marketplace/listing_cta.html" %}
 {% endblock %}
