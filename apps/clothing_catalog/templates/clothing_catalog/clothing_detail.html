@@ -13,7 +13,6 @@
                     <img src="{{ clothing.image_url }}" alt="{{ clothing.name }}" class="h-full max-h-[34rem] w-full object-cover">
                 </figure>
             {% endif %}
-            <div class="flex flex-col gap-6">
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <h1 class="font-display text-h3">{{ clothing.name }}</h1>
@@ -68,7 +67,6 @@
                     <a class="btn btn-primary" href="{% url 'swap_request:create' clothing.pk %}">Request swap</a>
                 </div>
             {% endif %}
-            </div>
         </div>
     </article>
 </section>

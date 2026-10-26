@@ -9,13 +9,13 @@
         <p class="mt-2 text-base-content/70">Enter details for the clothing you want to swap.</p>
     </div>
 
-    <form method="post" enctype="multipart/form-data" class="rounded-box border border-neutral-40 bg-base-100 p-5 shadow-[0_4px_24px_rgb(115_20_29_/_6%)] md:p-8">
+    <form method="post" enctype="multipart/form-data" class="card border border-base-300 bg-base-100 shadow-sm" data-submit-once>
         {% csrf_token %}
         {{ form.non_field_errors }}
         {% if clothing.image_url %}
             <img src="{{ clothing.image_url }}" alt="Current photo of {{ clothing.name }}" width="160" height="160" class="mb-5 rounded-box object-cover">
         {% endif %}
-        <div class="space-y-5">
+        <div class="card-body gap-5">
             {% for field in form %}
                 <label class="w-full" for="{{ field.id_for_label }}">
                     <span class="swap-field-label mb-2 block">{{ field.label }}</span>
@@ -30,9 +30,26 @@
             {% endfor %}
             <div class="card-actions justify-end pt-3">
                 <a class="btn btn-ghost" href="{% if clothing %}{{ clothing.get_absolute_url }}{% else %}{% url 'clothing_catalog:list' %}{% endif %}">Cancel</a>
-                <button class="btn btn-primary" type="submit">Save</button>
+                <button class="btn btn-primary" type="submit" data-submitting-label="{% if clothing %}Saving...{% else %}Adding...{% endif %}">{% if clothing %}Save{% else %}Add{% endif %}</button>
             </div>
         </div>
     </form>
 </section>
+<script>
+    document.querySelectorAll("[data-submit-once]").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+            if (form.dataset.submitting === "true") {
+                event.preventDefault();
+                return;
+            }
+
+            form.dataset.submitting = "true";
+            form.setAttribute("aria-busy", "true");
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = submitButton.dataset.submittingLabel;
+        });
+    });
+</script>
 {% endblock %}

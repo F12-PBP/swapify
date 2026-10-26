@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
+from .forms import ClothingForm
 from .models import Clothing
 
 
@@ -21,6 +22,14 @@ class ClothingViewTests(TestCase):
             size=Clothing.Size.M,
             condition=Clothing.Condition.GOOD,
         )
+
+    def test_catalog_shows_empty_state(self):
+        self.clothing.delete()
+
+        response = self.client.get(reverse("clothing_catalog:list"))
+
+        self.assertContains(response, "No clothing found.")
+        self.assertContains(response, "Try adjusting your search or filter parameters.")
 
     def test_catalog_and_detail_are_public(self):
         list_response = self.client.get(reverse("clothing_catalog:list"))
@@ -50,6 +59,25 @@ class ClothingViewTests(TestCase):
         self.assertRedirects(response, clothing.get_absolute_url())
         self.assertEqual(clothing.owner, self.owner)
 
+    def test_create_form_prevents_repeated_submission(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.get(reverse("clothing_catalog:create"))
+
+        self.assertContains(response, "data-submit-once")
+        self.assertContains(response, 'data-submitting-label="Adding..."')
+        self.assertContains(response, ">Add</button>")
+
+    def test_edit_form_keeps_save_labels(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.get(
+            reverse("clothing_catalog:update", args=[self.clothing.pk])
+        )
+
+        self.assertContains(response, 'data-submitting-label="Saving..."')
+        self.assertContains(response, ">Save</button>")
+
     def test_non_owner_cannot_update_or_delete_clothing(self):
         self.client.force_login(self.other_user)
 
@@ -63,3 +91,97 @@ class ClothingViewTests(TestCase):
         self.assertEqual(update_response.status_code, 403)
         self.assertEqual(delete_response.status_code, 403)
         self.assertTrue(Clothing.objects.filter(pk=self.clothing.pk).exists())
+
+    def test_owner_cannot_update_or_delete_reserved_or_swapped_clothing(self):
+        self.client.force_login(self.owner)
+
+        for status in (Clothing.Status.RESERVED, Clothing.Status.SWAPPED):
+            with self.subTest(status=status):
+                self.clothing.status = status
+                self.clothing.save()
+                update_response = self.client.post(
+                    reverse("clothing_catalog:update", args=[self.clothing.pk]),
+                    {
+                        "name": "Changed name",
+                        "description": "Changed description",
+                        "type": Clothing.Type.TOP,
+                        "size": Clothing.Size.M,
+                        "condition": Clothing.Condition.GOOD,
+                    },
+                )
+                delete_response = self.client.post(
+                    reverse("clothing_catalog:delete", args=[self.clothing.pk])
+                )
+
+                self.assertEqual(update_response.status_code, 403)
+                self.assertEqual(delete_response.status_code, 403)
+                self.clothing.refresh_from_db()
+                self.assertEqual(self.clothing.name, "Linen Shirt")
+                self.assertTrue(Clothing.objects.filter(pk=self.clothing.pk).exists())
+
+    def test_clothing_form_does_not_expose_status(self):
+        self.assertNotIn("status", ClothingForm().fields)
+
+    def test_catalog_filters_and_search(self):
+        Clothing.objects.create(
+            owner=self.owner,
+            name="Wool Coat",
+            description="Warm coat.",
+            type=Clothing.Type.OUTERWEAR,
+            size=Clothing.Size.L,
+            condition=Clothing.Condition.NEW,
+        )
+
+        response = self.client.get(
+            reverse("clothing_catalog:list"),
+            {
+                "search": "Linen",
+                "type": Clothing.Type.TOP,
+                "size": Clothing.Size.M,
+                "condition": Clothing.Condition.GOOD,
+                "status": Clothing.Status.AVAILABLE,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Linen Shirt")
+        self.assertNotContains(response, "Wool Coat")
+
+    def test_my_clothing_requires_login_and_lists_only_owners_items(self):
+        response = self.client.get(reverse("clothing_catalog:my_list"))
+        self.assertEqual(response.status_code, 302)
+
+        self.client.force_login(self.owner)
+        Clothing.objects.create(
+            owner=self.other_user,
+            name="Other Item",
+            description="Not mine.",
+            type=Clothing.Type.TOP,
+            size=Clothing.Size.S,
+            condition=Clothing.Condition.FAIR,
+        )
+        response = self.client.get(reverse("clothing_catalog:my_list"))
+
+        self.assertContains(response, "Linen Shirt")
+        self.assertNotContains(response, "Other Item")
+
+    def test_pagination_preserves_filters(self):
+        for index in range(12):
+            Clothing.objects.create(
+                owner=self.owner,
+                name=f"Shirt {index}",
+                description="Another linen shirt.",
+                type=Clothing.Type.TOP,
+                size=Clothing.Size.M,
+                condition=Clothing.Condition.GOOD,
+            )
+
+        response = self.client.get(
+            reverse("clothing_catalog:list"),
+            {"search": "linen", "type": Clothing.Type.TOP, "page": 2},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["page_obj"].number, 2)
+        self.assertContains(response, "search=linen")
+        self.assertContains(response, "type=top")

@@ -1,22 +1,91 @@
 {% extends "base.html" %}
 
-{% block title %}Clothing Catalog{% endblock %}
+{% block title %}{% if is_personal_view %}My Clothing Items{% else %}Clothing Catalog{% endif %}{% endblock %}
 
 {% block content %}
 <section class="px-4 py-10 md:px-6">
-    <div class="mb-10 flex flex-wrap items-end justify-between gap-5">
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-            <p class="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary">Swapify collection</p>
-            <h1 class="font-display text-h3 text-primary-80">Clothing Catalog</h1>
-            <p class="mt-3 max-w-xl text-base-content/70">Find clothing available for swapping.</p>
+            <h1 class="font-display text-h3">{% if is_personal_view %}My Clothing Items{% else %}Clothing Catalog{% endif %}</h1>
+            <p class="mt-2 text-base-content/70">
+                {% if is_personal_view %}Manage your listed clothing items.{% else %}Find clothing available for swapping.{% endif %}
+            </p>
         </div>
-        {% if user.is_authenticated %}
-            <a class="btn btn-primary" href="{% url 'clothing_catalog:create' %}">Add clothing</a>
-        {% endif %}
+        <div class="flex gap-2">
+            {% if is_personal_view %}
+                <a class="btn btn-outline" href="{% url 'clothing_catalog:list' %}">All Catalog</a>
+            {% elif user.is_authenticated %}
+                <a class="btn btn-outline" href="{% url 'clothing_catalog:my_list' %}">My Clothes</a>
+            {% endif %}
+
+            {% if user.is_authenticated %}
+                <a class="btn btn-primary" href="{% url 'clothing_catalog:create' %}">Add clothing</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Search and Filters Form -->
+    <div class="mb-8 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+        <form method="get" class="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+            <!-- Search -->
+            <div class="lg:col-span-2">
+                <label class="label"><span class="label-text">Search</span></label>
+                <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Search name or description..." class="input input-bordered w-full" />
+            </div>
+
+            <!-- Type -->
+            <div>
+                <label class="label"><span class="label-text">Type</span></label>
+                <select name="type" class="select select-bordered w-full">
+                    <option value="">All Types</option>
+                    {% for key, val in types %}
+                        <option value="{{ key }}" {% if request.GET.type == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Size -->
+            <div>
+                <label class="label"><span class="label-text">Size</span></label>
+                <select name="size" class="select select-bordered w-full">
+                    <option value="">All Sizes</option>
+                    {% for key, val in sizes %}
+                        <option value="{{ key }}" {% if request.GET.size == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Condition -->
+            <div>
+                <label class="label"><span class="label-text">Condition</span></label>
+                <select name="condition" class="select select-bordered w-full">
+                    <option value="">All Conditions</option>
+                    {% for key, val in conditions %}
+                        <option value="{{ key }}" {% if request.GET.condition == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label class="label"><span class="label-text">Status</span></label>
+                <select name="status" class="select select-bordered w-full">
+                    <option value="">All Statuses</option>
+                    {% for key, val in statuses %}
+                        <option value="{{ key }}" {% if request.GET.status == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="md:col-span-2 lg:col-span-6 flex justify-end gap-2 mt-2">
+                <a href="{% if is_personal_view %}{% url 'clothing_catalog:my_list' %}{% else %}{% url 'clothing_catalog:list' %}{% endif %}" class="btn btn-ghost">Reset</a>
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+            </div>
+        </form>
     </div>
 
     {% if clothing_items %}
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {% for clothing in clothing_items %}
                 <article class="group overflow-hidden rounded-box border border-neutral-40 bg-base-100 shadow-[0_4px_24px_rgb(115_20_29_/_6%)] transition hover:-translate-y-1 hover:shadow-[0_8px_32px_rgb(115_20_29_/_12%)]">
                     <a href="{{ clothing.get_absolute_url }}" aria-label="View {{ clothing.name }}">
@@ -28,28 +97,59 @@
                             {% endif %}
                         </figure>
                     </a>
-                    <div class="space-y-4 p-5">
+                    <div class="card-body gap-4">
                         <div class="flex items-start justify-between gap-3">
-                            <h2 class="font-display text-h6 text-primary-80">{{ clothing.name }}</h2>
-                            {% if clothing.status == 'available' %}<span class="badge swap-chip-secondary">{{ clothing.get_status_display }}</span>{% elif clothing.status == 'reserved' %}<span class="badge badge-warning badge-outline">{{ clothing.get_status_display }}</span>{% else %}<span class="badge badge-ghost">{{ clothing.get_status_display }}</span>{% endif %}
+                            <h2 class="card-title">{{ clothing.name }}</h2>
+                            {% if clothing.status == 'available' %}
+                                <span class="badge badge-success badge-outline">{{ clothing.get_status_display }}</span>
+                            {% elif clothing.status == 'reserved' %}
+                                <span class="badge badge-warning badge-outline">{{ clothing.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge badge-ghost">{{ clothing.get_status_display }}</span>
+                            {% endif %}
                         </div>
-                        <p class="line-clamp-2 text-sm text-base-content/70">{{ clothing.description }}</p>
-                        <div class="flex flex-wrap gap-2 text-xs">
-                            <span class="badge badge-outline">{{ clothing.get_type_display }}</span><span class="badge badge-outline">{{ clothing.get_size_display }}</span><span class="badge badge-outline">{{ clothing.get_condition_display }}</span>
+                        <p class="line-clamp-3 text-base-content/70">{{ clothing.description }}</p>
+                        <div class="flex flex-wrap gap-2 text-sm">
+                            <span class="badge badge-outline">{{ clothing.get_type_display }}</span>
+                            <span class="badge badge-outline">{{ clothing.get_size_display }}</span>
+                            <span class="badge badge-outline">{{ clothing.get_condition_display }}</span>
                         </div>
-                        <div class="flex items-center justify-between gap-3 border-t border-neutral-40 pt-4">
-                            <p class="text-xs text-base-content/60">@{{ clothing.owner.username }}</p>
-                            <a class="btn btn-primary-ghost btn-sm" href="{{ clothing.get_absolute_url }}">View details</a>
+                        <p class="text-sm text-base-content/60">Offered by {{ clothing.owner.username }}</p>
+                        <div class="card-actions justify-end">
+                            <a class="btn btn-outline btn-sm" href="{{ clothing.get_absolute_url }}">View details</a>
                         </div>
                     </div>
                 </article>
             {% endfor %}
         </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <div class="flex justify-center mt-8">
+                <div class="join">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.size %}&size={{ request.GET.size }}{% endif %}{% if request.GET.condition %}&condition={{ request.GET.condition }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="join-item btn">«</a>
+                    {% else %}
+                        <button class="join-item btn btn-disabled">«</button>
+                    {% endif %}
+
+                    <button class="join-item btn">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</button>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.size %}&size={{ request.GET.size }}{% endif %}{% if request.GET.condition %}&condition={{ request.GET.condition }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="join-item btn">»</a>
+                    {% else %}
+                        <button class="join-item btn btn-disabled">»</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
     {% else %}
         <div class="rounded-box border border-dashed border-base-300 p-10 text-center">
-            <p class="text-base-content/70">No clothing in the catalog yet.</p>
-            {% if user.is_authenticated %}
-                <a class="btn btn-primary mt-4" href="{% url 'clothing_catalog:create' %}">Add the first clothing item</a>
+            <p class="text-base-content/70 text-lg">No clothing found.</p>
+            <p class="text-base-content/50 text-sm mt-1">Try adjusting your search or filter parameters.</p>
+            {% if user.is_authenticated and not is_personal_view %}
+                <a class="btn btn-primary mt-4" href="{% url 'clothing_catalog:create' %}">Add a clothing item</a>
             {% endif %}
         </div>
     {% endif %}
