@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
 from django.db.models import Q
@@ -82,6 +83,7 @@ class ClothingCreateView(LoginRequiredMixin, ClothingImageUploadMixin, CreateVie
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
+        messages.success(self.request, "Item added successfully.")
         return super().form_valid(form)
 
 
@@ -114,9 +116,17 @@ class ClothingUpdateView(
     context_object_name = "clothing"
     template_name = "clothing_catalog/clothing_form.html"
 
+    def form_valid(self, form):
+        messages.success(self.request, "Item updated successfully.")
+        return super().form_valid(form)
+
 
 class ClothingDeleteView(OwnerRequiredMixin, AvailableClothingMixin, DeleteView):
     model = Clothing
     context_object_name = "clothing"
     template_name = "clothing_catalog/clothing_confirm_delete.html"
     success_url = reverse_lazy("clothing_catalog:list")
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, "Item deleted successfully.")
+        return super().delete(request, *args, **kwargs)
