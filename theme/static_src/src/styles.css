@@ -824,7 +824,7 @@ button.btn:disabled {
 .auth-page [hidden] { display: none !important; }
 .auth-login, .auth-register { transform: translateY(-2.5rem); }
 #onboarding {
-  --onboarding-duration: 400ms;
+  --onboarding-duration: 600ms;
   --onboarding-easing: cubic-bezier(0.4, 0, 0.2, 1);
 }
 #onboarding.is-ready {
@@ -916,3 +916,22 @@ button.btn:disabled {
 .style-option img { flex: none; }
 .auth-page summary { list-style: none; }
 .auth-page summary::-webkit-details-marker { display: none; }
+
+/* Keep map layers inside the location card, below app navigation and dialogs. */
+.location-map-panel[hidden] { display: none !important; }
+.location-map {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  width: 100%;
+  height: 16rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: var(--color-neutral-30);
+  font-family: var(--font-sans);
+}
+.location-map .leaflet-control-attribution { font-size: 10px; }
+.location-map .leaflet-control-attribution a { color: var(--color-primary-base); }
+.location-map .leaflet-bar { border-color: var(--color-neutral-40); box-shadow: none; }
+.location-map .leaflet-bar a { color: var(--color-primary-base); }
+.location-map:focus-visible { outline: 2px solid var(--color-primary-base); outline-offset: 3px; }

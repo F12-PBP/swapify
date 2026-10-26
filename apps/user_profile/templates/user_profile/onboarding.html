@@ -49,7 +49,7 @@
           <div class="-mt-[30px] flex items-center justify-end gap-3">
 
             <button class="btn btn-primary px-6" type="submit">Next
-              {%lucide "arrow-right" class="size-2"%}
+              {%lucide "arrow-right" class="size-5"%}
             </button>
           </div>
         </form>
@@ -66,6 +66,7 @@
             <button type="button" id="detect-location" class="btn btn-primary auth-submit gap-2"><img src="{% static 'user_profile/images/auth/location.svg' %}" alt="">Use My Location</button>
             <p id="location-status" role="status" class="text-b9 text-neutral-80"></p>
           </div>
+          {% include "user_profile/location_map.html" %}
           <div class="flex flex-col gap-3 sm:flex-row">
             {% include "user_profile/auth/field.html" with field=location_form.district %}
             {% include "user_profile/auth/field.html" with field=location_form.city %}
@@ -78,11 +79,11 @@
           <div data-errors role="alert" class="swap-field-error">{{ location_form.non_field_errors }}</div>
           <div class="flex items-center justify-between gap-4">
             <a href="?step=1" data-back class="btn btn-primary-ghost px-6">
-              {%lucide "arrow-left" class="size-2"%}
+              {%lucide "arrow-left" class="size-5"%}
               Back</a>
             <button type="submit" id="save-location" class="btn btn-primary px-6">Next
 
-              {%lucide "arrow-right" class="size-2"%}
+              {%lucide "arrow-right" class="size-5"%}
             </button>
           </div>
         </form>
@@ -107,7 +108,7 @@
           <div data-errors role="alert" class="swap-field-error">{{ preferences_form.errors }}</div>
           <div class="flex items-center justify-between gap-4">
             <a href="?step=2" data-back class="btn btn-primary-ghost px-6">
-              {% lucide "arrow-left" class="size-2" %}
+              {% lucide "arrow-left" class="size-5" %}
               Back</a>
             <button type="submit" class="btn btn-primary px-6">Finish</button>
           </div>
@@ -126,6 +127,6 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script defer src="{% static 'user_profile/js/location.js' %}"></script>
+<script defer src="{% static 'user_profile/js/location.js' %}?v=map-1"></script>
 <script defer src="{% static 'user_profile/js/onboarding.js' %}"></script>
 {% endblock %}
