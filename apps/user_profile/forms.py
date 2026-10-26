@@ -88,6 +88,23 @@ class LoginForm(AuthenticationForm):
 
 
 class RegisterForm(UserCreationForm):
+    name = forms.CharField(
+        max_length=225,
+        widget=forms.TextInput(
+            attrs={
+                "class": "input swap-input w-full",
+                "autocomplete": "name",
+                "placeholder": "Enter your name",
+            }
+        ),
+    )
+    community_agreement = forms.BooleanField(
+        label=(
+            "I agree to swap honestly, describe items accurately, and respect others."
+        ),
+        widget=forms.CheckboxInput(attrs={"class": "checkbox"}),
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -154,3 +171,65 @@ class ProfileUpdateForm(forms.ModelForm):
             "display_name": "Display name",
             "bio": "Bio",
         }
+
+
+STYLE_CHOICES = (
+    ("tops", "Tops"),
+    ("outerwear", "Outerwear"),
+    ("bottoms", "Bottoms"),
+    ("dresses", "Dresses"),
+    ("bags", "Bags"),
+    ("accessories", "Accessories"),
+    ("shoes", "Shoes"),
+)
+
+
+class OnboardingProfileForm(ProfileUpdateForm):
+    bio = forms.CharField(
+        label="About you",
+        required=False,
+        max_length=1000,
+        widget=forms.Textarea(
+            attrs={
+                "class": "textarea swap-input w-full",
+                "rows": 4,
+                "placeholder": "Tell us about yourself and what you love to swap…",
+                "maxlength": 1000,
+                "aria-describedby": "bio-count",
+            }
+        ),
+    )
+
+
+class OnboardingLocationForm(ProfileLocationForm):
+    location_agreement = forms.BooleanField(
+        label=(
+            "I understand that my city is visible on my listings, "
+            "but my exact address is private."
+        ),
+        widget=forms.CheckboxInput(attrs={"class": "checkbox"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["location_agreement"].widget.attrs["class"] = "checkbox"
+        self.fields["district"].widget.attrs["placeholder"] = "e.g. Gambir"
+        self.fields["city"].widget.attrs["placeholder"] = "e.g. Central Jakarta"
+        self.fields["city"].label = "City"
+        self.fields["province"].widget.attrs["placeholder"] = "e.g. Jakarta"
+
+
+class PreferencesForm(forms.ModelForm):
+    preferences = forms.MultipleChoiceField(
+        choices=STYLE_CHOICES,
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    class Meta:
+        model = Profile
+        fields = ("preferences",)
+
+
+class ProfilePhotoForm(forms.Form):
+    new_profile_picture = forms.ImageField(validators=[validate_uploaded_image])

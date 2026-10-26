@@ -25,6 +25,7 @@
                     <p id="location-status" class="mt-2 text-sm" role="status" aria-live="polite"></p>
                     <noscript><p class="text-sm">Location detection needs JavaScript. You can still enter your area below.</p></noscript>
                 </div>
+                {% include "user_profile/location_map.html" %}
                 {% if form.non_field_errors %}
                     <div class="alert alert-error" role="alert">{{ form.non_field_errors }}</div>
                 {% endif %}
@@ -50,5 +51,5 @@
         </div>
     </div>
 </section>
-<script src="{% static 'user_profile/js/location.js' %}" defer></script>
+<script src="{% static 'user_profile/js/location.js' %}?v=map-1" defer></script>
 {% endblock %}

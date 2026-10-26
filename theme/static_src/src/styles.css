@@ -37,6 +37,7 @@ html {
 }
 
 @theme {
+  --font-brand: "Times New Roman", Times, serif;
   --font-display: "Fraunces", Georgia, serif;
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
@@ -793,3 +794,144 @@ button.btn:disabled {
 .ds-code {
   @apply overflow-x-auto rounded-box bg-neutral p-4 text-xs leading-6 text-neutral-content;
 }
+
+/* Authentication composes the shared design-system controls. */
+.auth-page .input {
+  padding: 0.75rem 1.25rem;
+  height: 3rem;
+}
+.auth-page .textarea {
+  min-height: 7.9375rem;
+  border: 1px solid transparent;
+  border-radius: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-neutral-30);
+  color: var(--color-primary-base);
+  font: inherit;
+  resize: vertical;
+}
+.auth-page .textarea::placeholder { color: var(--color-neutral-60); }
+.auth-page .textarea:focus-visible {
+  outline: 2px solid var(--color-primary-base);
+  outline-offset: 2px;
+}
+.auth-page .auth-submit {
+  min-height: 2.75rem;
+  height: 2.75rem;
+  font-size: var(--text-b8);
+  line-height: var(--text-b8--line-height);
+}
+.auth-page [hidden] { display: none !important; }
+.auth-login, .auth-register { transform: translateY(-2.5rem); }
+#onboarding {
+  --onboarding-duration: 600ms;
+  --onboarding-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+#onboarding.is-ready {
+  transition: margin-top var(--onboarding-duration) var(--onboarding-easing),
+    row-gap var(--onboarding-duration) var(--onboarding-easing);
+}
+#onboarding.is-ready .onboarding-viewport {
+  transition: height var(--onboarding-duration) var(--onboarding-easing);
+}
+.onboarding-viewport { overflow: hidden; }
+#onboarding-track { display: block; transform: none; }
+.onboarding-slide[hidden] { display: none !important; }
+.auth-page .onboarding-photo,
+.auth-page .onboarding-photo label,
+.auth-page .onboarding-photo input { outline: none !important; box-shadow: none; }
+#onboarding-progress { height: 78px; flex-shrink: 0; }
+#onboarding.is-ready #onboarding-progress {
+  transition: height var(--onboarding-duration) var(--onboarding-easing),
+    min-height var(--onboarding-duration) var(--onboarding-easing), opacity 280ms ease;
+}
+#onboarding.is-complete { row-gap: 0; }
+#onboarding.is-complete #onboarding-progress {
+  height: 0;
+  min-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+#finish-later-form button { transition: opacity 240ms ease; }
+#finish-later-form button.is-hidden { opacity: 0; pointer-events: none; }
+.step-number, .step-label {
+  transition: color 280ms ease, background-color 280ms ease, border-color 280ms ease;
+}
+.onboarding-step { color: var(--color-neutral-70); }
+.step-number {
+  border-color: var(--color-neutral-60);
+  color: var(--color-neutral-60);
+}
+.onboarding-step[aria-current="step"] { color: var(--color-primary-base); }
+.onboarding-step[aria-current="step"] .step-number {
+  border-color: var(--color-primary-base);
+  background: var(--color-primary-base);
+  color: var(--color-neutral-10);
+}
+.onboarding-step.is-complete { color: var(--color-neutral-50); }
+.onboarding-step.is-complete .step-number {
+  border-color: var(--color-neutral-50);
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-10);
+}
+.style-option { transition: background-color 150ms, border-color 150ms; }
+.style-option:hover { background: var(--color-primary-10); }
+.style-option:has(input:checked) {
+  border-color: var(--color-primary-base);
+  background: var(--color-primary-10);
+  color: var(--color-primary-base);
+}
+.style-option:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary-base);
+  outline-offset: 3px;
+}
+.auth-page a:focus-visible, .auth-page button:focus-visible {
+  outline: 2px solid var(--color-primary-base);
+  outline-offset: 4px;
+}
+@media (max-width: 639px), (max-height: 850px) {
+  .auth-login, .auth-register { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #onboarding.is-ready,
+  #onboarding.is-ready #onboarding-track,
+  #onboarding.is-ready .onboarding-viewport,
+  #onboarding.is-ready .onboarding-slide,
+  #onboarding.is-ready #onboarding-progress,
+  #finish-later-form button,
+  .step-number, .step-label { transition: none; }
+}
+#onboarding:not(.is-enhanced) [data-panel][aria-hidden="true"] { display: none; }
+
+.auth-page [data-errors]:empty, .auth-page [data-field-errors]:empty { display: none; }
+.auth-page .onboarding-photo:has(input:focus-visible) label > span {
+  outline: 2px solid var(--color-primary-base);
+  outline-offset: 4px;
+}
+
+@media (min-width: 1024px) {
+  #onboarding[data-step="3"] { margin-top: -33px; }
+}
+
+.style-option img { flex: none; }
+.auth-page summary { list-style: none; }
+.auth-page summary::-webkit-details-marker { display: none; }
+
+/* Keep map layers inside the location card, below app navigation and dialogs. */
+.location-map-panel[hidden] { display: none !important; }
+.location-map {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  width: 100%;
+  height: 16rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: var(--color-neutral-30);
+  font-family: var(--font-sans);
+}
+.location-map .leaflet-control-attribution { font-size: 10px; }
+.location-map .leaflet-control-attribution a { color: var(--color-primary-base); }
+.location-map .leaflet-bar { border-color: var(--color-neutral-40); box-shadow: none; }
+.location-map .leaflet-bar a { color: var(--color-primary-base); }
+.location-map:focus-visible { outline: 2px solid var(--color-primary-base); outline-offset: 3px; }

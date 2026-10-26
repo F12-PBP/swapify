@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "apps.chat",
     "apps.user_profile.apps.UserProfileConfig",
     "apps.review_rating.apps.ReviewRatingConfig",
+    "lucide",
 ]
 
 if DEBUG:
@@ -174,6 +175,11 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 WHITENOISE_USE_FINDERS = True
+
+# Local frontend edits must refresh file metadata even when DEBUG is false.
+if not PRODUCTION:
+    WHITENOISE_AUTOREFRESH = True
+    WHITENOISE_MAX_AGE = 0
 
 
 # Default primary key field type

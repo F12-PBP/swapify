@@ -63,6 +63,8 @@ class AuthenticationTests(TestCase):
     def register(self, **overrides):
         data = {
             "username": "new_member",
+            "name": "New Member",
+            "community_agreement": "on",
             "password1": PASSWORD,
             "password2": PASSWORD,
         }
@@ -71,13 +73,13 @@ class AuthenticationTests(TestCase):
 
     def test_registration_creates_user_and_exactly_one_profile(self):
         response = self.register()
-        self.assertRedirects(response, reverse("user_profile:login"))
+        self.assertRedirects(response, reverse("user_profile:onboarding"))
         user = get_user_model().objects.get(username="new_member")
         self.assertTrue(user.check_password(PASSWORD))
         self.assertNotEqual(user.password, PASSWORD)
         self.assertEqual(Profile.objects.filter(user=user).count(), 1)
-        self.assertEqual(user.profile.display_name, user.username)
-        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertEqual(user.profile.display_name, "New Member")
+        self.assertEqual(self.client.session["_auth_user_id"], str(user.pk))
 
     def test_registration_rejects_duplicate_username(self):
         response = self.register(username=self.user.username)
@@ -252,11 +254,7 @@ class ProfileBackfillTests(TestCase):
         existing.profile.save()
         missing = user_model.objects.create_user(username="legacy_member")
         missing.profile.delete()
-        historical_apps = (
-            MigrationExecutor(connection)
-            .loader.project_state([("user_profile", "0001_initial")])
-            .apps
-        )
+        historical_apps = MigrationExecutor(connection).loader.project_state().apps
         migration = import_module(
             "apps.user_profile.migrations.0002_backfill_missing_profiles"
         )
@@ -278,7 +276,13 @@ class AuthenticatedExchangeFlowTests(TestCase):
         for client, username in ((requester, "alice"), (owner, "bob")):
             response = client.post(
                 reverse("user_profile:register"),
-                {"username": username, "password1": PASSWORD, "password2": PASSWORD},
+                {
+                    "username": username,
+                    "name": username,
+                    "community_agreement": "on",
+                    "password1": PASSWORD,
+                    "password2": PASSWORD,
+                },
             )
             self.assertEqual(response.status_code, 302)
             response = client.post(
@@ -1251,3 +1255,188 @@ class ProfileReviewTests(TestCase):
                 response = self.client.get(self.url, {"reviews_page": value})
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.context["reviews_page"].number, expected_page)
+
+
+class OnboardingTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(
+            username="onboarding_member",
+            password=PASSWORD,
+        )
+        cls.other = get_user_model().objects.create_user(username="other_onboarding")
+
+    def setUp(self):
+        self.url = reverse("user_profile:onboarding")
+        self.client.force_login(self.user)
+
+    def post_step(self, step, **data):
+        return self.client.post(
+            self.url,
+            {"step": step, **data},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+    def test_setup_requires_authentication_and_csrf(self):
+        self.assertEqual(Client().get(self.url).status_code, 302)
+        protected = Client(enforce_csrf_checks=True)
+        protected.force_login(self.user)
+        self.assertEqual(protected.post(self.url, {"step": 3}).status_code, 403)
+
+    def test_each_step_saves_only_current_members_fields(self):
+        response = self.post_step(
+            1,
+            display_name="Alex",
+            bio="I love vintage pieces.",
+            user_id=self.other.pk,
+            preferences=["shoes"],
+        )
+        self.assertEqual(response.json()["step"], 2)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.display_name, "Alex")
+        self.assertEqual(self.user.profile.preferences, [])
+        self.other.profile.refresh_from_db()
+        self.assertEqual(self.other.profile.display_name, self.other.username)
+        response = self.post_step(
+            2,
+            district="Gambir",
+            city="Central Jakarta",
+            province="Jakarta",
+            location_agreement="on",
+        )
+        self.assertEqual(response.json()["step"], 3)
+        response = self.post_step(3, preferences=["tops", "shoes"])
+        self.assertEqual(response.json()["step"], 4)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.city, "Central Jakarta")
+        self.assertEqual(self.user.profile.preferences, ["tops", "shoes"])
+        self.assertTrue(self.user.profile.onboarding_completed)
+        response = self.client.get(self.url + "?step=3")
+        self.assertContains(response, 'value="tops" class="sr-only" checked')
+
+    def test_invalid_step_and_preferences_do_not_write(self):
+        for step in ("oops", 0, 4):
+            self.assertEqual(self.post_step(step).status_code, 400)
+        response = self.post_step(3, preferences=["arbitrary-value"])
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("preferences", response.json()["errors"])
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.preferences, [])
+        self.assertFalse(self.user.profile.onboarding_completed)
+
+    def test_profile_and_location_validation(self):
+        response = self.post_step(1, display_name="Alex", bio="x" * 1001)
+        self.assertIn("bio", response.json()["errors"])
+        response = self.post_step(2, city="Jakarta", province="Jakarta")
+        self.assertIn("location_agreement", response.json()["errors"])
+        response = self.post_step(2, location_agreement="on")
+        self.assertIn("city", response.json()["errors"])
+
+    def test_optional_preferences_can_be_empty_and_changed(self):
+        self.post_step(3, preferences=["tops"])
+        self.assertEqual(self.post_step(3).status_code, 200)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.preferences, [])
+
+    def test_invalid_photo_and_upload_failure_preserve_profile(self):
+        response = self.post_step(
+            1,
+            display_name="Changed",
+            new_profile_picture=SimpleUploadedFile(
+                "fake.png",
+                b"not-an-image",
+                content_type="image/png",
+            ),
+        )
+        self.assertIn("new_profile_picture", response.json()["errors"])
+        with patch("apps.user_profile.views.upload_profile_picture") as upload:
+            upload.side_effect = ProfilePhotoUploadError("Upload unavailable.")
+            response = self.post_step(
+                1,
+                display_name="Changed",
+                new_profile_picture=image_upload(),
+            )
+        self.assertEqual(response.status_code, 400)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.display_name, self.user.username)
+
+    def test_finish_later_preserves_saved_progress(self):
+        self.post_step(1, display_name="Saved name", bio="Saved bio")
+        self.assertRedirects(
+            self.client.post(self.url, {"action": "later"}),
+            reverse("clothing_catalog:list"),
+        )
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.bio, "Saved bio")
+        self.assertFalse(self.user.profile.onboarding_completed)
+
+    def test_non_javascript_submission_redirects_and_errors_render(self):
+        response = self.client.post(self.url, {"step": 1, "display_name": "Alex"})
+        self.assertRedirects(response, self.url + "?step=2")
+        response = self.client.post(self.url, {"step": 2})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["step"], 2)
+        self.assertTrue(response.context["location_form"].errors)
+
+    def test_registration_requires_name_and_community_agreement(self):
+        self.client.logout()
+        response = self.client.post(
+            reverse("user_profile:register"),
+            {
+                "username": "missing_details",
+                "password1": PASSWORD,
+                "password2": PASSWORD,
+            },
+        )
+        self.assertIn("name", response.context["form"].errors)
+        self.assertIn("community_agreement", response.context["form"].errors)
+
+    @patch("apps.user_profile.views.upload_profile_picture")
+    def test_photo_autosaves_without_submitting_other_profile_fields(self, upload):
+        upload.return_value = CloudinaryImage("swapify/profile-pictures/saved-photo")
+        response = self.client.post(
+            self.url,
+            {
+                "action": "upload_photo",
+                "new_profile_picture": image_upload(),
+                "display_name": "Do not change this",
+                "user_id": self.other.pk,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("saved-photo", response.json()["profile_picture_url"])
+        self.user.profile.refresh_from_db()
+        self.assertIn("saved-photo", str(self.user.profile.profile_picture))
+        self.assertEqual(self.user.profile.display_name, self.user.username)
+        self.other.profile.refresh_from_db()
+        self.assertFalse(self.other.profile.profile_picture)
+        # The following Next request must keep the autosaved photo.
+        self.post_step(1, display_name="Alex")
+        self.user.profile.refresh_from_db()
+        self.assertIn("saved-photo", str(self.user.profile.profile_picture))
+        self.assertEqual(upload.call_count, 1)
+
+    @patch("apps.user_profile.views.upload_profile_picture")
+    def test_photo_autosave_rejects_invalid_images_and_handles_upload_failure(
+        self, upload
+    ):
+        for data in (
+            {},
+            {"new_profile_picture": SimpleUploadedFile("bad.png", b"bad")},
+        ):
+            response = self.client.post(self.url, {"action": "upload_photo", **data})
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("new_profile_picture", response.json()["errors"])
+        upload.assert_not_called()
+        upload.side_effect = ProfilePhotoUploadError("Upload unavailable.")
+        response = self.client.post(
+            self.url,
+            {
+                "action": "upload_photo",
+                "new_profile_picture": image_upload(),
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"], "Upload unavailable.")
+        self.user.profile.refresh_from_db()
+        self.assertFalse(self.user.profile.profile_picture)
