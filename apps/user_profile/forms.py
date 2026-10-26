@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import signing
 
+from apps.clothing_catalog.categories import STYLE_CHOICES
 from common.images import validate_uploaded_image
 
 from .models import Profile
@@ -171,17 +172,6 @@ class ProfileUpdateForm(forms.ModelForm):
             "display_name": "Display name",
             "bio": "Bio",
         }
-
-
-STYLE_CHOICES = (
-    ("tops", "Tops"),
-    ("outerwear", "Outerwear"),
-    ("bottoms", "Bottoms"),
-    ("dresses", "Dresses"),
-    ("bags", "Bags"),
-    ("accessories", "Accessories"),
-    ("shoes", "Shoes"),
-)
 
 
 class OnboardingProfileForm(ProfileUpdateForm):

@@ -11,6 +11,8 @@ class Clothing(models.Model):
         DRESS = "dress", "Dress"
         OUTERWEAR = "outerwear", "Outerwear"
         FOOTWEAR = "footwear", "Footwear"
+        BAG = "bag", "Bag"
+        ACCESSORY = "accessory", "Accessory"
         OTHER = "other", "Other"
 
     class Size(models.TextChoices):
