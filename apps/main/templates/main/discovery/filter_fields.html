@@ -1,0 +1,12 @@
+<div class="{% if modal %}flex w-full flex-col gap-2{% endif %}">
+  <label for="size-{{ suffix }}" class="{% if modal %}text-b7 font-semibold text-primary-base{% else %}sr-only{% endif %}">Size</label>
+  <select id="size-{{ suffix }}" name="size" class="{% if modal %}market-input{% else %}market-filter{% endif %}">
+    {% for value, label in filter_form.fields.size.choices %}<option value="{{ value }}" {% if filters.size == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+</div>
+<div class="{% if modal %}flex w-full flex-col gap-2{% endif %}">
+  <label for="condition-{{ suffix }}" class="{% if modal %}text-b7 font-semibold text-primary-base{% else %}sr-only{% endif %}">Condition</label>
+  <select id="condition-{{ suffix }}" name="condition" class="{% if modal %}market-input{% else %}market-filter{% endif %}">
+    {% for value, label in filter_form.fields.condition.choices %}<option value="{{ value }}" {% if filters.condition == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+</div>

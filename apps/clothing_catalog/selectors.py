@@ -1,9 +1,10 @@
 """Catalog queries shared by discovery and item detail pages."""
 
-from django.db.models import Avg, OuterRef, Q, Subquery
+from django.db.models import Avg, Case, IntegerField, OuterRef, Q, Subquery, Value, When
 
 from apps.review_rating.models import Review
 
+from .categories import STYLE_TO_TYPE
 from .models import Clothing
 
 
@@ -28,8 +29,30 @@ def listings_with_owners():
     )
 
 
-def discover_listings(user, search=""):
+def discover_listings(user, filters=None):
+    filters = filters or {}
     queryset = listings_with_owners().filter(status=Clothing.Status.AVAILABLE)
     if user.is_authenticated:
         queryset = queryset.exclude(owner=user)
-    return catalog_search(queryset, search).order_by("-created_at", "-pk")
+    queryset = catalog_search(queryset, filters.get("search"))
+    for field in ("type", "size", "condition"):
+        if filters.get(field):
+            queryset = queryset.filter(**{field: filters[field]})
+    if (
+        user.is_authenticated
+        and (filters.get("sort") or "recommended") == "recommended"
+    ):
+        preferences = getattr(getattr(user, "profile", None), "preferences", [])
+        preferred_types = [
+            STYLE_TO_TYPE[style] for style in preferences if style in STYLE_TO_TYPE
+        ]
+        queryset = queryset.annotate(
+            preference_rank=Case(
+                When(type__in=preferred_types, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
+        ).order_by("preference_rank", "-created_at", "-pk")
+    else:
+        queryset = queryset.order_by("-created_at", "-pk")
+    return queryset

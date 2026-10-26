@@ -2,7 +2,25 @@ from django import forms
 
 from common.images import validate_uploaded_image
 
+from .categories import DISCOVERY_TYPES
 from .models import Clothing
+
+
+class DiscoveryFilterForm(forms.Form):
+    search = forms.CharField(required=False, max_length=150)
+    type = forms.ChoiceField(
+        required=False, choices=[("", "All finds"), *DISCOVERY_TYPES]
+    )
+    size = forms.ChoiceField(
+        required=False, choices=[("", "All sizes"), *Clothing.Size.choices]
+    )
+    condition = forms.ChoiceField(
+        required=False, choices=[("", "Any condition"), *Clothing.Condition.choices]
+    )
+    sort = forms.ChoiceField(
+        required=False,
+        choices=[("recommended", "Recommended"), ("newest", "Newest first")],
+    )
 
 
 class ClothingForm(forms.ModelForm):

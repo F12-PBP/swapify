@@ -94,3 +94,38 @@ class DiscoveryViewTests(TestCase):
         response = self.client.get(reverse("main:discover"), {"search": "Denim"})
         self.assertEqual(len(response.context["clothing_items"]), 12)
         self.assertContains(response, "search=Denim&amp;page=2")
+
+    def test_filters_combine_and_invalid_values_are_ignored(self):
+        route = reverse("main:discover")
+        response = self.client.get(
+            route, {"type": "outerwear", "size": "L", "condition": "like_new"}
+        )
+        self.assertEqual(response.context["paginator"].count, 1)
+        empty = self.client.get(route, {"size": "XS"})
+        self.assertEqual(empty.context["paginator"].count, 0)
+        invalid = self.client.get(
+            route, {"type": "unknown", "sort": "name; DROP TABLE"}
+        )
+        self.assertEqual(invalid.status_code, 200)
+        self.assertEqual(invalid.context["paginator"].count, 1)
+        self.assertContains(invalid, "Some filter values were invalid")
+
+    def test_recommendations_use_preferences_and_newest_can_override(self):
+        newer = Clothing.objects.create(
+            owner=self.owner,
+            name="Newest top",
+            description="Top",
+            type="top",
+            size="M",
+            condition="good",
+        )
+        self.viewer.profile.preferences = ["outerwear"]
+        self.viewer.profile.save(update_fields=["preferences"])
+        self.client.force_login(self.viewer)
+        route = reverse("main:discover")
+        recommended = self.client.get(route)
+        self.assertEqual(
+            list(recommended.context["clothing_items"]), [self.item, newer]
+        )
+        newest = self.client.get(route, {"sort": "newest"})
+        self.assertEqual(list(newest.context["clothing_items"]), [newer, self.item])
