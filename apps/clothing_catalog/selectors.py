@@ -1,6 +1,20 @@
 """Catalog queries shared by discovery and item detail pages."""
 
-from django.db.models import Avg, Case, IntegerField, OuterRef, Q, Subquery, Value, When
+import math
+
+from django.db.models import (
+    Avg,
+    Case,
+    F,
+    FloatField,
+    IntegerField,
+    OuterRef,
+    Q,
+    Subquery,
+    Value,
+    When,
+)
+from django.db.models.functions import ACos, Cos, Greatest, Least, Radians, Sin
 
 from apps.review_rating.models import Review
 
@@ -29,6 +43,51 @@ def listings_with_owners():
     )
 
 
+def viewer_coordinates(user):
+    if not user.is_authenticated:
+        return None
+    profile = getattr(user, "profile", None)
+    if profile is None or profile.latitude is None or profile.longitude is None:
+        return None
+    lat, lon = profile.latitude, profile.longitude
+    if not (
+        math.isfinite(lat)
+        and math.isfinite(lon)
+        and -90 <= lat <= 90
+        and -180 <= lon <= 180
+    ):
+        return None
+    return lat, lon
+
+
+def with_distance(queryset, user):
+    """Approximate owner-to-viewer distance; coordinates never leave the server."""
+    coordinates = viewer_coordinates(user)
+    if coordinates is None:
+        return queryset
+    lat, lon = coordinates
+    cosine = Sin(Radians(Value(lat))) * Sin(
+        Radians(F("owner__profile__latitude"))
+    ) + Cos(Radians(Value(lat))) * Cos(Radians(F("owner__profile__latitude"))) * Cos(
+        Radians(F("owner__profile__longitude")) - Radians(Value(lon))
+    )
+    valid_area = Q(
+        owner__profile__latitude__range=(-90, 90),
+        owner__profile__longitude__range=(-180, 180),
+    )
+    return queryset.annotate(
+        distance_km=Case(
+            When(
+                valid_area,
+                then=Value(6371.0)
+                * ACos(Least(Value(1.0), Greatest(Value(-1.0), cosine))),
+            ),
+            default=Value(None),
+            output_field=FloatField(),
+        )
+    )
+
+
 def discover_listings(user, filters=None):
     filters = filters or {}
     queryset = listings_with_owners().filter(status=Clothing.Status.AVAILABLE)
@@ -38,6 +97,13 @@ def discover_listings(user, filters=None):
     for field in ("type", "size", "condition"):
         if filters.get(field):
             queryset = queryset.filter(**{field: filters[field]})
+    queryset = with_distance(queryset, user)
+    if viewer_coordinates(user) and filters.get("distance"):
+        queryset = queryset.filter(distance_km__lte=int(filters["distance"]))
+    if viewer_coordinates(user) and filters.get("sort") == "nearest":
+        return queryset.order_by(
+            F("distance_km").asc(nulls_last=True), "-created_at", "-pk"
+        )
     if (
         user.is_authenticated
         and (filters.get("sort") or "recommended") == "recommended"

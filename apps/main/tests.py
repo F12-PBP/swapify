@@ -129,3 +129,62 @@ class DiscoveryViewTests(TestCase):
         )
         newest = self.client.get(route, {"sort": "newest"})
         self.assertEqual(list(newest.context["clothing_items"]), [newer, self.item])
+
+    def test_nearby_filter_uses_saved_area_and_does_not_expose_coordinates(self):
+        for user, latitude in ((self.viewer, -6.36), (self.owner, -6.37)):
+            user.profile.latitude = latitude
+            user.profile.longitude = 106.83
+            user.profile.save(update_fields=["latitude", "longitude"])
+        far_owner = get_user_model().objects.create_user(username="far-owner")
+        far_owner.profile.latitude = -7.8
+        far_owner.profile.longitude = 110.4
+        far_owner.profile.save(update_fields=["latitude", "longitude"])
+        far_item = Clothing.objects.create(
+            owner=far_owner,
+            name="A distant piece",
+            description="Far away",
+            type="top",
+            size="M",
+            condition="good",
+        )
+        unknown_owner = get_user_model().objects.create_user(username="unknown-area")
+        unknown_item = Clothing.objects.create(
+            owner=unknown_owner,
+            name="No saved area",
+            description="Unknown",
+            type="top",
+            size="M",
+            condition="good",
+        )
+        self.client.force_login(self.viewer)
+        route = reverse("main:discover")
+        nearby = self.client.get(route, {"distance": "5"})
+        self.assertEqual(list(nearby.context["clothing_items"]), [self.item])
+        self.assertAlmostEqual(
+            nearby.context["clothing_items"][0].distance_km, 1.112, places=2
+        )
+        self.assertNotContains(nearby, "106.83")
+        self.assertNotContains(nearby, "-6.37")
+        nearest = self.client.get(route, {"sort": "nearest"})
+        self.assertEqual(
+            list(nearest.context["clothing_items"]), [self.item, far_item, unknown_item]
+        )
+
+    def test_guest_distance_parameter_does_not_remove_listings(self):
+        response = self.client.get(reverse("main:discover"), {"distance": "5"})
+        self.assertEqual(response.context["paginator"].count, 1)
+        self.assertFalse(response.context["has_location"])
+
+    def test_location_save_returns_to_discover_but_rejects_external_return(self):
+        self.client.force_login(self.viewer)
+        route = reverse("user_profile:location_edit")
+        data = {
+            "district": "",
+            "city": "Jakarta",
+            "province": "Jakarta",
+            "next": reverse("main:discover"),
+        }
+        response = self.client.post(route, data)
+        self.assertRedirects(response, reverse("main:discover"))
+        response = self.client.post(route, {**data, "next": "https://example.com/"})
+        self.assertRedirects(response, reverse("user_profile:detail"))

@@ -8,7 +8,7 @@
     <div class="flex flex-1 flex-col gap-2 border-b border-neutral-40 pb-4">
       <div class="flex flex-wrap items-center justify-between gap-2 text-b8 text-neutral-70">
         <span>{{ clothing.get_type_display }} · Size {{ clothing.get_size_display }}</span>
-        {% if clothing.distance_km != None %}<span class="inline-flex items-center gap-1"><img src="{% static 'main/images/discovery/imgIcon16.svg' %}" alt="">~{{ clothing.distance_km|floatformat:"0" }} km away</span>{% endif %}
+        {% if clothing.distance_km != None %}<span class="inline-flex items-center gap-1"><img src="{% static 'main/images/discovery/imgIcon16.svg' %}" alt="">{% if clothing.distance_km < 1 %}Within ~1 km{% else %}~{{ clothing.distance_km|floatformat:"0" }} km away{% endif %}</span>{% endif %}
       </div>
       <h3 class="text-s6 font-semibold text-neutral-110"><a href="{{ clothing.get_absolute_url }}" class="line-clamp-2 hover:text-primary-base">{{ clothing.name }}</a></h3>
     </div>

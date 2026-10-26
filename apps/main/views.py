@@ -3,7 +3,7 @@ from django.views.generic import ListView, TemplateView
 
 from apps.clothing_catalog.categories import DISCOVERY_TYPES
 from apps.clothing_catalog.forms import DiscoveryFilterForm
-from apps.clothing_catalog.selectors import discover_listings
+from apps.clothing_catalog.selectors import discover_listings, viewer_coordinates
 
 
 class HomeView(TemplateView):
@@ -17,7 +17,9 @@ class DiscoverView(ListView):
 
     @cached_property
     def filter_form(self):
-        form = DiscoveryFilterForm(self.request.GET)
+        form = DiscoveryFilterForm(
+            self.request.GET, has_location=bool(viewer_coordinates(self.request.user))
+        )
         form.is_valid()
         return form
 
@@ -29,6 +31,7 @@ class DiscoverView(ListView):
         context["filter_form"] = self.filter_form
         context["filters"] = self.filter_form.cleaned_data
         context["categories"] = DISCOVERY_TYPES
+        context["has_location"] = bool(viewer_coordinates(self.request.user))
         return context
 
 

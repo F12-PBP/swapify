@@ -7,6 +7,27 @@ from .models import Clothing
 
 
 class DiscoveryFilterForm(forms.Form):
+    distance = forms.ChoiceField(
+        required=False,
+        choices=[
+            ("", "Any distance"),
+            ("5", "Within 5 km"),
+            ("10", "Within 10 km"),
+            ("25", "Within 25 km"),
+            ("50", "Within 50 km"),
+        ],
+    )
+
+    def __init__(self, *args, has_location=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        if has_location:
+            self.fields["sort"].choices = [
+                *self.fields["sort"].choices,
+                ("nearest", "Nearest first"),
+            ]
+        else:
+            self.fields["distance"].disabled = True
+
     search = forms.CharField(required=False, max_length=150)
     type = forms.ChoiceField(
         required=False, choices=[("", "All finds"), *DISCOVERY_TYPES]

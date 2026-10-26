@@ -11,6 +11,6 @@
     <input type="hidden" name="sort" value="{{ filters.sort|default:'recommended' }}">
     {% include "main/discovery/filter_fields.html" with suffix="modal" modal=True %}
     <button class="market-button mt-3" type="submit">Show matching finds</button>
-    <a href="{% querystring size=None condition=None page=None %}#finds" class="market-secondary text-b7">Reset filters</a>
+    <a href="{% querystring size=None condition=None distance=None page=None %}#finds" class="market-secondary text-b7">Reset filters</a>
   </form>
 </dialog>

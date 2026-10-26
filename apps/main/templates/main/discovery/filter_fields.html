@@ -5,6 +5,13 @@
   </select>
 </div>
 <div class="{% if modal %}flex w-full flex-col gap-2{% endif %}">
+  <label for="distance-{{ suffix }}" class="{% if modal %}text-b7 font-semibold text-primary-base{% else %}sr-only{% endif %}">Distance</label>
+  <select id="distance-{{ suffix }}" name="distance" class="{% if modal %}market-input{% else %}market-filter{% endif %}" {% if not has_location %}disabled aria-describedby="distance-help-{{ suffix }}"{% endif %}>
+    {% for value, label in filter_form.fields.distance.choices %}<option value="{{ value }}" {% if filters.distance == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  {% if not has_location %}<span id="distance-help-{{ suffix }}" class="{% if not modal %}sr-only{% else %}text-b9 text-neutral-80{% endif %}">Save your location to find pieces nearby.</span>{% endif %}
+</div>
+<div class="{% if modal %}flex w-full flex-col gap-2{% endif %}">
   <label for="condition-{{ suffix }}" class="{% if modal %}text-b7 font-semibold text-primary-base{% else %}sr-only{% endif %}">Condition</label>
   <select id="condition-{{ suffix }}" name="condition" class="{% if modal %}market-input{% else %}market-filter{% endif %}">
     {% for value, label in filter_form.fields.condition.choices %}<option value="{{ value }}" {% if filters.condition == value %}selected{% endif %}>{{ label }}</option>{% endfor %}

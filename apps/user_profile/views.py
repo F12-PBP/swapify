@@ -9,6 +9,7 @@ from django.db.models import Avg, Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.generic import CreateView, DetailView, UpdateView
 
@@ -110,6 +111,22 @@ class MyProfileLocationUpdateView(LoginRequiredMixin, SuccessMessageMixin, Updat
     context_object_name = "profile"
     success_url = reverse_lazy("user_profile:detail")
     success_message = "Your location has been updated."
+
+    def get_success_url(self):
+        target = self.request.POST.get("next") or self.request.GET.get("next", "")
+        if target and url_has_allowed_host_and_scheme(
+            target,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        ):
+            return target
+        return str(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "return_url": self.get_success_url(),
+        }
 
     def get_object(self, queryset=None):
         return self.request.user.profile
