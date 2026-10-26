@@ -1,0 +1,131 @@
+{% extends "user_profile/auth/base.html" %}
+{% load static lucide %}
+{% block title %}Make yourself at home | Swapify{% endblock %}
+{% block main_class %}items-center px-4 pb-12 pt-12 sm:px-8 lg:pt-[118px]{% endblock %}
+{% block header_action %}
+<form method="post" id="finish-later-form">
+  {% csrf_token %}<button type="submit" name="action" value="later" class="flex cursor-pointer items-center gap-2 text-b9 font-semibold text-neutral-80" {% if step == 4 %}hidden{% endif %}>
+    Finish later <img src="{% static 'user_profile/images/auth/exit.svg' %}" alt="">
+  </button>
+</form>
+{% endblock %}
+{% block content %}
+<div id="onboarding" data-step="{{ step }}" class="flex w-full max-w-[860px] flex-col items-center gap-10 sm:gap-[60px]">
+  <ol id="onboarding-progress" aria-label="Account setup progress" class="flex min-h-[78px] w-full items-center gap-2 sm:gap-3.5" {% if step == 4 %}hidden{% endif %}>
+    {% for label in step_labels %}
+      {% if not forloop.first %}<li aria-hidden="true" class="mb-7 h-px min-w-2 flex-1 bg-neutral-50"></li>{% endif %}
+      <li class="onboarding-step flex w-20 shrink-0 flex-col items-center gap-3 text-center text-b10 sm:w-auto sm:text-b9" data-progress="{{ forloop.counter }}" {% if step == forloop.counter %}aria-current="step"{% endif %}>
+        <span class="step-number flex size-12 items-center justify-center rounded-full border font-display text-h6 font-bold">{{ forloop.counter }}</span>
+        <span class="step-label">{{ label }}</span>
+      </li>
+    {% endfor %}
+  </ol>
+  <div class="onboarding-viewport w-full overflow-hidden">
+    <div id="onboarding-track" class="flex w-full items-start">
+      <section class="onboarding-slide flex w-full shrink-0 justify-center px-0.5" data-panel="1" {% if step != 1 %}inert aria-hidden="true"{% endif %}>
+        <form method="post" enctype="multipart/form-data" class="onboarding-card flex w-full max-w-[636px] flex-col gap-8 rounded-3xl border border-neutral-40 p-5 sm:p-8" data-step-form="1">
+          {% csrf_token %}<input type="hidden" name="step" value="1">
+          <div class="flex flex-col gap-2">
+            <h1 tabindex="-1" class="font-display text-h4 text-primary-base sm:text-h3">First, a little hello.</h1>
+            <p class="text-b7 text-neutral-80">A familiar face and a few thoughtful words make for better exchanges.</p>
+          </div>
+          <div class="flex flex-col gap-5">
+            <div class="onboarding-photo flex h-[100px] flex-col items-center gap-2">
+              <label for="{{ profile_form.new_profile_picture.id_for_label }}" class="flex -translate-y-4 cursor-pointer flex-col items-center gap-2 text-b7 font-semibold text-primary-60">
+                <span class="flex size-[100px] items-center justify-center overflow-hidden rounded-full bg-neutral-30">
+                  <img id="photo-preview" {% if profile.profile_picture %}src="{{ profile.profile_picture.url }}"{% else %}hidden{% endif %} alt="Profile preview" class="size-full object-cover">
+                  <img id="photo-plus" src="{% static 'user_profile/images/auth/plus.svg' %}" alt="" {% if profile.profile_picture %}hidden{% endif %}>
+                </span>
+                Profile Picture
+              </label>
+              <input id="{{ profile_form.new_profile_picture.id_for_label }}" type="file" name="new_profile_picture" accept="image/jpeg,image/png,image/webp" class="sr-only" aria-label="Upload a profile picture">
+              <div data-field-errors="new_profile_picture" class="swap-field-error">{{ profile_form.new_profile_picture.errors }}</div>
+            </div>
+            {% include "user_profile/auth/field.html" with field=profile_form.display_name %}
+            {% include "user_profile/auth/field.html" with field=profile_form.bio %}
+            <p id="bio-count" class="text-b8 text-neutral-80">{{ profile_form.bio.value|default:''|length }}/1000 characters</p>
+          </div>
+          <div data-errors role="alert" class="swap-field-error">{{ profile_form.non_field_errors }}</div>
+          <div class="-mt-[30px] flex items-center justify-end gap-3">
+
+            <button class="btn btn-primary px-6" type="submit">Next
+              {%lucide "arrow-right" class="size-2"%}
+            </button>
+          </div>
+        </form>
+      </section>
+      <section class="onboarding-slide flex w-full shrink-0 justify-center px-0.5" data-panel="2" {% if step != 2 %}inert aria-hidden="true"{% endif %}>
+        <form method="post" id="location-form" data-resolve-url="{% url 'user_profile:location_resolve' %}" class="onboarding-card flex w-full max-w-[636px] flex-col gap-8 rounded-3xl border border-neutral-40 p-5 sm:p-8" data-step-form="2">
+          {% csrf_token %}<input type="hidden" name="step" value="2">{{ location_form.location_token }}
+          <div class="flex flex-col gap-2">
+            <h2 tabindex="-1" class="font-display text-h4 text-primary-base sm:text-h3">Good finds, closer to home.</h2>
+            <p class="text-b7 text-neutral-80">Tell us your city so your community can find you. Your exact address is never shared.</p>
+          </div>
+          <div class="flex flex-col items-start gap-2">
+            <p class="swap-field-label text-b7">Find your neighbourhood</p>
+            <button type="button" id="detect-location" class="btn btn-primary auth-submit gap-2"><img src="{% static 'user_profile/images/auth/location.svg' %}" alt="">Use My Location</button>
+            <p id="location-status" role="status" class="text-b9 text-neutral-80"></p>
+          </div>
+          <div class="flex flex-col gap-3 sm:flex-row">
+            {% include "user_profile/auth/field.html" with field=location_form.district %}
+            {% include "user_profile/auth/field.html" with field=location_form.city %}
+            {% include "user_profile/auth/field.html" with field=location_form.province %}
+          </div>
+          <div>
+            <label class="flex items-center gap-3 text-b9">{{ location_form.location_agreement }}<span>{{ location_form.location_agreement.label }}</span></label>
+            <div class="swap-field-error">{{ location_form.location_agreement.errors }}</div>
+          </div>
+          <div data-errors role="alert" class="swap-field-error">{{ location_form.non_field_errors }}</div>
+          <div class="flex items-center justify-between gap-4">
+            <a href="?step=1" data-back class="btn btn-primary-ghost px-6">
+              {%lucide "arrow-left" class="size-2"%}
+              Back</a>
+            <button type="submit" id="save-location" class="btn btn-primary px-6">Next
+
+              {%lucide "arrow-right" class="size-2"%}
+            </button>
+          </div>
+        </form>
+      </section>
+      <section class="onboarding-slide flex w-full shrink-0 justify-center px-0.5" data-panel="3" {% if step != 3 %}inert aria-hidden="true"{% endif %}>
+        <form method="post" class="onboarding-card flex w-full max-w-[534px] flex-col gap-8 rounded-3xl border border-neutral-40 p-5 sm:p-8 sm:pb-[52px]" data-step-form="3">
+          {% csrf_token %}<input type="hidden" name="step" value="3">
+          <div class="flex flex-col gap-2">
+            <h2 tabindex="-1" class="font-display text-h4 text-primary-base sm:text-h3">What feels like you?</h2>
+            <p class="text-b7 text-neutral-80">Choose the pieces you love. You can always explore everything and change these later.</p>
+          </div>
+          <fieldset class="flex flex-wrap gap-4 sm:gap-6">
+            <legend class="sr-only">Your favourite kinds of pieces (optional)</legend>
+            {% for value, label in style_choices %}
+            <label class="style-option flex min-h-[74px] min-w-0 cursor-pointer items-center gap-2 rounded-xl border border-neutral-40 p-3 text-b9 text-neutral-90 sm:p-6 sm:text-b8 {% if forloop.last %}w-full{% else %}w-full min-[360px]:w-[calc(50%-8px)] sm:w-[calc(50%-12px)]{% endif %}">
+              <input type="checkbox" name="preferences" value="{{ value }}" class="sr-only" {% if value in preferences_form.preferences.value %}checked{% endif %}>
+              {% with 'user_profile/images/auth/'|add:value|add:'.svg' as icon %}<img src="{% static icon %}" alt="">{% endwith %}
+              <span>{{ label }}</span>
+            </label>
+            {% endfor %}
+          </fieldset>
+          <div data-errors role="alert" class="swap-field-error">{{ preferences_form.errors }}</div>
+          <div class="flex items-center justify-between gap-4">
+            <a href="?step=2" data-back class="btn btn-primary-ghost px-6">
+              {% lucide "arrow-left" class="size-2" %}
+              Back</a>
+            <button type="submit" class="btn btn-primary px-6">Finish</button>
+          </div>
+        </form>
+      </section>
+      <section class="onboarding-slide flex w-full shrink-0 flex-col items-center gap-8 px-2 py-16" data-panel="4" {% if step != 4 %}inert aria-hidden="true"{% endif %}>
+        <img src="{% static 'user_profile/images/auth/mascot.svg' %}" alt="Swapy welcoming you to the community">
+        <h2 tabindex="-1" class="text-center font-brand text-h3 tracking-tight text-primary-base sm:text-h2 sm:leading-[52px]">A fresh start looks<br><em>good on you, <span id="welcome-name" class="break-words text-secondary-70">{{ profile.display_name }}!</span></em></h2>
+        <div class="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
+          <a href="{% url 'clothing_catalog:list' %}" class="btn btn-primary px-6">Find my next favourite</a>
+          <a href="{% url 'clothing_catalog:create' %}" class="btn btn-primary-ghost gap-3 px-6"><span aria-hidden="true" class="text-h5">+</span>List my first piece</a>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script defer src="{% static 'user_profile/js/location.js' %}"></script>
+<script defer src="{% static 'user_profile/js/onboarding.js' %}"></script>
+{% endblock %}

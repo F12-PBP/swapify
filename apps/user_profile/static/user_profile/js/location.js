@@ -60,7 +60,9 @@
                 form.elements.namedItem(field).value = result[field];
             });
             token.value = result.location_token;
-            status.textContent = "Area found. Review the details, then select Save Location.";
+            status.textContent = form.dataset.stepForm
+                ? "Area found. Review the details, then select Next."
+                : "Area found. Review the details, then select Save Location.";
         } catch (error) {
             const messages = {
                 1: "Location access was denied. Please enter your area manually.",

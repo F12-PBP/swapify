@@ -8,3 +8,4 @@ django-browser-reload==1.21.0
 honcho==2.0.0
 cloudinary
 Pillow
+lucide[django]

@@ -1,4 +1,4 @@
-from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages.views import SuccessMessageMixin
@@ -7,8 +7,8 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Avg, Count
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DetailView, UpdateView
 
@@ -18,7 +18,11 @@ from apps.review_rating.models import Review
 from .forms import (
     LocationCoordinatesForm,
     LoginForm,
+    OnboardingLocationForm,
+    OnboardingProfileForm,
+    PreferencesForm,
     ProfileLocationForm,
+    ProfilePhotoForm,
     ProfileUpdateForm,
     RegisterForm,
 )
@@ -36,7 +40,7 @@ class LoginUserView(LoginView):
 class RegisterUserView(CreateView):
     template_name = "user_profile/register.html"
     form_class = RegisterForm
-    success_url = reverse_lazy("user_profile:login")
+    success_url = reverse_lazy("user_profile:onboarding")
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -47,7 +51,10 @@ class RegisterUserView(CreateView):
     @transaction.atomic
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, "Account created. You can now log in.")
+        profile = self.object.profile
+        profile.display_name = form.cleaned_data["name"]
+        profile.save(update_fields=["display_name"])
+        login(self.request, self.object)
         return response
 
 
@@ -180,3 +187,95 @@ class PublicProfileDetailView(DetailView):
         )
 
         return context
+
+
+class OnboardingView(LoginRequiredMixin, View):
+    """Save each step independently, so members can safely finish later."""
+
+    def get(self, request):
+        try:
+            step = min(4, max(1, int(request.GET.get("step", 1))))
+        except (TypeError, ValueError):
+            step = 1
+        if step == 4 and not request.user.profile.onboarding_completed:
+            step = 1
+        return render(request, "user_profile/onboarding.html", self.context(step))
+
+    def context(self, step, bound_form=None):
+        profile = self.request.user.profile
+        forms = [
+            OnboardingProfileForm(instance=profile),
+            OnboardingLocationForm(instance=profile, user_id=profile.user_id),
+            PreferencesForm(instance=profile),
+        ]
+        if bound_form is not None:
+            forms[step - 1] = bound_form
+        return {
+            "step": step,
+            "profile_form": forms[0],
+            "location_form": forms[1],
+            "preferences_form": forms[2],
+            "profile": profile,
+            "step_labels": (
+                "A little about you",
+                "Your neighbourhood",
+                "Your kind of style",
+            ),
+            "style_choices": forms[2].fields["preferences"].choices,
+        }
+
+    def post(self, request):
+        if request.POST.get("action") == "upload_photo":
+            form = ProfilePhotoForm(request.POST, request.FILES)
+            if not form.is_valid():
+                return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+            try:
+                picture = upload_profile_picture(
+                    image=form.cleaned_data["new_profile_picture"],
+                    user_id=request.user.pk,
+                )
+            except ProfilePhotoUploadError as error:
+                return JsonResponse({"error": str(error)}, status=400)
+            profile = request.user.profile
+            profile.profile_picture = picture
+            profile.save(update_fields=["profile_picture"])
+            return JsonResponse({"profile_picture_url": profile.profile_picture.url})
+        if request.POST.get("action") == "later":
+            return redirect("clothing_catalog:list")
+        try:
+            step = int(request.POST.get("step", 1))
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "Invalid onboarding step."}, status=400)
+        if step not in (1, 2, 3):
+            return JsonResponse({"error": "Invalid onboarding step."}, status=400)
+        profile = request.user.profile
+        form_class = (OnboardingProfileForm, OnboardingLocationForm, PreferencesForm)[
+            step - 1
+        ]
+        kwargs = {"instance": profile}
+        if step == 2:
+            kwargs["user_id"] = request.user.pk
+        form = form_class(request.POST, request.FILES, **kwargs)
+        if form.is_valid():
+            if step == 1 and (image := form.cleaned_data.get("new_profile_picture")):
+                try:
+                    form.instance.profile_picture = upload_profile_picture(
+                        image=image,
+                        user_id=request.user.pk,
+                    )
+                except ProfilePhotoUploadError as error:
+                    form.add_error("new_profile_picture", str(error))
+            if not form.errors:
+                with transaction.atomic():
+                    form.save()
+                    if step == 3:
+                        profile.onboarding_completed = True
+                        profile.save(update_fields=["onboarding_completed"])
+                if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                    return JsonResponse(
+                        {"step": step + 1, "display_name": profile.display_name}
+                    )
+                return redirect(f"{reverse('user_profile:onboarding')}?step={step + 1}")
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+        return render(request, "user_profile/onboarding.html", self.context(step, form))

@@ -9,6 +9,8 @@ class Profile(models.Model):
     )
     display_name = models.CharField("display name", max_length=225)
     bio = models.TextField("bio", blank=True)
+    preferences = models.JSONField("style preferences", default=list, blank=True)
+    onboarding_completed = models.BooleanField(default=False)
     profile_picture = CloudinaryField("profile picture", blank=True, null=True)
     latitude = models.FloatField("latitude", null=True, blank=True)
     longitude = models.FloatField("longitude", null=True, blank=True)
