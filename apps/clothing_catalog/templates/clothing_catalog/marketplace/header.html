@@ -1,11 +1,7 @@
 {% load static lucide %}
 <header class="sticky top-0 z-40 bg-neutral-10 shadow-sm" data-market-navbar>
   {% url 'user_profile:location_edit' as location_url %}
-  <div class="relative flex min-h-8 items-center justify-center gap-2 bg-primary-base px-4 py-1.5 text-center text-b9 text-primary-20">
-    <img src="{% static 'clothing_catalog/images/discovery/imgIcon.svg' %}" alt="">
-    <p>Good for your wardrobe. Even better for the planet.</p>
-    <span class="absolute right-8 hidden text-[9px] tracking-wide opacity-80 xl:block">A little exchange. A big difference.</span>
-  </div>
+  {% include "clothing_catalog/marketplace/marquee.html" %}
   <div class="market-container flex flex-wrap items-center justify-between gap-x-5 gap-y-3 py-4 lg:flex-nowrap lg:gap-10 lg:py-6">
     {% include "clothing_catalog/marketplace/logo.html" %}
     <form method="get" action="{% url 'clothing_catalog:list' %}#finds" role="search" class="order-last flex h-12 w-full items-center gap-3 rounded-full border border-neutral-40 bg-neutral-20 px-5 lg:order-none lg:max-w-[620px] lg:flex-1">

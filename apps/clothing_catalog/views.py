@@ -24,6 +24,7 @@ from .selectors import (
     catalog_search,
     discover_listings,
     listings_with_owners,
+    related_listings,
     viewer_coordinates,
     with_distance,
 )
@@ -131,9 +132,7 @@ class ClothingDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["related_items"] = discover_listings(
-            self.request.user, {"type": self.object.type}
-        ).exclude(pk=self.object.pk)[:4]
+        context["related_items"] = related_listings(self.request.user, self.object)
         return context
 
 

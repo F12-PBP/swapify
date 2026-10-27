@@ -50,12 +50,14 @@
     </a>
   </div>
 </article>
-{% if related_items %}
 <section class="mt-16 flex flex-col gap-10" aria-labelledby="related-title">
-  <div class="flex items-center justify-between gap-4"><h2 id="related-title" class="font-display text-h3 text-primary-base">More lovely finds out there</h2><a class="inline-flex shrink-0 items-center gap-2 text-b8 font-semibold text-primary-base" href="{% url 'clothing_catalog:list' %}?type={{ clothing.type }}#finds">See more {% lucide "arrow-right" size=20 %}</a></div>
-  <div class="flex flex-wrap items-stretch gap-6">{% for clothing in related_items %}{% include "clothing_catalog/partials/product_card.html" %}{% endfor %}</div>
+  <div class="flex items-center justify-between gap-4"><h2 id="related-title" class="font-display text-h3 text-primary-base">More lovely finds out there</h2><a class="inline-flex shrink-0 items-center gap-2 text-b8 font-semibold text-primary-base" href="{% url 'clothing_catalog:list' %}#finds">See more {% lucide "arrow-right" size=20 %}</a></div>
+  {% if related_items %}
+    <div class="flex flex-wrap items-stretch gap-6">{% for clothing in related_items %}{% include "clothing_catalog/partials/product_card.html" %}{% endfor %}</div>
+  {% else %}
+    <p class="rounded-3xl bg-neutral-20 p-8 text-b7 text-neutral-80">More lovely finds are on their way. Check back soon for another piece to love.</p>
+  {% endif %}
 </section>
-{% endif %}
 {% include "clothing_catalog/marketplace/listing_cta.html" %}
 {% endblock %}
 {% block dialogs %}{% include "swap_request/partials/propose_dialog.html" %}{% endblock %}

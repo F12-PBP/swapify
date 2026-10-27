@@ -9,4 +9,18 @@
   };
   updateOffset();
   new ResizeObserver(updateOffset).observe(navbar);
+
+  const marquee = navbar.querySelector("[data-market-marquee]");
+  const toggle = marquee?.querySelector("[data-marquee-toggle]");
+  if (toggle) {
+    toggle.hidden = false;
+    toggle.addEventListener("click", () => {
+      const paused = toggle.getAttribute("aria-pressed") !== "true";
+      toggle.setAttribute("aria-pressed", String(paused));
+      toggle.setAttribute("aria-label", paused ? "Resume announcements" : "Pause announcements");
+      marquee.dataset.paused = String(paused);
+      toggle.querySelector("[data-marquee-pause]").hidden = paused;
+      toggle.querySelector("[data-marquee-play]").hidden = !paused;
+    });
+  }
 })();

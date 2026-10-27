@@ -15,10 +15,10 @@
     {% if messages %}<div class="mb-6 flex flex-col gap-2" role="status">{% for message in messages %}<p class="rounded-xl bg-secondary-10 p-4 text-b8">{{ message }}</p>{% endfor %}</div>{% endif %}
     {% block content %}{% endblock %}
   </main>
-  {% include "clothing_catalog/marketplace/footer.html" %}
+  {% include "components/footer/footer.html" %}
   {% block dialogs %}{% endblock %}
   <script src="{% static 'js/design-system-dropdown.js' %}" defer></script>
-  <script src="{% static 'clothing_catalog/js/navbar.js' %}?v=20261027" defer></script>
+  <script src="{% static 'clothing_catalog/js/navbar.js' %}?v=marquee-1" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

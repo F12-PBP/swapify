@@ -10,8 +10,8 @@
 </head>
 <body class="auth-page flex min-h-svh flex-col bg-neutral-10 font-sans text-neutral-100">
   <header class="flex min-h-20 items-center justify-between gap-4 border-b border-neutral-40 px-5 py-6 sm:px-10 lg:px-20">
-    <a href="{% url 'main:home' %}" aria-label="Swapify home" class="flex shrink-0 items-center gap-2 text-primary-base">
-      <img src="{% static 'user_profile/images/auth/logo.svg' %}" alt="Swapify.">
+    <a href="{% url 'main:home' %}" aria-label="Swapify home" class="flex shrink-0 items-center gap-3 text-primary-base">
+      {% include "components/brand/logo.html" %}
     </a>
     {% block header_action %}
     <a href="{% url 'clothing_catalog:list' %}" class="flex items-center gap-3 text-right text-b9 font-semibold text-neutral-80 sm:text-b8">

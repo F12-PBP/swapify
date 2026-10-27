@@ -98,6 +98,41 @@ class ClothingViewTests(TestCase):
             own, reverse("swap_request:create", args=[self.clothing.pk])
         )
 
+    def test_related_finds_prioritize_category_and_fill_four_unique_available_items(
+        self,
+    ):
+        same_category = Clothing.objects.create(
+            owner=self.owner,
+            name="Another shirt",
+            type="top",
+            size="M",
+            condition="good",
+            description="A related piece",
+        )
+        for index in range(5):
+            Clothing.objects.create(
+                owner=self.other_user,
+                name=f"Jacket {index}",
+                type="outerwear",
+                size="M",
+                condition="good",
+                description="Another available find",
+            )
+        response = self.client.get(self.clothing.get_absolute_url())
+        related = list(response.context["related_items"])
+        self.assertEqual(len(related), 4)
+        self.assertEqual(related[0], same_category)
+        self.assertEqual(len({item.pk for item in related}), 4)
+        self.assertNotIn(self.clothing, related)
+        self.client.force_login(self.other_user)
+        owned = self.client.get(self.clothing.get_absolute_url())
+        self.assertEqual(list(owned.context["related_items"]), [same_category])
+
+    def test_related_finds_section_stays_visible_when_no_alternatives_exist(self):
+        response = self.client.get(self.clothing.get_absolute_url())
+        self.assertContains(response, "More lovely finds out there")
+        self.assertContains(response, "More lovely finds are on their way.")
+
     def test_authenticated_user_becomes_owner_when_creating_clothing(self):
         self.client.force_login(self.owner)
         response = self.client.post(

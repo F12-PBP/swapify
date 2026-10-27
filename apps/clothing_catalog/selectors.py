@@ -122,3 +122,19 @@ def discover_listings(user, filters=None):
     else:
         queryset = queryset.order_by("-created_at", "-pk")
     return queryset
+
+
+def related_listings(user, clothing):
+    """Prefer the same category, then fill from other available pieces."""
+    return (
+        discover_listings(user)
+        .exclude(pk=clothing.pk)
+        .annotate(
+            related_rank=Case(
+                When(type=clothing.type, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
+        )
+        .order_by("related_rank", "-created_at", "-pk")[:4]
+    )
