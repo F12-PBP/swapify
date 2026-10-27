@@ -112,6 +112,15 @@ class Transaction(models.Model):
         blank=True,
     )
 
+    # Start Parameter
+    requester_started = models.BooleanField(
+        default=False,
+    )
+
+    owner_started = models.BooleanField(
+        default=False,
+    )
+
     def __str__(self):
         return f"Transaction {self.id} - {self.status}"
 

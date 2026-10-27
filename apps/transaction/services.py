@@ -35,15 +35,26 @@ def _reserved_clothing(exchange):
 @transaction.atomic
 def start_transaction(transaction_id, user):
     exchange = _get_participant_transaction(transaction_id, user)
+    party = "requester" if user.pk == exchange.swap_request.requester_id else "owner"
     if exchange.status == Transaction.Status.IN_PROGRESS:
         return exchange
     if exchange.status != Transaction.Status.WAITING:
         raise ValidationError("Only a waiting transaction can be started.")
 
-    exchange.status = Transaction.Status.IN_PROGRESS
-    exchange.full_clean()
-    _reserved_clothing(exchange)
-    exchange.save(update_fields=["status"])
+    start_field = f"{party}_started"
+    updated_fields = []
+
+    if not getattr(exchange, start_field):
+        setattr(exchange, start_field, True)
+        updated_fields.append(start_field)
+
+    if exchange.requester_started and exchange.owner_started:
+        exchange.status = Transaction.Status.IN_PROGRESS
+        updated_fields.append("status")
+        exchange.full_clean()
+        _reserved_clothing(exchange)
+
+    exchange.save(update_fields=updated_fields)
     return exchange
 
 
