@@ -14,6 +14,7 @@ from django.views.generic import CreateView, DetailView, UpdateView
 
 from apps.clothing_catalog.models import Clothing
 from apps.review_rating.models import Review
+from common.redirects import safe_return_url
 
 from .forms import (
     LocationCoordinatesForm,
@@ -110,6 +111,15 @@ class MyProfileLocationUpdateView(LoginRequiredMixin, SuccessMessageMixin, Updat
     context_object_name = "profile"
     success_url = reverse_lazy("user_profile:detail")
     success_message = "Your location has been updated."
+
+    def get_success_url(self):
+        return safe_return_url(self.request, self.success_url)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "return_url": self.get_success_url(),
+        }
 
     def get_object(self, queryset=None):
         return self.request.user.profile

@@ -15,6 +15,7 @@
 
             <form method="post" class="space-y-4" id="location-form" data-resolve-url="{% url 'user_profile:location_resolve' %}">
                 {% csrf_token %}
+                <input type="hidden" name="next" value="{{ return_url }}">
                 {{ form.location_token }}
                 <div>
                     <button type="button" id="detect-location" class="btn btn-primary-ghost">Use My Location</button>
@@ -45,7 +46,7 @@
                 {% endfor %}
                 <div class="flex flex-wrap gap-3 pt-4">
                     <button type="submit" class="btn btn-primary" id="save-location">Save Location</button>
-                    <a href="{% url 'user_profile:detail' %}" class="btn btn-primary-ghost">Cancel</a>
+                    <a href="{{ return_url }}" class="btn btn-primary-ghost">Cancel</a>
                 </div>
             </form>
         </div>

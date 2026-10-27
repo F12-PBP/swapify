@@ -6,20 +6,23 @@ from .models import SwapRequest
 
 
 class SwapRequestForm(forms.ModelForm):
+    message = forms.CharField(
+        required=False,
+        max_length=1000,
+        widget=forms.Textarea(
+            attrs={
+                "class": "market-input min-h-36 resize-y rounded-[20px]",
+                "rows": 5,
+                "placeholder": "Say hello and tell them what you’d love to swap.",
+            }
+        ),
+    )
+
     class Meta:
         model = SwapRequest
         fields = ("offered_clothing", "message")
         widgets = {
-            "offered_clothing": forms.Select(
-                attrs={"class": "select swap-input w-full"}
-            ),
-            "message": forms.Textarea(
-                attrs={
-                    "class": "textarea swap-input w-full",
-                    "placeholder": "Tulis pesan untuk pemilik pakaian (opsional).",
-                    "rows": 4,
-                }
-            ),
+            "offered_clothing": forms.Select(attrs={"class": "market-input"}),
         }
 
     def __init__(self, *args, requester, requested_clothing, **kwargs):
@@ -31,7 +34,7 @@ class SwapRequestForm(forms.ModelForm):
             owner=requester,
             status=Clothing.Status.AVAILABLE,
         )
-        offered_field.empty_label = "Pilih pakaianmu"
+        offered_field.empty_label = "Pick your piece"
 
     def clean(self):
         cleaned_data = super().clean()
@@ -42,6 +45,7 @@ class SwapRequestForm(forms.ModelForm):
         ).exists()
         if has_pending_request:
             raise forms.ValidationError(
-                "Kamu masih punya swap request yang menunggu untuk pakaian ini."
+                "You already have a pending request for this piece. "
+                "Check My swaps for updates."
             )
         return cleaned_data

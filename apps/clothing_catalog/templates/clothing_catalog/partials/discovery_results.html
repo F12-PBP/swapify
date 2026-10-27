@@ -1,0 +1,21 @@
+<div aria-live="polite" class="text-b9 text-neutral-80">
+  {{ paginator.count }} lovely find{{ paginator.count|pluralize }} waiting for {{ paginator.count|pluralize:"its,their" }} next chapter
+</div>
+{% if clothing_items %}
+  <div class="mt-11 flex flex-wrap items-stretch gap-6">
+    {% for clothing in clothing_items %}{% include "clothing_catalog/partials/product_card.html" %}{% endfor %}
+  </div>
+  {% if is_paginated %}
+  <nav aria-label="Catalog pages" class="mt-10 flex flex-wrap items-center justify-center gap-4 text-b8">
+    {% if page_obj.has_previous %}<a class="market-secondary" data-catalog-link data-catalog-page href="{% querystring page=page_obj.previous_page_number %}#finds">← Previous</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="market-secondary" data-catalog-link data-catalog-page href="{% querystring page=page_obj.next_page_number %}#finds">Next →</a>{% endif %}
+  </nav>
+  {% endif %}
+{% else %}
+  <div class="mt-8 flex flex-col items-center gap-4 rounded-3xl border border-dashed border-neutral-50 bg-neutral-20 px-6 py-16 text-center">
+    <h3 class="font-display text-h5 text-primary-base">A good find is worth waiting for.</h3>
+    <p class="text-b8 text-neutral-80">No pieces match this search yet. Try another search or check back soon.</p>
+    <a class="market-secondary text-b8" data-catalog-link href="{% url 'clothing_catalog:list' %}#finds">See all finds</a>
+  </div>
+{% endif %}

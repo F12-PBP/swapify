@@ -1,0 +1,17 @@
+{% load static %}
+<div class="mt-2 flex flex-wrap gap-3 border-b border-neutral-40 pb-5 sm:gap-4" aria-label="Clothing categories">
+  <a href="{% querystring type=None page=None %}#finds" data-catalog-link data-catalog-category="" class="market-chip {% if not filters.type %}market-chip-active{% endif %}" {% if not filters.type %}aria-current="true"{% endif %}>All finds</a>
+  {% for value, label in categories %}<a href="{% querystring type=value page=None %}#finds" data-catalog-link data-catalog-category="{{ value }}" class="market-chip {% if filters.type == value %}market-chip-active{% endif %}" {% if filters.type == value %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+</div>
+<form method="get" action="{% url 'clothing_catalog:list' %}#finds" data-catalog-form class="my-2 flex flex-wrap items-center gap-3" aria-label="Filter and sort finds">
+  <input type="hidden" name="search" value="{{ filters.search }}">
+  <input type="hidden" name="type" value="{{ filters.type }}">
+  {% include "clothing_catalog/discovery/filter_fields.html" with suffix="inline" dropdown_size="sm" auto_apply=True %}
+  <button class="market-secondary px-3 py-2 text-b9" type="submit" data-filter-apply>Apply</button>
+  <button type="button" class="market-filter" data-dialog-open="catalog-filters" hidden>All filters</button>
+  <div class="ml-auto flex items-center gap-2 text-b9 text-neutral-80">
+    <span>Sort by:</span>
+    {% include "components/dropdown.html" with dropdown_id="sort-finds" name="sort" label="Sort finds" choices=filter_form.fields.sort.choices value=filters.sort|default:"recommended" size="sm" auto_apply=True %}
+  </div>
+</form>
+<p id="catalog-filter-errors" class="text-b9 text-red-70" role="status" {% if not filter_form.errors %}hidden{% endif %}>Some filter values were invalid and have been ignored. Please choose from the available options.</p>

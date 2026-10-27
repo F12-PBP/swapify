@@ -1,73 +1,64 @@
-{% extends "base.html" %}
-
-{% block title %}{{ clothing.name }}{% endblock %}
-
+{% extends "clothing_catalog/marketplace/base.html" %}
+{% load static lucide %}
+{% block title %}{{ clothing.name }} | Swapify{% endblock %}
 {% block content %}
-<section class="px-4 py-10 md:px-6">
-    <a class="btn btn-ghost btn-sm mb-6" href="{% url 'clothing_catalog:list' %}">← Back to catalog</a>
-
-    <article class="overflow-hidden rounded-box border border-neutral-40 bg-base-100 shadow-[0_4px_24px_rgb(115_20_29_/_6%)]">
-        <div class="grid gap-8 p-5 md:grid-cols-2 md:p-8">
-            {% if clothing.image_url %}
-                <figure class="overflow-hidden rounded-box bg-neutral-30">
-                    <img src="{{ clothing.image_url }}" alt="{{ clothing.name }}" class="h-full max-h-[34rem] w-full object-cover">
-                </figure>
-            {% endif %}
-            <div class="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                    <h1 class="font-display text-h3">{{ clothing.name }}</h1>
-                    <p class="mt-2 text-base-content/60">
-                        Offered by
-                        <a
-                            href="{% url 'user_profile:public' clothing.owner.username %}"
-                            class="link"
-                        >
-                            {{ clothing.owner.username }}
-                        </a>
-                    </p>
-                </div>
-                {% if clothing.status == 'available' %}
-                    <span class="badge badge-success badge-outline">{{ clothing.get_status_display }}</span>
-                {% elif clothing.status == 'reserved' %}
-                    <span class="badge badge-warning badge-outline">{{ clothing.get_status_display }}</span>
-                {% else %}
-                    <span class="badge badge-ghost">{{ clothing.get_status_display }}</span>
-                {% endif %}
-            </div>
-
-            <p class="whitespace-pre-line leading-relaxed">{{ clothing.description }}</p>
-
-            <dl class="grid gap-4 sm:grid-cols-3">
-                <div>
-                    <dt class="text-sm text-base-content/60">Type</dt>
-                    <dd class="font-medium">{{ clothing.get_type_display }}</dd>
-                </div>
-                <div>
-                    <dt class="text-sm text-base-content/60">Size</dt>
-                    <dd class="font-medium">{{ clothing.get_size_display }}</dd>
-                </div>
-                <div>
-                    <dt class="text-sm text-base-content/60">Condition</dt>
-                    <dd class="font-medium">{{ clothing.get_condition_display }}</dd>
-                </div>
-
-            </dl>
-
-            {% if user == clothing.owner %}
-                {% if clothing.status == 'available' %}
-                <div class="card-actions justify-end border-t border-neutral-40 pt-5">
-                    <a class="btn btn-primary-ghost" href="{% url 'clothing_catalog:update' clothing.pk %}">Edit</a>
-                    <a class="btn btn-error-ghost" href="{% url 'clothing_catalog:delete' clothing.pk %}">Delete</a>
-                </div>
-                {% else %}
-                <p class="text-sm text-base-content/60">This listing cannot be edited or deleted while it is reserved or after it has been swapped.</p>
-                {% endif %}
-            {% elif clothing.status == 'available' %}
-                <div class="card-actions justify-end border-t border-neutral-40 pt-5">
-                    <a class="btn btn-primary" href="{% url 'swap_request:create' clothing.pk %}">Request swap</a>
-                </div>
-            {% endif %}
+<article class="mt-2 flex flex-col items-start gap-8 lg:mt-4 lg:flex-row lg:gap-[60px]">
+  <figure class="flex aspect-square w-full shrink-0 items-center justify-center overflow-hidden rounded-[20px] bg-neutral-30 lg:aspect-[544/560] lg:w-[43%]">
+    {% if clothing.image_url %}<img src="{{ clothing.image_url }}" alt="{{ clothing.name }}" width="800" height="824" class="size-full object-cover">{% else %}<span class="font-display text-h5 text-neutral-70">A new chapter awaits</span>{% endif %}
+  </figure>
+  <div class="flex min-w-0 flex-1 flex-col gap-8">
+    <div class="flex flex-col gap-5">
+      <div class="flex flex-wrap items-center gap-3">
+        <h1 class="font-display text-h3 text-primary-base">{{ clothing.name }}</h1>
+        <span class="rounded-full bg-primary-10 px-2 py-1.5 text-b8 font-semibold text-primary-base">{{ clothing.get_condition_display }}</span>
+      </div>
+      <p class="whitespace-pre-line text-b6 text-neutral-100">{{ clothing.description }}</p>
+      <div class="flex flex-wrap items-center gap-5 text-b7 text-neutral-70">
+        <span>{{ clothing.get_type_display }}</span><span>Size {{ clothing.get_size_display }}</span>
+        {% if clothing.distance_km != None %}<span class="inline-flex items-center gap-2"><img src="{% static 'clothing_catalog/images/discovery/imgIcon16.svg' %}" alt="">{% if clothing.distance_km < 1 %}Within ~1 km{% else %}~{{ clothing.distance_km|floatformat:"0" }} km away{% endif %}</span>{% endif %}
+      </div>
+    </div>
+    {% if user == clothing.owner %}
+      {% if clothing.status == 'available' %}
+      <div class="flex flex-wrap gap-3"><a class="market-button" href="{% url 'clothing_catalog:update' clothing.pk %}">Edit item</a><a class="market-secondary" href="{% url 'clothing_catalog:delete' clothing.pk %}">Delete item</a></div>
+      {% else %}<p class="rounded-xl bg-secondary-10 p-4 text-b8">This listing cannot be edited or deleted while it is reserved or after it has been swapped.</p>{% endif %}
+    {% elif clothing.status == 'available' %}
+      <a class="market-button self-start text-b7" href="{% url 'swap_request:create' clothing.pk %}" data-swap-link>{% lucide "arrow-right-left" size=24 %}Propose a swap</a>
+    {% else %}<p class="rounded-xl bg-secondary-10 p-4 text-b8" role="status">This piece is {{ clothing.get_status_display|lower }} and is no longer available for a new swap.</p>{% endif %}
+    <section aria-labelledby="exchange-options" class="flex flex-col gap-3">
+      <h2 id="exchange-options" class="text-s6 font-semibold">Available options</h2>
+      <div class="flex flex-col gap-4 sm:flex-row">
+        <div class="flex flex-1 items-center gap-3 rounded-[20px] border border-neutral-40 p-4">
+          <img src="{% static 'clothing_catalog/images/imgIcon11.svg' %}" alt="">
+          <div class="flex flex-col gap-1"><h3 class="text-b8 font-semibold text-neutral-90">Meet nearby</h3><p class="text-b9 text-neutral-90">Arrange a handover in a safe, public place.</p></div>
         </div>
-    </article>
+        <div class="flex flex-1 items-center gap-3 rounded-[20px] border border-neutral-40 p-4">
+          <img src="{% static 'clothing_catalog/images/imgIcon12.svg' %}" alt="">
+          <div class="flex flex-col gap-1"><h3 class="text-b8 font-semibold text-neutral-90">Send a package</h3><p class="text-b9 text-neutral-90">Agree on delivery and shipping costs with your partner.</p></div>
+        </div>
+      </div>
+    </section>
+    <a href="{% url 'user_profile:public' clothing.owner.username %}" class="flex flex-col gap-3 rounded-[20px] border border-primary-20 bg-primary-10 p-5">
+      <span class="flex items-center gap-2 text-b7 font-semibold text-primary-base">
+        <span class="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary-20 text-b9 text-secondary-70">{% if clothing.owner.profile.profile_picture %}<img src="{{ clothing.owner.profile.profile_picture.url }}" alt="" class="size-full object-cover">{% else %}{{ clothing.owner.profile.display_name|default:clothing.owner.username|first|upper }}{% endif %}</span>
+        {{ clothing.owner.profile.display_name|default:clothing.owner.username }}
+      </span>
+      <span class="flex flex-wrap items-center gap-5 text-b8 text-neutral-80">
+        <span class="inline-flex items-center gap-2"><img src="{% static 'clothing_catalog/images/imgIcon13.svg' %}" alt="">{% if clothing.owner_rating %}{{ clothing.owner_rating|floatformat:1 }} community rating{% else %}New swapper{% endif %}</span>
+        {% if clothing.owner.profile.city %}<span class="inline-flex items-center gap-2"><img src="{% static 'clothing_catalog/images/imgIcon14.svg' %}" alt="">{{ clothing.owner.profile.city }}</span>{% endif %}
+      </span>
+    </a>
+  </div>
+</article>
+<section class="mt-16 flex flex-col gap-10" aria-labelledby="related-title">
+  <div class="flex items-center justify-between gap-4"><h2 id="related-title" class="font-display text-h3 text-primary-base">More lovely finds out there</h2><a class="inline-flex shrink-0 items-center gap-2 text-b8 font-semibold text-primary-base" href="{% url 'clothing_catalog:list' %}#finds">See more {% lucide "arrow-right" size=20 %}</a></div>
+  {% if related_items %}
+    <div class="flex flex-wrap items-stretch gap-6">{% for clothing in related_items %}{% include "clothing_catalog/partials/product_card.html" %}{% endfor %}</div>
+  {% else %}
+    <p class="rounded-3xl bg-neutral-20 p-8 text-b7 text-neutral-80">More lovely finds are on their way. Check back soon for another piece to love.</p>
+  {% endif %}
 </section>
+{% include "clothing_catalog/marketplace/listing_cta.html" %}
 {% endblock %}
+{% block dialogs %}{% include "swap_request/partials/propose_dialog.html" %}{% endblock %}
+{% block scripts %}<script src="{% static 'clothing_catalog/js/marketplace.js' %}" defer></script>{% endblock %}

@@ -1,0 +1,32 @@
+@layer components {
+  .marketplace { overflow-wrap: anywhere; overflow-anchor: none; }
+  .marketplace #finds, .marketplace #main-content { scroll-margin-top: calc(var(--market-navbar-height, 0px) + 2rem); }
+  .market-marquee-track { animation: market-marquee 120s linear infinite; }
+  .market-marquee:hover .market-marquee-track,
+  .market-marquee[data-paused="true"] .market-marquee-track { animation-play-state: paused; }
+  @keyframes market-marquee { to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .market-marquee-track { animation: none; }
+    .market-marquee > div { overflow-x: auto; }
+    .market-marquee-track > [aria-hidden="true"], .market-marquee-toggle { display: none; }
+  }
+  .market-container { @apply mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-20; }
+  .market-button { @apply inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-primary-base px-5 py-3 text-b8 font-semibold text-neutral-20 transition-colors hover:bg-primary-60 disabled:cursor-wait disabled:opacity-60; }
+  .market-secondary { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-neutral-20 px-5 py-3 font-semibold text-primary-base transition-colors hover:bg-primary-20; }
+  .market-nav { @apply inline-flex items-center gap-3 border-b-2 pb-2 text-b8 text-neutral-80 transition-colors hover:text-primary-base; }
+  .marketplace a:focus-visible, .marketplace button:focus-visible, .marketplace summary:focus-visible { @apply outline-2 outline-offset-4 outline-primary-base; }
+  .marketplace form:has(#market-search:focus-visible) { @apply ring-2 ring-primary-base; }
+  .market-chip { @apply rounded-full border border-neutral-60 px-5 py-2 text-b7 text-neutral-80 transition-colors hover:border-primary-base hover:text-primary-base; }
+  .market-chip-active { @apply border-primary-60 bg-primary-60 text-secondary-10 hover:text-secondary-10; }
+  .market-filter { @apply cursor-pointer rounded-lg border border-neutral-40 bg-neutral-10 px-3 py-3 text-b9 text-neutral-80; }
+  .market-filter:disabled { @apply cursor-not-allowed text-neutral-60; }
+  .market-input { @apply min-h-12 w-full min-w-0 rounded-3xl border border-transparent bg-neutral-30 px-5 py-3 text-b7 text-neutral-100 placeholder:text-neutral-60 focus:border-primary-base focus:outline-none; }
+  .market-dialog { @apply fixed m-auto w-[calc(100%_-_2rem)] max-w-[524px] max-h-[calc(100dvh_-_2rem)] overflow-y-auto rounded-[32px] border-0 bg-neutral-10 p-6 text-neutral-100 shadow-xl sm:p-9; }
+  .market-dialog::backdrop { background: rgb(25 23 23 / 35%); backdrop-filter: blur(3px); }
+  .market-dialog-open { overflow: hidden; }
+  [data-swap-status]:empty { display: none; }
+  .market-dialog { opacity: 0; transform: translateY(12px); transition: opacity 220ms ease, transform 220ms ease, display 220ms allow-discrete, overlay 220ms allow-discrete; }
+  .market-dialog[open] { opacity: 1; transform: translateY(0); }
+  @starting-style { .market-dialog[open] { opacity: 0; transform: translateY(12px); } }
+  @media (prefers-reduced-motion: reduce) { .market-dialog { transition: none; } }
+}

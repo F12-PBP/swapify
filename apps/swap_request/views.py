@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -14,7 +15,12 @@ from apps.clothing_catalog.models import Clothing
 
 from .forms import SwapRequestForm
 from .models import SwapRequest
-from .services import SwapAcceptanceError, accept_swap_request
+from .services import (
+    SwapAcceptanceError,
+    SwapCreationError,
+    accept_swap_request,
+    create_swap_request,
+)
 
 RELATED_FIELDS = (
     "requester",
@@ -52,10 +58,19 @@ class SwapRequestCreateView(LoginRequiredMixin, CreateView):
     form_class = SwapRequestForm
     template_name = "swap_request/swap_request_form.html"
 
+    @property
+    def wants_fragment(self):
+        return self.request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    def get_template_names(self):
+        if self.wants_fragment:
+            return ["swap_request/partials/propose_form.html"]
+        return super().get_template_names()
+
     @cached_property
     def requested_clothing(self):
         other_available_clothing = (
-            Clothing.objects.select_related("owner")
+            Clothing.objects.select_related("owner__profile")
             .filter(status=Clothing.Status.AVAILABLE)
             .exclude(owner=self.request.user)
         )
@@ -71,14 +86,36 @@ class SwapRequestCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        offerable_clothing = context["form"].fields["offered_clothing"].queryset
+        context["offered_choices"] = [
+            choice for choice in context["form"].fields["offered_clothing"].choices
+        ]
         context["requested_clothing"] = self.requested_clothing
-        context["has_offerable_clothing"] = offerable_clothing.exists()
+        context["has_offerable_clothing"] = len(context["offered_choices"]) > 1
         return context
 
     def form_valid(self, form):
-        messages.success(self.request, "Swap request berhasil dikirim.")
-        return super().form_valid(form)
+        try:
+            self.object = create_swap_request(
+                requester=self.request.user,
+                requested_clothing_id=self.requested_clothing.pk,
+                offered_clothing_id=form.cleaned_data["offered_clothing"].pk,
+                message=form.cleaned_data["message"],
+            )
+        except SwapCreationError as error:
+            form.add_error(None, str(error))
+            return self.form_invalid(form)
+        messages.success(self.request, "Your swap request has been sent.")
+        if self.wants_fragment:
+            return JsonResponse(
+                {"redirect": self.object.get_absolute_url()}, status=201
+            )
+        return redirect(self.object)
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if self.wants_fragment:
+            response.status_code = 400
+        return response
 
 
 class SwapRequestActionView(LoginRequiredMixin, SingleObjectMixin, View):

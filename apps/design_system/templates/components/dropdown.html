@@ -1,0 +1,29 @@
+{% load static %}
+{% with selected=value|default_if_none:"" %}
+<div class="min-w-0 {% if size != 'sm' %}w-full{% endif %}" data-dropdown-field>
+  <span id="{{ dropdown_id }}-label" class="{% if show_label %}mb-2 block text-b7 font-semibold text-primary-base{% else %}sr-only{% endif %}">{{ label }}</span>
+  {% if disabled %}
+  <div class="swap-dropdown is-disabled" data-size="{{ size|default:'md' }}" data-dropdown-enhanced hidden>
+    <div class="swap-dropdown-trigger" aria-disabled="true" aria-labelledby="{{ dropdown_id }}-label {{ dropdown_id }}-value">
+      <span id="{{ dropdown_id }}-value" class="swap-dropdown-value">{% for option_value, option_label in choices %}{% if option_value|stringformat:"s" == selected|stringformat:"s" %}{{ option_label }}{% endif %}{% endfor %}</span>
+      <img src="{% static 'icons/select-chevron-default.svg' %}" alt="" width="16" height="16">
+    </div>
+  </div>
+  {% else %}
+  <details id="{{ dropdown_id }}" class="swap-dropdown {% if selected %}is-filled{% endif %}" data-size="{{ size|default:'md' }}" data-dropdown-enhanced hidden>
+    <summary class="swap-dropdown-trigger" role="button" aria-labelledby="{{ dropdown_id }}-label {{ dropdown_id }}-value" aria-haspopup="listbox" aria-controls="{{ dropdown_id }}-options" aria-expanded="false">
+      <span id="{{ dropdown_id }}-value" class="swap-dropdown-value">{% for option_value, option_label in choices %}{% if option_value|stringformat:"s" == selected|stringformat:"s" %}{{ option_label }}{% endif %}{% endfor %}</span>
+      <img class="swap-dropdown-chevron-default" src="{% static 'icons/select-chevron-default.svg' %}" alt="" width="16" height="16">
+      <img class="swap-dropdown-chevron-filled" src="{% static 'icons/select-chevron-filled.svg' %}" alt="" width="16" height="16">
+    </summary>
+    <div class="swap-dropdown-menu" id="{{ dropdown_id }}-options" role="listbox" aria-labelledby="{{ dropdown_id }}-label">
+      {% for option_value, option_label in choices %}<button class="swap-dropdown-option" type="button" role="option" aria-selected="{% if option_value|stringformat:'s' == selected|stringformat:'s' %}true{% else %}false{% endif %}" tabindex="-1" data-value="{{ option_value }}">{{ option_label }}</button>{% endfor %}
+    </div>
+    <input type="hidden" name="{{ name }}" value="{{ selected }}" disabled {% if auto_apply %}data-auto-submit{% endif %}>
+  </details>
+  {% endif %}
+  <select name="{{ name }}" class="select swap-input w-full" data-dropdown-fallback {% if auto_apply %}data-auto-submit{% endif %} aria-labelledby="{{ dropdown_id }}-label" {% if disabled %}disabled{% endif %} {% if required %}required{% endif %}>
+    {% for option_value, option_label in choices %}<option value="{{ option_value }}" {% if option_value|stringformat:"s" == selected|stringformat:"s" %}selected{% endif %}>{{ option_label }}</option>{% endfor %}
+  </select>
+</div>
+{% endwith %}

@@ -1,0 +1,16 @@
+{% load lucide %}
+<dialog id="catalog-filters" class="market-dialog" aria-labelledby="filter-title" aria-describedby="filter-description">
+  <div class="flex items-start justify-between gap-4">
+    <h2 id="filter-title" class="font-display text-h4 text-primary-base">A little more your style.</h2>
+    <button type="button" data-dialog-close aria-label="Close filters" class="cursor-pointer text-neutral-80">{% lucide "x" size=24 %}</button>
+  </div>
+  <p id="filter-description" class="mt-3 text-b7 text-neutral-80">Narrow down your next favourite.</p>
+  <form method="get" action="{% url 'clothing_catalog:list' %}#finds" data-catalog-form class="mt-8 flex flex-col gap-4">
+    <input type="hidden" name="search" value="{{ filters.search }}">
+    <input type="hidden" name="type" value="{{ filters.type }}">
+    <input type="hidden" name="sort" value="{{ filters.sort|default:'recommended' }}">
+    {% include "clothing_catalog/discovery/filter_fields.html" with suffix="modal" modal=True dropdown_size="md" auto_apply=False %}
+    <button class="market-button mt-3" type="submit">Show matching finds</button>
+    <a href="{% querystring size=None condition=None distance=None page=None %}#finds" data-catalog-link data-catalog-reset class="market-secondary text-b7">Reset filters</a>
+  </form>
+</dialog>
