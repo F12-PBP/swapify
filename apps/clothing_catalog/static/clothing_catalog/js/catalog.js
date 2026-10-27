@@ -17,6 +17,11 @@
 
   search.setAttribute("aria-controls", "catalog-results");
   search.setAttribute("autocomplete", "off");
+  search.addEventListener("pointerdown", (event) => {
+    if (document.activeElement === search || event.button !== 0) return;
+    event.preventDefault();
+    search.focus({ preventScroll: true });
+  });
   document.querySelectorAll("[data-filter-apply]").forEach((button) => { button.hidden = true; });
 
   const canonicalURL = (url, state) => {
@@ -32,11 +37,14 @@
   };
 
   const synchronize = (state, url) => {
-    if (search.value !== (state.search || "")) search.value = state.search || "";
+    // Reassigning a focused sticky input can make the browser reveal its
+    // original position in the document. Keep the user's draft and caret intact.
+    if (document.activeElement !== search && search.value !== (state.search || "")) search.value = state.search || "";
     document.querySelectorAll("[data-catalog-form], form[role='search']").forEach((form) => {
       fields.forEach((name) => {
         const value = state[name] || (name === "sort" ? "recommended" : "");
         form.querySelectorAll(`[name="${name}"]`).forEach((input) => {
+          if (input === search) return;
           input.value = value;
           if (input.tagName === "INPUT") input.defaultValue = value;
         });
@@ -70,7 +78,7 @@
     requestSequence += 1;
   };
 
-  const load = async (url, { history = "push", scroll = false } = {}) => {
+  const load = async (url, { history = "push", scroll = false, preserveLayout = false } = {}) => {
     invalidatePending();
     const sequence = requestSequence;
     controller = new AbortController();
@@ -78,7 +86,7 @@
     pendingURL = new URL(url);
     results.setAttribute("aria-busy", "true");
     status.textContent = "Updating finds…";
-    feedback.hidden = false;
+    feedback.classList.remove("invisible");
     retry.hidden = true;
     const timeout = setTimeout(() => activeController.abort("timeout"), 15000);
     try {
@@ -91,13 +99,17 @@
       const data = await response.json();
       if (sequence !== requestSequence) return;
       const target = canonicalURL(url, data.filters);
+      // Shrinking the document beneath a focused sticky input can move the
+      // viewport. Keep the results area stable throughout live typing.
+      if (preserveLayout) results.style.minHeight = `${results.getBoundingClientRect().height}px`;
+      else results.style.removeProperty("min-height");
       results.innerHTML = data.html;
       synchronize(data.filters, target);
       document.getElementById("catalog-filter-errors").hidden = Object.keys(data.errors).length === 0;
       if (history === "push" && target.href !== window.location.href) window.history.pushState(null, "", target);
       else if (history === "replace") window.history.replaceState(null, "", target);
       appliedURL = target;
-      feedback.hidden = true;
+      feedback.classList.add("invisible");
       if (scroll) catalog.scrollIntoView({ block: "start" });
     } catch {
       if (sequence !== requestSequence) return;
@@ -131,7 +143,7 @@
     invalidatePending();
     results.setAttribute("aria-busy", "false");
     if (composing) return;
-    debounce = setTimeout(() => load(searchURL(), { history: "replace" }), 250);
+    debounce = setTimeout(() => load(searchURL(), { history: "replace", preserveLayout: true }), 250);
   };
   search.addEventListener("input", queueSearch);
   search.addEventListener("compositionstart", () => { composing = true; invalidatePending(); });
