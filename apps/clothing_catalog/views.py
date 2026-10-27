@@ -1,7 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy
+from django.utils.cache import patch_vary_headers
 from django.utils.functional import cached_property
 from django.views.generic import (
     CreateView,
@@ -30,6 +33,29 @@ class ClothingListView(ListView):
     template_name = "clothing_catalog/clothing_list.html"
     context_object_name = "clothing_items"
     paginate_by = 12
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get("X-Catalog-Request") == "results":
+            response = JsonResponse(
+                {
+                    "html": render_to_string(
+                        "clothing_catalog/partials/discovery_results.html",
+                        context,
+                        request=self.request,
+                    ),
+                    "filters": {
+                        **self.filter_form.cleaned_data,
+                        "sort": self.filter_form.cleaned_data.get("sort")
+                        or "recommended",
+                    },
+                    "errors": self.filter_form.errors.get_json_data(),
+                    "count": context["paginator"].count,
+                }
+            )
+        else:
+            response = super().render_to_response(context, **response_kwargs)
+        patch_vary_headers(response, ["X-Catalog-Request"])
+        return response
 
     @cached_property
     def filter_form(self):

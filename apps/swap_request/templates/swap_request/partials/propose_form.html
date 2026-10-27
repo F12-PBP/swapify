@@ -6,8 +6,7 @@
   {% csrf_token %}
   {% if form.non_field_errors %}<div class="rounded-xl bg-red-10 p-4 text-b8 text-red-80" role="alert">{{ form.non_field_errors }}</div>{% endif %}
   <div class="flex flex-col gap-2">
-    <label for="{{ form.offered_clothing.id_for_label }}" class="text-b7 font-semibold text-primary-base">Your piece to swap</label>
-    {{ form.offered_clothing }}
+    {% include "components/dropdown.html" with dropdown_id=form.offered_clothing.id_for_label name="offered_clothing" label="Your piece to swap" choices=offered_choices value=form.offered_clothing.value size="md" show_label=True required=True %}
     {% for error in form.offered_clothing.errors %}<p class="text-b9 text-red-70" role="alert">{{ error }}</p>{% endfor %}
   </div>
   <div class="flex flex-col gap-2">

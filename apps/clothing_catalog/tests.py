@@ -313,6 +313,39 @@ class DiscoveryViewTests(TestCase):
         )
         self.assertContains(empty, "No pieces match")
 
+    def test_live_search_returns_only_results_and_current_filter_state(self):
+        response = self.client.get(
+            reverse("clothing_catalog:list"),
+            {"search": "denim", "type": "outerwear", "size": "L"},
+            HTTP_X_CATALOG_REQUEST="results",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["count"], 1)
+        self.assertIn(self.item.name, data["html"])
+        self.assertNotIn("<!DOCTYPE", data["html"])
+        self.assertNotIn("Your next favourite.", data["html"])
+        self.assertEqual(data["filters"]["search"], "denim")
+        self.assertEqual(data["filters"]["sort"], "recommended")
+        self.assertEqual(data["errors"], {})
+        self.assertIn("X-Catalog-Request", response["Vary"])
+        page = self.client.get(reverse("clothing_catalog:list"))
+        self.assertIn("X-Catalog-Request", page["Vary"])
+
+    def test_live_search_empty_and_invalid_filter_responses(self):
+        route = reverse("clothing_catalog:list")
+        empty = self.client.get(
+            route, {"search": "missing-piece"}, HTTP_X_CATALOG_REQUEST="results"
+        ).json()
+        self.assertEqual(empty["count"], 0)
+        self.assertIn("No pieces match", empty["html"])
+        invalid = self.client.get(
+            route, {"type": "unknown"}, HTTP_X_CATALOG_REQUEST="results"
+        ).json()
+        self.assertEqual(invalid["count"], 1)
+        self.assertIn("type", invalid["errors"])
+        self.assertNotIn("type", invalid["filters"])
+
     def test_discovery_paginates_twelve_items_and_keeps_search(self):
         Clothing.objects.bulk_create(
             [

@@ -86,9 +86,11 @@ class SwapRequestCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        offerable_clothing = context["form"].fields["offered_clothing"].queryset
+        context["offered_choices"] = [
+            choice for choice in context["form"].fields["offered_clothing"].choices
+        ]
         context["requested_clothing"] = self.requested_clothing
-        context["has_offerable_clothing"] = offerable_clothing.exists()
+        context["has_offerable_clothing"] = len(context["offered_choices"]) > 1
         return context
 
     def form_valid(self, form):

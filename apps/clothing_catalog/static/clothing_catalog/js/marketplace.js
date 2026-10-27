@@ -25,10 +25,6 @@
       dialog.querySelector("form")?.reset();
     });
   });
-  document.querySelectorAll("[data-auto-submit]").forEach((select) => {
-    select.addEventListener("change", () => select.form.requestSubmit());
-  });
-  document.querySelectorAll("[data-filter-apply]").forEach((button) => { button.hidden = true; });
 
   const swapDialog = document.getElementById("propose-swap");
   if (!swapDialog) return;
@@ -87,8 +83,9 @@
       const html = await response.text();
       if (sequence !== loadSequence || !swapDialog.open) return;
       content.innerHTML = html;
+      window.SwapDropdown?.init(content);
       status.textContent = "";
-      content.querySelector("select, a")?.focus();
+      content.querySelector("summary, select, a")?.focus();
     } catch {
       if (sequence === loadSequence && swapDialog.open) status.textContent = "We couldn’t connect. Close this window and try again.";
     }
@@ -115,6 +112,7 @@
       }
       if (response.status === 400) {
         content.innerHTML = await response.text();
+        window.SwapDropdown?.init(content);
         status.textContent = "Please review the highlighted details.";
         showFormErrors();
       } else {
