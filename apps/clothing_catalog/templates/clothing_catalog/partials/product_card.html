@@ -8,7 +8,7 @@
     <div class="flex flex-1 flex-col gap-2 border-b border-neutral-40 pb-4">
       <div class="flex flex-wrap items-center justify-between gap-2 text-b8 text-neutral-70">
         <span>{{ clothing.get_type_display }} · Size {{ clothing.get_size_display }}</span>
-        {% if clothing.distance_km != None %}<span class="inline-flex items-center gap-1"><img src="{% static 'main/images/discovery/imgIcon16.svg' %}" alt="">{% if clothing.distance_km < 1 %}Within ~1 km{% else %}~{{ clothing.distance_km|floatformat:"0" }} km away{% endif %}</span>{% endif %}
+        {% if clothing.distance_km != None %}<span class="inline-flex items-center gap-1"><img src="{% static 'clothing_catalog/images/discovery/imgIcon16.svg' %}" alt="">{% if clothing.distance_km < 1 %}Within ~1 km{% else %}~{{ clothing.distance_km|floatformat:"0" }} km away{% endif %}</span>{% endif %}
       </div>
       <h3 class="text-s6 font-semibold text-neutral-110"><a href="{{ clothing.get_absolute_url }}" class="line-clamp-2 hover:text-primary-base">{{ clothing.name }}</a></h3>
     </div>
@@ -16,7 +16,7 @@
       <a href="{% url 'user_profile:public' clothing.owner.username %}" class="flex min-w-0 flex-1 items-center gap-1 text-b9 text-neutral-90">
         <span class="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary-20 text-[8px] text-secondary-70">{% if clothing.owner.profile.profile_picture %}<img src="{{ clothing.owner.profile.profile_picture.url }}" alt="" loading="lazy" class="size-full object-cover">{% else %}{{ clothing.owner.profile.display_name|default:clothing.owner.username|first|upper }}{% endif %}</span>
         <span class="flex min-w-0 flex-col"><span class="truncate">{{ clothing.owner.profile.display_name|default:clothing.owner.username }}</span>{% if not clothing.owner_rating %}<span class="text-[9px] text-neutral-70">New swapper</span>{% endif %}</span>
-        {% if clothing.owner_rating %}<span class="ml-1 inline-flex shrink-0 items-center gap-0.5 text-neutral-80"><img src="{% static 'main/images/discovery/imgIcon17.svg' %}" alt="Rated">{{ clothing.owner_rating|floatformat:1 }}</span>{% endif %}
+        {% if clothing.owner_rating %}<span class="ml-1 inline-flex shrink-0 items-center gap-0.5 text-neutral-80"><img src="{% static 'clothing_catalog/images/discovery/imgIcon17.svg' %}" alt="Rated">{{ clothing.owner_rating|floatformat:1 }}</span>{% endif %}
       </a>
       <a href="{% url 'swap_request:create' clothing.pk %}" class="market-button shrink-0 gap-2 px-4 text-b8" data-swap-link>Let’s Swap</a>
     </div>

@@ -1,4 +1,4 @@
-{% extends "marketplace/base.html" %}
+{% extends "clothing_catalog/marketplace/base.html" %}
 {% load static lucide %}
 {% block title %}{{ clothing.name }} | Swapify{% endblock %}
 {% block content %}
@@ -15,7 +15,7 @@
       <p class="whitespace-pre-line text-b6 text-neutral-100">{{ clothing.description }}</p>
       <div class="flex flex-wrap items-center gap-5 text-b7 text-neutral-70">
         <span>{{ clothing.get_type_display }}</span><span>Size {{ clothing.get_size_display }}</span>
-        {% if clothing.distance_km != None %}<span class="inline-flex items-center gap-2"><img src="{% static 'main/images/discovery/imgIcon16.svg' %}" alt="">{% if clothing.distance_km < 1 %}Within ~1 km{% else %}~{{ clothing.distance_km|floatformat:"0" }} km away{% endif %}</span>{% endif %}
+        {% if clothing.distance_km != None %}<span class="inline-flex items-center gap-2"><img src="{% static 'clothing_catalog/images/discovery/imgIcon16.svg' %}" alt="">{% if clothing.distance_km < 1 %}Within ~1 km{% else %}~{{ clothing.distance_km|floatformat:"0" }} km away{% endif %}</span>{% endif %}
       </div>
     </div>
     {% if user == clothing.owner %}
@@ -52,11 +52,11 @@
 </article>
 {% if related_items %}
 <section class="mt-16 flex flex-col gap-10" aria-labelledby="related-title">
-  <div class="flex items-center justify-between gap-4"><h2 id="related-title" class="font-display text-h3 text-primary-base">More lovely finds out there</h2><a class="inline-flex shrink-0 items-center gap-2 text-b8 font-semibold text-primary-base" href="{% url 'main:discover' %}?type={{ clothing.type }}#finds">See more {% lucide "arrow-right" size=20 %}</a></div>
+  <div class="flex items-center justify-between gap-4"><h2 id="related-title" class="font-display text-h3 text-primary-base">More lovely finds out there</h2><a class="inline-flex shrink-0 items-center gap-2 text-b8 font-semibold text-primary-base" href="{% url 'clothing_catalog:list' %}?type={{ clothing.type }}#finds">See more {% lucide "arrow-right" size=20 %}</a></div>
   <div class="flex flex-wrap items-stretch gap-6">{% for clothing in related_items %}{% include "clothing_catalog/partials/product_card.html" %}{% endfor %}</div>
 </section>
 {% endif %}
-{% include "marketplace/listing_cta.html" %}
+{% include "clothing_catalog/marketplace/listing_cta.html" %}
 {% endblock %}
 {% block dialogs %}{% include "swap_request/partials/propose_dialog.html" %}{% endblock %}
-{% block scripts %}<script src="{% static 'main/js/marketplace.js' %}" defer></script>{% endblock %}
+{% block scripts %}<script src="{% static 'clothing_catalog/js/marketplace.js' %}" defer></script>{% endblock %}

@@ -3,10 +3,10 @@
   <a href="{% querystring type=None page=None %}#finds" class="market-chip {% if not filters.type %}market-chip-active{% endif %}" {% if not filters.type %}aria-current="true"{% endif %}>All finds</a>
   {% for value, label in categories %}<a href="{% querystring type=value page=None %}#finds" class="market-chip {% if filters.type == value %}market-chip-active{% endif %}" {% if filters.type == value %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
 </div>
-<form method="get" action="{% url 'main:discover' %}#finds" class="my-2 flex flex-wrap items-center gap-3" aria-label="Filter and sort finds">
+<form method="get" action="{% url 'clothing_catalog:list' %}#finds" class="my-2 flex flex-wrap items-center gap-3" aria-label="Filter and sort finds">
   <input type="hidden" name="search" value="{{ filters.search }}">
   <input type="hidden" name="type" value="{{ filters.type }}">
-  {% include "main/discovery/filter_fields.html" with suffix="inline" %}
+  {% include "clothing_catalog/discovery/filter_fields.html" with suffix="inline" %}
   <button class="market-secondary px-3 py-2 text-b9" type="submit" data-filter-apply>Apply</button>
   <button type="button" class="market-filter" data-dialog-open="catalog-filters" hidden>All filters</button>
   <div class="ml-auto flex items-center gap-2 text-b9 text-neutral-80">
