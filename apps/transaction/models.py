@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
@@ -6,6 +7,8 @@ from django.utils import timezone
 
 
 class Transaction(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     swap_request = models.OneToOneField(
         "swap_request.SwapRequest",
         on_delete=models.PROTECT,
@@ -110,6 +113,15 @@ class Transaction(models.Model):
     reported_at = models.DateTimeField(
         null=True,
         blank=True,
+    )
+
+    # Start Parameter
+    requester_started = models.BooleanField(
+        default=False,
+    )
+
+    owner_started = models.BooleanField(
+        default=False,
     )
 
     def __str__(self):
