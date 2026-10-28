@@ -15,7 +15,8 @@
         <a href="{% url 'clothing_catalog:my_list' %}" class="btn btn-primary-ghost inline-flex items-center justify-center gap-2">{% lucide "shirt" size=20 %}Manage clothing</a>
       {% endif %}
     </div>
-    <div class="flex flex-wrap items-stretch gap-6" aria-label="Available clothing">
+    <h2 id="available-clothing-heading" class="sr-only">Available clothing</h2>
+    <div class="flex flex-wrap items-stretch gap-6" aria-labelledby="available-clothing-heading">
       {% for clothing in clothing_items %}
         {% include "clothing_catalog/partials/product_card.html" with variant="wardrobe" %}
       {% empty %}

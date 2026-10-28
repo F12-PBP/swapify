@@ -4,7 +4,7 @@
     {% if clothing.image_url %}<img src="{{ clothing.image_url }}" alt="{{ clothing.name }}" loading="lazy" width="600" height="450" class="size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-105">{% else %}<span class="flex size-full items-center justify-center font-display text-h5 text-neutral-70">A new chapter awaits</span>{% endif %}
     <span class="absolute top-3 left-3 rounded-full bg-primary-10 px-2 py-1.5 text-b8 font-semibold text-primary-base">{{ clothing.get_condition_display }}</span>
   </a>
-  <div class="flex flex-1 flex-col gap-4 p-4 pt-5">
+  <div class="flex flex-1 flex-col gap-4 p-4 {% if variant == 'wardrobe' %}pt-9{% else %}pt-5{% endif %}">
     {% if variant == "wardrobe" %}<p class="text-b7 font-semibold {% if clothing.pending_request_id %}text-secondary-70{% else %}text-neutral-80{% endif %}">{% if clothing.pending_request_id %}Requested{% else %}{{ clothing.get_status_display }}{% endif %}</p>{% endif %}
     <div class="flex flex-1 flex-col gap-2 border-b border-neutral-40 pb-4">
       <div class="flex flex-wrap items-center justify-between gap-2 text-b8 text-neutral-70">
