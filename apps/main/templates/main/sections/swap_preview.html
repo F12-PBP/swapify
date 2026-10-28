@@ -1,0 +1,60 @@
+{% load static lucide %}
+<section id="try-a-swap" class="scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16 border-y border-neutral-40 bg-neutral-10" aria-labelledby="swap-preview-title" data-swap-demo>
+    <div class="mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14">
+        <div class="mb-20 flex flex-wrap items-end justify-center gap-4">
+            <div class="flex flex-col gap-3">
+                <h2 id="swap-preview-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">Try a little swap.</h2>
+            </div>
+        </div>
+        <div class="mx-auto flex max-w-[1000px] flex-wrap items-center justify-center gap-4 lg:flex-nowrap lg:gap-12">
+            <article class="order-1 flex w-[calc((100%_-_1rem)/2)] min-w-0 flex-col gap-4 rounded-3xl border border-neutral-40 bg-neutral-20 p-3 sm:p-5 lg:flex-1" data-demo-side="yours">
+                <h3 class="text-b8 font-semibold text-primary-base lg:text-b7">Your piece</h3>
+                <figure class="relative aspect-square rounded-2xl bg-secondary-10" data-demo-piece>
+                    <img src="{% static 'images/landing_page/clothing/knit.svg' %}" width="320" height="320" alt="Your demo piece: cosy knit" class="pointer-events-none relative z-1 size-full object-contain">
+                </figure>
+                <div data-demo-picker class="flex flex-wrap gap-2" role="group" aria-label="Choose your demo piece">
+                    <input type="hidden" name="your_piece" value="knit">
+                    {% for piece in style_pieces %}
+                        <button type="button" class="btn btn-primary-ghost h-12! min-h-12! w-[calc((100%_-_.5rem)/2)] px-2! aria-pressed:border-primary-base aria-pressed:bg-primary-20 aria-pressed:ring-2 aria-pressed:ring-primary-base sm:w-12" data-demo-choice="{{ piece.key }}" data-demo-input="your_piece" aria-label="Your piece: {{ piece.label }}" aria-pressed="{% if piece.key == 'knit' %}true{% else %}false{% endif %}" title="{{ piece.label }}">
+                            <img src="{{ piece.image }}" width="32" height="32" alt="" class="size-8 object-contain">
+                        </button>
+                    {% endfor %}
+                </div>
+                <p class="text-b10 text-neutral-80 sm:text-b9">A favourite ready for a new story.</p>
+            </article>
+            <div class="relative z-10 order-3 flex h-80 w-full shrink-0 flex-col items-center gap-4 pt-2 text-center lg:order-2 lg:h-auto lg:w-52 lg:self-stretch lg:pt-10">
+                <span class="text-secondary-70" aria-hidden="true">{% lucide "arrow-left-right" size=42 %}</span>
+                <div class="relative">
+                    <button type="button" class="btn btn-primary" data-demo-swap disabled>Swap these pieces</button>
+                    <button type="button" class="absolute top-1/2 -right-11 flex size-9 -translate-y-1/2 items-center justify-center rounded-full text-primary-base transition-opacity duration-300 disabled:pointer-events-none disabled:opacity-0 motion-reduce:transition-none" aria-label="Reset demo" title="Reset demo" data-demo-reset disabled>
+                        {% lucide "rotate-ccw" size=19 %}
+                    </button>
+                </div>
+                <div class="group/demo-pose absolute bottom-0 left-1/2 h-56 w-52 -translate-x-1/2 lg:h-72 lg:w-64" data-demo-mascot data-complete="false" aria-hidden="true">
+                    <img src="{% static 'images/landing_page/swapy/hello.svg' %}" width="340" height="380" alt="" class="absolute inset-0 size-full object-contain opacity-100 transition-opacity duration-400 ease-out group-data-[complete=true]/demo-pose:opacity-0 motion-reduce:transition-none" data-demo-ready>
+                    <img src="{% static 'images/landing_page/swapy/celebrate.svg' %}" width="340" height="380" alt="" class="absolute inset-0 size-full object-contain opacity-0 transition-opacity duration-400 ease-out group-data-[complete=true]/demo-pose:opacity-100 motion-reduce:transition-none" data-demo-celebrate>
+                </div>
+                <p class="sr-only" role="status" aria-live="polite" data-demo-result></p>
+            </div>
+            <article class="order-2 flex w-[calc((100%_-_1rem)/2)] min-w-0 flex-col gap-4 rounded-3xl border border-neutral-40 bg-neutral-20 p-3 sm:p-5 lg:order-3 lg:flex-1" data-demo-side="theirs">
+                <h3 class="text-b8 font-semibold text-primary-base lg:text-b7">Their piece</h3>
+                <figure class="relative aspect-square rounded-2xl bg-primary-10" data-demo-piece>
+                    <img src="{% static 'images/landing_page/clothing/jacket.svg' %}" width="320" height="320" alt="Their demo piece: denim jacket" class="pointer-events-none relative z-1 size-full object-contain">
+                </figure>
+                <div data-demo-picker class="flex flex-wrap gap-2" role="group" aria-label="Choose their demo piece">
+                    <input type="hidden" name="their_piece" value="jacket">
+                    {% for piece in style_pieces %}
+                        <button type="button" class="btn btn-primary-ghost h-12! min-h-12! w-[calc((100%_-_.5rem)/2)] px-2! aria-pressed:border-primary-base aria-pressed:bg-primary-20 aria-pressed:ring-2 aria-pressed:ring-primary-base sm:w-12" data-demo-choice="{{ piece.key }}" data-demo-input="their_piece" aria-label="Their piece: {{ piece.label }}" aria-pressed="{% if piece.key == 'jacket' %}true{% else %}false{% endif %}" title="{{ piece.label }}">
+                            <img src="{{ piece.image }}" width="32" height="32" alt="" class="size-8 object-contain">
+                        </button>
+                    {% endfor %}
+                </div>
+                <p class="text-b10 text-neutral-80 sm:text-b9">Someone else’s soon-to-be favourite.</p>
+            </article>
+        </div>
+        <div class="mt-8 flex justify-center">
+            <a href="{% url 'clothing_catalog:list' %}" class="inline-flex items-center gap-2 text-b8 font-semibold text-primary-base underline decoration-primary-30 underline-offset-4">Find a piece for your real swap {% lucide "arrow-right" size=18 %}</a>
+        </div>
+        {{ style_pieces|json_script:"landing-pieces" }}
+    </div>
+</section>
