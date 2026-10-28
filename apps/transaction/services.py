@@ -39,7 +39,7 @@ def start_transaction(transaction_id, user):
     if exchange.status == Transaction.Status.IN_PROGRESS:
         return exchange
     if exchange.status != Transaction.Status.WAITING:
-        raise ValidationError("Only a waiting transaction can be started.")
+        raise ValidationError("Only a waiting exchange can be started.")
 
     start_field = f"{party}_started"
     updated_fields = []
@@ -53,6 +53,66 @@ def start_transaction(transaction_id, user):
         updated_fields.append("status")
         exchange.full_clean()
         _reserved_clothing(exchange)
+
+    exchange.save(update_fields=updated_fields)
+    return exchange
+
+
+@transaction.atomic
+def cancel_ready_transaction(transaction_id, user):
+    exchange = _get_participant_transaction(transaction_id, user)
+    party = "requester" if user.pk == exchange.swap_request.requester_id else "owner"
+    if exchange.status == Transaction.Status.IN_PROGRESS:
+        return exchange
+    if exchange.status != Transaction.Status.WAITING:
+        raise ValidationError("You can only unready a waiting exchange.")
+
+    start_field = f"{party}_started"
+    updated_fields = []
+
+    if getattr(exchange, start_field):
+        setattr(exchange, start_field, False)
+        updated_fields.append(start_field)
+
+    exchange.save(update_fields=updated_fields)
+    return exchange
+
+
+@transaction.atomic
+def validate_resi(transaction_id, user):
+    exchange = _get_participant_transaction(transaction_id, user)
+    party = "owner" if user.pk == exchange.swap_request.requester_id else "requester"
+    if exchange.status == Transaction.Status.IN_PROGRESS:
+        return exchange
+    if exchange.status != Transaction.Status.WAITING:
+        raise ValidationError("Only a waiting exchange resi can be validated")
+
+    valid_field = f"{party}_resi_valid"
+    updated_fields = []
+
+    if not getattr(exchange, valid_field):
+        setattr(exchange, valid_field, True)
+        updated_fields.append(valid_field)
+
+    exchange.save(update_fields=updated_fields)
+    return exchange
+
+
+@transaction.atomic
+def unvalidate_resi(transaction_id, user):
+    exchange = _get_participant_transaction(transaction_id, user)
+    party = "owner" if user.pk == exchange.swap_request.requester_id else "requester"
+    if exchange.status == Transaction.Status.IN_PROGRESS:
+        return exchange
+    if exchange.status != Transaction.Status.WAITING:
+        raise ValidationError("Only a waiting exchange resi can be unvalidated")
+
+    valid_field = f"{party}_resi_valid"
+    updated_fields = []
+
+    if getattr(exchange, valid_field):
+        setattr(exchange, valid_field, False)
+        updated_fields.append(valid_field)
 
     exchange.save(update_fields=updated_fields)
     return exchange

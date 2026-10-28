@@ -1,3 +1,5 @@
+import uuid
+
 from cloudinary.models import CloudinaryField
 from django.conf import settings
 from django.db import models
@@ -5,6 +7,9 @@ from django.urls import reverse
 
 
 class Clothing(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+
     class Type(models.TextChoices):
         TOP = "top", "Top"
         BOTTOM = "bottom", "Bottom"

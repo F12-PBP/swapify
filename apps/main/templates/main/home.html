@@ -5,16 +5,16 @@
     Swapify — Swap Smartly, Wear Happily
 {% endblock %}
 
-{% block main_class %}w-full min-h-screen pt-16 xl:pt-24{% endblock %}
+{% block main_class %}bg-neutral-20 text-neutral-100 [&_:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-4 [&_:focus-visible]:outline-primary-base w-full min-h-screen pt-16 xl:pt-24{% endblock %}
 
 {% block content %}
     {% include "main/sections/hero.html" %}
-    {% include "main/sections/about.html" %}
+    {% include "main/sections/discovery.html" %}
+    {% include "main/sections/swap_preview.html" %}
+    {% include "main/sections/nearby.html" %}
     {% include "main/sections/steps.html" %}
     {% include "main/sections/benefits.html" %}
-    {% include "main/sections/testimonials.html" %}
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" integrity="sha384-HOvlOYPIs/zjoIkWUGXkVmXsjr8GuZLV+Q+rcPwmJOVZVpvTSXQChiN4t9Euv9Vc" crossorigin="anonymous" defer></script>
-    <script src="{% static 'main/js/hero.js' %}" defer></script>
-    <script src="{% static 'main/js/swapy.js' %}" defer></script>
-    <script src="{% static 'main/js/testimonials.js' %}" defer></script>
+    {% include "main/sections/faq.html" %}
+    {% include "main/sections/invitation.html" %}
+    <script src="{% static 'main/js/landing.js' %}?v=landing-8" defer></script>
 {% endblock %}
