@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./marketplace.css";
+@import "./landing.css";
 
 html {
   scroll-behavior: smooth;
