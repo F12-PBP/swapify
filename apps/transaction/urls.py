@@ -26,4 +26,14 @@ urlpatterns = [
         views.TransactionCancelView.as_view(),
         name="transaction_cancel",
     ),
+    path(
+        "<uuid:pk>/validate/",
+        views.ResiValidatetView.as_view(),
+        name="validate_resi",
+    ),
+    path(
+        "<uuid:pk>/unvalidate/",
+        views.ResiUnvalidatetView.as_view(),
+        name="unvalidate_resi",
+    ),
 ]
