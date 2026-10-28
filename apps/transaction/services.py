@@ -59,6 +59,26 @@ def start_transaction(transaction_id, user):
 
 
 @transaction.atomic
+def cancel_ready_transaction(transaction_id, user):
+    exchange = _get_participant_transaction(transaction_id, user)
+    party = "requester" if user.pk == exchange.swap_request.requester_id else "owner"
+    if exchange.status == Transaction.Status.IN_PROGRESS:
+        return exchange
+    if exchange.status != Transaction.Status.WAITING:
+        raise ValidationError("Exchange has been started.")
+
+    start_field = f"{party}_started"
+    updated_fields = []
+
+    if getattr(exchange, start_field):
+        setattr(exchange, start_field, False)
+        updated_fields.append(start_field)
+
+    exchange.save(update_fields=updated_fields)
+    return exchange
+
+
+@transaction.atomic
 def confirm_receipt(transaction_id, user):
     exchange = _get_participant_transaction(transaction_id, user)
     party = "requester" if user.pk == exchange.swap_request.requester_id else "owner"

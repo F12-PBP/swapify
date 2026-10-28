@@ -417,10 +417,31 @@
                             Update Information
                         </a>
 
-                        <form method="post" action="{% url 'transaction_start' transaction.pk %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-primary">Start Exchange</button>
-                        </form>
+                        {% if transaction.is_requester %}
+                            {% if transaction.requester_started %}
+                                <form method="post" action="{% url 'transaction_cancel' transaction.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">Unready</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url 'transaction_start' transaction.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">Ready</button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            {% if transaction.owner_started %}
+                                <form method="post" action="{% url 'transaction_cancel' transaction.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">Unready</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url 'transaction_start' transaction.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">Ready</button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
                     </div>
                     <p class="text-sm text-neutral-70 mt-3">
                         Fill in the meetup date and location, or both participants' tracking numbers and delivery estimates. Starting locks these details for both participants.

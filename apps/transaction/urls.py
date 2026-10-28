@@ -21,4 +21,9 @@ urlpatterns = [
         views.TransactionReceivedView.as_view(),
         name="transaction_received",
     ),
+    path(
+        "<uuid:pk>/cancel/",
+        views.TransactionCancelView.as_view(),
+        name="transaction_cancel",
+    ),
 ]
