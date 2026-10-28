@@ -32,3 +32,11 @@
     .map-story-number { transition: none; }
   }
 }
+
+@layer components {
+  @media (prefers-reduced-motion: no-preference) {
+    .journey-step[data-arrived="true"] img { animation: landing-arrive 650ms both; }
+    .journey-step:nth-child(2) img { animation-delay: 100ms; }
+    .journey-step:nth-child(3) img { animation-delay: 200ms; }
+  }
+}

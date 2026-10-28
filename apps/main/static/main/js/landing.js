@@ -143,3 +143,14 @@
   desktop.addEventListener('change', update);
   update();
 })();
+
+(() => {
+  const journey = document.querySelector('[data-landing-journey]');
+  if (!journey) return;
+  const observer = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) return;
+    journey.querySelectorAll('.journey-step').forEach((step) => { step.dataset.arrived = 'true'; });
+    observer.disconnect();
+  }, { threshold: .2 });
+  observer.observe(journey);
+})();
