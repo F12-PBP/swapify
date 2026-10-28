@@ -1,30 +1,33 @@
 {% load static lucide %}
 <section id="hero" class="landing-shell pt-6 lg:pt-10" aria-labelledby="hero-title">
-  <div class="relative isolate flex flex-col overflow-hidden rounded-[32px] border border-primary-20/60 bg-primary-10 px-6 pt-8 sm:px-10 sm:pt-10 lg:min-h-[620px] lg:flex-row lg:items-center lg:px-12 lg:py-16">
-    <div class="landing-hero-copy z-10 flex flex-col items-start gap-5 sm:gap-7 lg:w-[47%] lg:shrink-0">
-      <p class="landing-eyebrow">Less new. More you.</p>
-      <h1 id="hero-title" class="landing-hero-title max-w-[550px] font-display font-medium text-primary-base">Your next favourite<br>is <em class="font-normal text-secondary-70">already<br class="hidden lg:block"> out there.</em></h1>
-      <p class="max-w-sm text-b8 leading-relaxed sm:text-b7 text-neutral-90 lg:text-b6">Swap pre-loved clothing with people near you. Better for your wardrobe, better for the planet.</p>
-      <div class="flex flex-wrap gap-3">
-        <a href="{% url 'clothing_catalog:list' %}" class="btn btn-primary gap-3">Explore clothing {% lucide "arrow-right" size=18 %}</a>
-        <a href="#how-it-works" class="btn btn-primary-ghost">See how it works</a>
-      </div>
+    <div class="relative isolate flex flex-col overflow-hidden rounded-[32px] border border-primary-20/60 bg-primary-10 px-6 pt-8 sm:px-10 sm:pt-10 lg:min-h-[620px] lg:flex-row lg:items-center lg:px-12 lg:py-16">
+        <div class="landing-hero-copy z-10 flex flex-col items-start gap-5 sm:gap-7 lg:w-[51%] lg:shrink-0">
+            <p class="landing-eyebrow">Less new. More you.</p>
+            <h1 id="hero-title" class="landing-hero-title max-w-[550px] font-display font-medium text-primary-base">
+                Your next favourite<br>
+                is <em class="font-normal text-secondary-70">already<br class="hidden lg:block"> out there.</em>
+            </h1>
+            <p class="max-w-sm text-b8 leading-relaxed sm:text-b7 text-neutral-90 lg:text-b6">Swap pre-loved clothing with people near you. Better for your wardrobe, better for the planet.</p>
+            <div class="flex flex-wrap gap-3">
+                <a href="{% url 'clothing_catalog:list' %}" class="btn btn-primary gap-3">Explore clothing {% lucide "arrow-right" size=18 %}</a>
+                <a href="#how-it-works" class="btn btn-primary-ghost">See how it works</a>
+            </div>
+        </div>
+        <div class="landing-hero-scene relative mt-4 aspect-[1.12] w-full self-center lg:absolute lg:right-0 lg:bottom-8 lg:mt-0 lg:w-[53%]" data-hero-scene aria-label="Swapy waves hello among a shirt, jeans, and a denim jacket">
+            <figure class="landing-garment-card top-[4%] left-[6%] w-[29%] -rotate-12">
+                <img src="{% static 'images/landing_page/clothing/shirt.svg' %}" alt="A cream linen shirt" width="320" height="320">
+                <figcaption class="pb-1 font-display text-[9px] text-neutral-90 sm:text-b8">A lighter layer.</figcaption>
+            </figure>
+            <figure class="landing-garment-card top-0 right-[6%] w-[27%] rotate-12">
+                <img src="{% static 'images/landing_page/clothing/jeans.svg' %}" alt="A pair of blue jeans" width="320" height="320">
+                <figcaption class="pb-1 font-display text-[9px] text-neutral-90 sm:text-b8">A perfect fit.</figcaption>
+            </figure>
+            <figure class="landing-garment-card right-[1%] bottom-[11%] w-[28%] rotate-[9deg]">
+                <img src="{% static 'images/landing_page/clothing/jacket.svg' %}" alt="A pre-loved denim jacket" width="320" height="320">
+                <figcaption class="pb-1 font-display text-[9px] text-neutral-90 sm:text-b8">Another chapter.</figcaption>
+            </figure>
+            <img src="{% static 'images/landing_page/swapy/hello.svg' %}" alt="Swapy, the Swapify mascot, waving hello" width="340" height="380" fetchpriority="high" class="absolute bottom-[3%] left-[21%] w-[59%] drop-shadow-sm">
+            <span class="absolute bottom-[6%] left-[7%] -rotate-6 font-display text-b7 italic text-secondary-70 sm:text-h5">Hello, new favourite.</span>
+        </div>
     </div>
-    <div class="landing-hero-scene relative mt-4 aspect-[1.12] w-full self-center lg:absolute lg:right-0 lg:bottom-8 lg:mt-0 lg:w-[53%]" data-hero-scene aria-label="Swapy waves hello among a shirt, jeans, and a denim jacket">
-      <figure class="landing-garment-card top-[4%] left-[6%] w-[29%] -rotate-12">
-        <img src="{% static 'images/landing_page/clothing/shirt.svg' %}" alt="A cream linen shirt" width="320" height="320">
-        <figcaption class="pb-1 font-display text-b9 text-neutral-90 sm:text-b8">A lighter layer.</figcaption>
-      </figure>
-      <figure class="landing-garment-card top-0 right-[6%] w-[27%] rotate-12">
-        <img src="{% static 'images/landing_page/clothing/jeans.svg' %}" alt="A pair of blue jeans" width="320" height="320">
-        <figcaption class="pb-1 font-display text-b9 text-neutral-90 sm:text-b8">A perfect fit.</figcaption>
-      </figure>
-      <figure class="landing-garment-card right-[1%] bottom-[11%] w-[28%] rotate-[9deg]">
-        <img src="{% static 'images/landing_page/clothing/jacket.svg' %}" alt="A pre-loved denim jacket" width="320" height="320">
-        <figcaption class="pb-1 font-display text-b9 text-neutral-90 sm:text-b8">Another chapter.</figcaption>
-      </figure>
-      <img src="{% static 'images/landing_page/swapy/hello.svg' %}" alt="Swapy, the Swapify mascot, waving hello" width="340" height="380" fetchpriority="high" class="absolute bottom-[3%] left-[21%] w-[59%] drop-shadow-sm">
-      <span class="absolute bottom-[6%] left-[7%] -rotate-6 font-display text-b7 italic text-secondary-70 sm:text-h5">Hello, new favourite.</span>
-    </div>
-  </div>
 </section>

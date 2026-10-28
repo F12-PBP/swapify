@@ -1,37 +1,40 @@
 {% load static lucide %}
 <section id="benefits" class="landing-section bg-primary-10" aria-labelledby="trust-title">
-  <div id="about-us" class="landing-shell flex scroll-mt-32 flex-col items-center gap-10 lg:flex-row lg:gap-16">
-    <div class="flex w-full flex-col gap-5 lg:w-[40%] lg:shrink-0">
-      <p class="landing-eyebrow">A little care goes a long way</p>
-      <h2 id="trust-title" class="landing-heading">Swap with confidence.</h2>
-      <p class="text-b7 leading-relaxed text-neutral-80">Good swaps start with the details. Look at the photos and condition, get to know the person behind the piece, and ask the questions that matter to you.</p>
-      <p class="text-b8 leading-relaxed text-neutral-80">Visit their profile and read any reviews available. When a proposal is accepted, use Messages to agree on the exchange before meeting or sending anything.</p>
-      <a href="{% url 'main:safety' %}" class="landing-link self-start">A few ways to swap safely {% lucide "arrow-up-right" size=18 %}</a>
+    <div id="about-us" class="landing-shell flex scroll-mt-32 flex-col items-center gap-10 lg:flex-row lg:gap-16">
+        <div class="flex w-full flex-col gap-5 lg:w-[40%] lg:shrink-0">
+            <p class="landing-eyebrow">A little care goes a long way</p>
+            <h2 id="trust-title" class="landing-heading">Swap with confidence.</h2>
+            <p class="text-b7 leading-relaxed text-neutral-80">Good swaps start with the details. Look at the photos and condition, get to know the person behind the piece, and ask the questions that matter to you.</p>
+            <p class="text-b8 leading-relaxed text-neutral-80">Visit their profile and read any reviews available. When a proposal is accepted, use Messages to agree on the exchange before meeting or sending anything.</p>
+            <a href="{% url 'main:safety' %}" class="landing-link self-start">A few ways to swap safely {% lucide "arrow-up-right" size=18 %}</a>
+        </div>
+        <figure class="flex w-full min-w-0 flex-1 flex-col gap-4 rounded-[28px] bg-secondary-20 p-5 sm:p-8" aria-label="Example of a member profile, an item’s condition, and a conversation before exchanging">
+            <div class="flex flex-col gap-5 rounded-2xl border border-neutral-40 bg-neutral-10 p-5 shadow-sm sm:p-6">
+                <div class="flex items-center gap-3">
+                    <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-20 text-primary-base" aria-hidden="true">{% lucide "user-round" size=27 %}</span>
+                    <div class="flex min-w-0 flex-1 flex-col gap-1">
+                        <span class="text-b7 font-semibold text-primary-base">Maya’s wardrobe</span>
+                        <span class="text-b10 text-neutral-70">Example profile</span>
+                    </div>
+                    <span class="text-secondary-70" aria-hidden="true">{% lucide "heart" size=22 %}</span>
+                </div>
+                <p class="border-b border-neutral-40 pb-5 text-b9 leading-relaxed text-neutral-80">“Soft knits, everyday denim, and pieces with a little story.”</p>
+                <div class="flex items-center gap-4">
+                    <img src="{% static 'clothing_catalog/images/discovery/imgImageVintageBlueDenimJacket.png' %}" width="236" height="260" alt="Close view of the collar, seams, and fabric of a pre-loved denim jacket" loading="lazy" class="aspect-square w-[43%] rounded-xl object-cover">
+                    <div class="flex min-w-0 flex-1 flex-col items-start gap-3">
+                        <span class="rounded-full bg-secondary-20 px-2.5 py-1 text-b10 font-medium text-secondary-80">Good condition</span>
+                        <h3 class="font-display text-h5 leading-tight text-primary-base">Everyday denim.</h3>
+                        <p class="text-b10 text-neutral-70">Outerwear · Size M</p>
+                        <p class="text-b9 leading-relaxed text-neutral-80">See the fabric, seams, and any signs of wear.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="ml-4 flex flex-col gap-3 rounded-2xl border border-primary-20 bg-neutral-10 p-4 shadow-md sm:ml-12 sm:p-5">
+                <p class="flex items-center gap-2 text-b9 font-semibold text-primary-base">{% lucide "messages-square" size=18 %} Start with a conversation</p>
+                <p class="mr-6 self-start rounded-2xl rounded-bl-sm bg-primary-10 px-3 py-2 text-b9 leading-relaxed text-neutral-90">Could I see a close-up of the cuff?</p>
+                <p class="ml-6 self-end rounded-2xl rounded-br-sm bg-secondary-20 px-3 py-2 text-b9 leading-relaxed text-secondary-80">Of course. Let’s check the details first.</p>
+            </div>
+            <figcaption class="text-center text-b10 leading-relaxed text-neutral-70">An example of the details you can check. Take your time before agreeing.</figcaption>
+        </figure>
     </div>
-    <figure class="flex w-full min-w-0 flex-1 flex-col gap-4 rounded-[28px] bg-secondary-20 p-5 sm:p-8" aria-label="Example of a member profile, an item’s condition, and a conversation before exchanging">
-      <div class="flex flex-col gap-5 rounded-2xl border border-neutral-40 bg-neutral-10 p-5 shadow-sm sm:p-6">
-        <div class="flex items-center gap-3">
-          <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-20 text-primary-base" aria-hidden="true">{% lucide "user-round" size=27 %}</span>
-          <div class="flex min-w-0 flex-1 flex-col gap-1"><span class="text-b7 font-semibold text-primary-base">Maya’s wardrobe</span><span class="text-b10 text-neutral-70">Example profile</span></div>
-          <span class="text-secondary-70" aria-hidden="true">{% lucide "heart" size=22 %}</span>
-        </div>
-        <p class="border-b border-neutral-40 pb-5 text-b9 leading-relaxed text-neutral-80">“Soft knits, everyday denim, and pieces with a little story.”</p>
-        <div class="flex items-center gap-4">
-          <img src="{% static 'clothing_catalog/images/discovery/imgImageVintageBlueDenimJacket.png' %}" width="236" height="260" alt="Close view of the collar, seams, and fabric of a pre-loved denim jacket" loading="lazy" class="aspect-square w-[43%] rounded-xl object-cover">
-          <div class="flex min-w-0 flex-1 flex-col items-start gap-3">
-            <span class="rounded-full bg-secondary-20 px-2.5 py-1 text-b10 font-medium text-secondary-80">Good condition</span>
-            <h3 class="font-display text-h5 leading-tight text-primary-base">Everyday denim.</h3>
-            <p class="text-b10 text-neutral-70">Outerwear · Size M</p>
-            <p class="text-b9 leading-relaxed text-neutral-80">See the fabric, seams, and any signs of wear.</p>
-          </div>
-        </div>
-      </div>
-      <div class="ml-4 flex flex-col gap-3 rounded-2xl border border-primary-20 bg-neutral-10 p-4 shadow-md sm:ml-12 sm:p-5">
-        <p class="flex items-center gap-2 text-b9 font-semibold text-primary-base">{% lucide "messages-square" size=18 %} Start with a conversation</p>
-        <p class="mr-6 self-start rounded-2xl rounded-bl-sm bg-primary-10 px-3 py-2 text-b9 leading-relaxed text-neutral-90">Could I see a close-up of the cuff?</p>
-        <p class="ml-6 self-end rounded-2xl rounded-br-sm bg-secondary-20 px-3 py-2 text-b9 leading-relaxed text-secondary-80">Of course. Let’s check the details first.</p>
-      </div>
-      <figcaption class="text-center text-b10 leading-relaxed text-neutral-70">An example of the details you can check. Take your time before agreeing.</figcaption>
-    </figure>
-  </div>
 </section>

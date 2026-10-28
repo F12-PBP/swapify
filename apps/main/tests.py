@@ -29,6 +29,76 @@ class HomeViewTests(TestCase):
         )
 
 
+class LandingDiscoveryTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = get_user_model().objects.create_user(username="landing-owner")
+        cls.viewer = get_user_model().objects.create_user(username="landing-viewer")
+        cls.pieces = [
+            Clothing.objects.create(
+                owner=cls.owner,
+                name=f"Available piece {index}",
+                type="top",
+                size="M",
+                condition="good",
+            )
+            for index in range(5)
+        ]
+        for status in (Clothing.Status.RESERVED, Clothing.Status.SWAPPED):
+            Clothing.objects.create(
+                owner=cls.owner,
+                name=f"Unavailable {status}",
+                type="top",
+                size="M",
+                condition="good",
+                status=status,
+            )
+
+    def test_discovery_links_to_four_available_pieces(self):
+        response = self.client.get(reverse("main:home"))
+        self.assertEqual(
+            [piece.pk for piece in response.context["featured_clothing"]],
+            [piece.pk for piece in reversed(self.pieces[1:])],
+        )
+        self.assertFalse(response.context["inspiration_pieces"])
+        for piece in self.pieces[1:]:
+            self.assertContains(response, f'href="{piece.get_absolute_url()}"')
+        self.assertNotContains(response, "Unavailable reserved")
+        self.assertNotContains(response, "Unavailable swapped")
+
+    def test_viewer_does_not_see_their_own_piece_as_a_swap_option(self):
+        own = Clothing.objects.create(
+            owner=self.viewer,
+            name="My own piece",
+            type="top",
+            size="M",
+            condition="good",
+        )
+        self.client.force_login(self.viewer)
+        response = self.client.get(reverse("main:home"))
+        self.assertNotIn(own, response.context["featured_clothing"])
+        self.assertContains(response, "Visit my wardrobe")
+
+    def test_sparse_catalog_keeps_four_cards_with_labeled_inspiration(self):
+        Clothing.objects.exclude(pk=self.pieces[0].pk).delete()
+        response = self.client.get(reverse("main:home"))
+        self.assertEqual(len(response.context["featured_clothing"]), 1)
+        self.assertEqual(len(response.context["inspiration_pieces"]), 3)
+        self.assertContains(response, "Illustration · photo unavailable", count=1)
+        self.assertContains(response, "Style inspiration", count=3)
+
+    def test_empty_catalog_still_has_clothing_and_a_real_catalog_link(self):
+        Clothing.objects.all().delete()
+        response = self.client.get(reverse("main:home"))
+        self.assertFalse(response.context["featured_clothing"])
+        self.assertEqual(len(response.context["inspiration_pieces"]), 4)
+        self.assertContains(response, "Style inspiration", count=4)
+        self.assertContains(response, f'href="{reverse("clothing_catalog:list")}"')
+        self.assertContains(response, "Just a demo. No items are exchanged.")
+        self.assertContains(response, "not exact or live locations")
+        self.assertContains(response, "Example profile")
+
+
 class MarketplaceLayoutTests(TestCase):
     @classmethod
     def setUpTestData(cls):

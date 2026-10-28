@@ -1,24 +1,42 @@
 {% load static lucide %}
 <section id="how-it-works" class="landing-section landing-shell" aria-labelledby="steps-title">
-  <div class="mb-10 flex max-w-2xl flex-col gap-3">
-    <p class="landing-eyebrow">A fresh start in three moments</p>
-    <h2 id="steps-title" class="landing-heading">From your wardrobe to theirs.</h2>
-    <p class="text-b7 leading-relaxed text-neutral-80">A piece you’ve loved. A find you’ll love next. A conversation that brings it together.</p>
-  </div>
-  <ol class="flex flex-col gap-10 md:flex-row md:gap-8" data-landing-journey>
-    <li class="journey-step relative flex min-w-0 flex-1 flex-col gap-5">
-      <img src="{% static 'images/landing_page/steps/prepare.svg' %}" width="380" height="260" alt="A shirt photographed and checked, ready for its listing" loading="lazy" class="w-full">
-      <div class="flex items-start gap-3"><span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary-30 text-b9 font-semibold text-secondary-80">1</span><div class="flex flex-col gap-2"><h3 class="font-display text-h5 text-primary-base">List your piece.</h3><p class="text-b8 leading-relaxed text-neutral-80">Take clear photos. Add the size, condition, and the little details someone would want to know.</p></div></div>
-      <span class="absolute top-1/2 -right-7 hidden text-secondary-60 md:block" aria-hidden="true">{% lucide "arrow-right" size=24 %}</span>
-    </li>
-    <li class="journey-step relative flex min-w-0 flex-1 flex-col gap-5">
-      <img src="{% static 'images/landing_page/steps/match.svg' %}" width="380" height="260" alt="A clothing catalog with a denim jacket selected for a possible swap" loading="lazy" class="w-full">
-      <div class="flex items-start gap-3"><span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary-30 text-b9 font-semibold text-secondary-80">2</span><div class="flex flex-col gap-2"><h3 class="font-display text-h5 text-primary-base">Find your match.</h3><p class="text-b8 leading-relaxed text-neutral-80">Explore the catalog. See something you like? Offer one of your available pieces in a swap proposal.</p></div></div>
-      <span class="absolute top-1/2 -right-7 hidden text-secondary-60 md:block" aria-hidden="true">{% lucide "arrow-right" size=24 %}</span>
-    </li>
-    <li class="journey-step flex min-w-0 flex-1 flex-col gap-5">
-      <img src="{% static 'images/landing_page/steps/agree.svg' %}" width="380" height="260" alt="Two members chatting and confirming the details of their exchange" loading="lazy" class="w-full">
-      <div class="flex items-start gap-3"><span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary-30 text-b9 font-semibold text-secondary-80">3</span><div class="flex flex-col gap-2"><h3 class="font-display text-h5 text-primary-base">Agree and exchange.</h3><p class="text-b8 leading-relaxed text-neutral-80">Once accepted, chat to arrange a meetup or delivery. Confirm the exchange when your piece arrives.</p></div></div>
-    </li>
-  </ol>
+    <div class="mb-10 flex max-w-2xl flex-col gap-3">
+        <p class="landing-eyebrow">A fresh start in three moments</p>
+        <h2 id="steps-title" class="landing-heading">From your wardrobe to theirs.</h2>
+        <p class="text-b7 leading-relaxed text-neutral-80">A piece you’ve loved. A find you’ll love next. A conversation that brings it together.</p>
+    </div>
+    <ol class="flex flex-col gap-10 md:flex-row md:gap-8" data-landing-journey>
+        <li class="journey-step relative flex min-w-0 flex-1 flex-col gap-5">
+            <img src="{% static 'images/landing_page/steps/prepare.svg' %}" width="380" height="260" alt="A shirt photographed and checked, ready for its listing" loading="lazy" class="w-full">
+            <div class="flex items-start gap-3">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary-30 text-b9 font-semibold text-secondary-80">1</span>
+                <div class="flex flex-col gap-2">
+                    <h3 class="font-display text-h5 text-primary-base">List your piece.</h3>
+                    <p class="text-b8 leading-relaxed text-neutral-80">Take clear photos. Add the size, condition, and the little details someone would want to know.</p>
+                </div>
+            </div>
+            <span class="absolute top-1/2 -right-7 hidden text-secondary-60 md:block" aria-hidden="true">{% lucide "arrow-right" size=24 %}</span>
+        </li>
+        <li class="journey-step relative flex min-w-0 flex-1 flex-col gap-5">
+            <img src="{% static 'images/landing_page/steps/match.svg' %}" width="380" height="260" alt="A clothing catalog with a denim jacket selected for a possible swap" loading="lazy" class="w-full">
+            <div class="flex items-start gap-3">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary-30 text-b9 font-semibold text-secondary-80">2</span>
+                <div class="flex flex-col gap-2">
+                    <h3 class="font-display text-h5 text-primary-base">Find your match.</h3>
+                    <p class="text-b8 leading-relaxed text-neutral-80">Explore the catalog. See something you like? Offer one of your available pieces in a swap proposal.</p>
+                </div>
+            </div>
+            <span class="absolute top-1/2 -right-7 hidden text-secondary-60 md:block" aria-hidden="true">{% lucide "arrow-right" size=24 %}</span>
+        </li>
+        <li class="journey-step flex min-w-0 flex-1 flex-col gap-5">
+            <img src="{% static 'images/landing_page/steps/agree.svg' %}" width="380" height="260" alt="Two members chatting and confirming the details of their exchange" loading="lazy" class="w-full">
+            <div class="flex items-start gap-3">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary-30 text-b9 font-semibold text-secondary-80">3</span>
+                <div class="flex flex-col gap-2">
+                    <h3 class="font-display text-h5 text-primary-base">Agree and exchange.</h3>
+                    <p class="text-b8 leading-relaxed text-neutral-80">Once accepted, chat to arrange a meetup or delivery. Confirm the exchange when your piece arrives.</p>
+                </div>
+            </div>
+        </li>
+    </ol>
 </section>

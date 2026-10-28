@@ -124,9 +124,9 @@
     const connection = progress;
     route.style.strokeDasharray = '1';
     route.style.strokeDashoffset = String(1 - connection);
-    const point = route.getPointAtLength(route.getTotalLength() * connection);
+    const point = route.getPointAtLength(route.getTotalLength() * (.08 + connection * .84));
     car.style.left = `${point.x / 880 * 100}%`;
-    car.style.top = `${(point.y + 35) / 650 * 100}%`;
+    car.style.top = `${(point.y + 70) / 650 * 100}%`;
     scene.style.setProperty('--map-drift', `${animated ? progress * -18 : 0}px`);
     steps.forEach((step, index) => { step.dataset.active = String(!animated || index === Math.round(progress * 2)); });
   };
