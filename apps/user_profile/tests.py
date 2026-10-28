@@ -1449,6 +1449,51 @@ class ProfileDialogTests(TestCase):
         self.member.profile.refresh_from_db()
         self.assertEqual(self.member.profile.display_name, "Edited name")
 
+    @patch("apps.user_profile.views.upload_profile_picture")
+    def test_dialog_upload_failure_preserves_profile_and_returns_errors(self, upload):
+        profile = self.member.profile
+        profile.profile_picture = "existing-photo"
+        profile.save()
+        upload.side_effect = ProfilePhotoUploadError("Photo upload unavailable.")
+        response = self.client.post(
+            reverse("user_profile:edit"),
+            {
+                "display_name": "Unsaved name",
+                "bio": "Unsaved bio",
+                "new_profile_picture": image_upload(),
+            },
+            HTTP_X_PROFILE_DIALOG="1",
+        )
+        self.assertEqual(response.status_code, 422)
+        self.assertContains(response, "Photo upload unavailable.", status_code=422)
+        profile.refresh_from_db()
+        self.assertEqual(profile.display_name, self.member.username)
+        self.assertEqual(profile.profile_picture.public_id, "existing-photo")
+        self.assertEqual(profile.bio, "")
+
+    def test_location_dialog_keeps_validation_and_manual_coordinate_reset(self):
+        profile = self.member.profile
+        profile.city = "Depok"
+        profile.province = "West Java"
+        profile.latitude = -6.36
+        profile.longitude = 106.83
+        profile.save()
+        url = reverse("user_profile:location_edit")
+        invalid = self.client.post(url, {"city": ""}, HTTP_X_PROFILE_DIALOG="1")
+        self.assertEqual(invalid.status_code, 422)
+        profile.refresh_from_db()
+        self.assertEqual(profile.city, "Depok")
+        response = self.client.post(
+            url,
+            {"city": "Bogor", "province": "West Java", "next": "https://example.com/"},
+            HTTP_X_PROFILE_DIALOG="1",
+        )
+        self.assertEqual(response.json()["redirect"], reverse("user_profile:detail"))
+        profile.refresh_from_db()
+        self.assertEqual(profile.city, "Bogor")
+        self.assertIsNone(profile.latitude)
+        self.assertIsNone(profile.longitude)
+
     def test_preferences_require_authentication_and_csrf(self):
         url = reverse("user_profile:preferences_edit")
         protected = Client(enforce_csrf_checks=True)

@@ -1,4 +1,5 @@
 (() => {
+  const sessions = new WeakMap();
   const init = () => {
     const form = document.getElementById("location-form");
     if (!form || form.dataset.locationReady) return;
@@ -14,9 +15,16 @@
     const mapElement = document.getElementById("location-map");
     const mapStatus = document.getElementById("location-map-status");
     const recenterButton = document.getElementById("recenter-location");
-    let map, areaCircle, marker, leafletReady;
+    let map, areaCircle, marker, leafletReady, mapObserver;
     let hasMapView = false;
     let mapRevision = 0;
+    sessions.set(form, () => {
+        mapRevision += 1;
+        mapObserver?.disconnect();
+        map?.remove();
+        delete form.dataset.locationReady;
+        sessions.delete(form);
+    });
 
     function loadLeaflet() {
         if (window.L) return Promise.resolve(window.L);
@@ -99,12 +107,13 @@
     }
 
     if (mapElement) {
-        new ResizeObserver(() => {
+        mapObserver = new ResizeObserver(() => {
             if (map && mapElement.clientWidth > 0) {
                 map.invalidateSize({ pan: false });
                 if (!hasMapView) hasMapView = recenter(false);
             }
-        }).observe(mapElement);
+        });
+        mapObserver.observe(mapElement);
         recenterButton.addEventListener("click", () => recenter());
         const latitude = Number(mapElement.dataset.latitude);
         const longitude = Number(mapElement.dataset.longitude);
@@ -142,6 +151,7 @@
                     maximumAge: 60000,
                 });
             });
+            if (!form.isConnected) return;
             showArea(position.coords.latitude, position.coords.longitude, position.coords.accuracy);
             status.textContent = "Finding your area…";
             const body = new URLSearchParams({
@@ -187,6 +197,12 @@
         }
     });
   };
-  window.SwapLocation = { init };
+  window.SwapLocation = {
+    init,
+    destroy(root) {
+      const form = root.querySelector('#location-form');
+      if (form) sessions.get(form)?.();
+    },
+  };
   init();
 })();

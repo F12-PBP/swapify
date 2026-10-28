@@ -101,6 +101,7 @@
         });
         if (response.redirected) { window.location.assign(response.url); return; }
         if (response.status === 422) {
+          window.SwapLocation?.destroy(content);
           content.innerHTML = await response.text();
           initialize();
           return;
@@ -117,6 +118,7 @@
     dialog.addEventListener('close', () => {
       loading?.abort();
       releasePhoto?.();
+      window.SwapLocation?.destroy(content);
       content.replaceChildren();
     });
   }

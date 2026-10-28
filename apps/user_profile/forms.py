@@ -34,6 +34,12 @@ class ProfileLocationForm(forms.ModelForm):
         self.fields["district"].help_text = "Optional."
         self.fields["city"].required = True
         self.fields["province"].required = True
+        for name, example in (
+            ("district", "e.g. Beji"),
+            ("city", "e.g. Depok"),
+            ("province", "e.g. West Java"),
+        ):
+            self.fields[name].widget.attrs["placeholder"] = example
 
     def clean(self):
         cleaned = super().clean()
