@@ -5,7 +5,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core import signing
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -14,6 +14,7 @@ from django.views.generic import CreateView, DetailView, UpdateView
 
 from apps.clothing_catalog.models import Clothing
 from apps.review_rating.models import Review
+from apps.swap_request.models import SwapRequest
 from common.redirects import safe_return_url
 
 from .forms import (
@@ -177,10 +178,28 @@ class PublicProfileDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["clothing_items"] = Clothing.objects.filter(
-            owner_id=self.object.user_id,
-            status=Clothing.Status.AVAILABLE,
-        ).order_by("-created_at")
+        is_owner = (
+            self.request.user.is_authenticated
+            and self.request.user.pk == self.object.user_id
+        )
+        clothing_items = (
+            Clothing.objects.filter(
+                owner_id=self.object.user_id,
+                status=Clothing.Status.AVAILABLE,
+            )
+            .select_related("owner__profile")
+            .order_by("-created_at", "-pk")
+        )
+        if is_owner:
+            pending_requests = SwapRequest.objects.filter(
+                requested_clothing_id=OuterRef("pk"),
+                status=SwapRequest.Status.PENDING,
+            ).order_by("-created_at", "-pk")
+            clothing_items = clothing_items.annotate(
+                pending_request_id=Subquery(pending_requests.values("pk")[:1]),
+            )
+        context["is_owner"] = is_owner
+        context["clothing_items"] = clothing_items
 
         received_reviews = Review.objects.filter(
             recipient_id=self.object.user_id,

@@ -1,178 +1,82 @@
 {% extends "marketplace/base.html" %}
+{% load lucide %}
 
-{% block title %}{{ profile.display_name }} | Swapify{% endblock %}
+{% block title %}{{ profile.display_name }}’s wardrobe | Swapify{% endblock %}
 
 {% block content %}
-<section class="mx-auto max-w-3xl">
-    <div class="card border border-neutral-40 bg-base-100 shadow-sm">
-        <div class="card-body gap-4">
-          {% if profile.profile_picture %}
-          <img
-               src="{{ profile.profile_picture.url }}"
-               alt="Profile photo of {{ profile.display_name }}"
-               width="96"
-               height="96"
-               class="rounded-full object-cover"
-               style="width: 96px; height: 96px;"
-          >
+<div class="flex min-w-0 flex-col gap-12 md:gap-16">
+  <section aria-labelledby="wardrobe-heading" class="flex min-w-0 flex-col gap-8 md:gap-10">
+    <div class="flex flex-wrap items-start justify-between gap-5">
+      <div class="flex min-w-0 flex-col gap-3">
+        <h1 id="wardrobe-heading" class="break-words font-display text-h3 text-primary-base md:text-h2">{% if is_owner %}My Wardrobe{% else %}{{ profile.display_name }}’s Wardrobe{% endif %}</h1>
+        <p class="text-b7 text-neutral-80 md:text-b6">Thoughtfully listed. Ready for their next chapter.</p>
+      </div>
+      {% if is_owner %}
+        <a href="{% url 'clothing_catalog:my_list' %}" class="btn btn-primary-ghost inline-flex items-center justify-center gap-2">{% lucide "shirt" size=20 %}Manage clothing</a>
+      {% endif %}
+    </div>
+    <div class="flex flex-wrap items-stretch gap-6" aria-label="Available clothing">
+      {% for clothing in clothing_items %}
+        {% include "clothing_catalog/partials/product_card.html" with variant="wardrobe" %}
+      {% empty %}
+        <div class="flex w-full flex-col items-center gap-4 rounded-[20px] bg-secondary-10 px-6 py-12 text-center md:py-16">
+          <span class="flex size-16 items-center justify-center rounded-full bg-secondary-20 text-secondary-70" aria-hidden="true">{% lucide "shirt" size=32 %}</span>
+          <h2 class="font-display text-h5 text-primary-base">A little space for a fresh start.</h2>
+          <p class="max-w-md text-b7 text-neutral-80">No clothing available to swap yet.</p>
+          {% if is_owner %}
+            <a href="{% url 'clothing_catalog:create' %}" class="btn btn-primary inline-flex items-center justify-center gap-2">{% lucide "plus" size=20 %}List your first piece</a>
           {% else %}
-          <div
-               class="flex size-24 items-center justify-center rounded-full bg-primary text-primary-content"
-               aria-hidden="true"
-          >
-               {{ profile.display_name|slice:":1"|upper }}
-          </div>
+            <a href="{% url 'clothing_catalog:list' %}" class="btn btn-primary inline-flex items-center justify-center">Explore other wardrobes</a>
           {% endif %}
-
-            <h1 class="font-display text-h3">
-                {{ profile.display_name }}
-            </h1>
-
-            <p class="text-base-content/60">
-                @{{ profile.user.username }}
-            </p>
-            {% if profile.city and profile.province %}
-                <p class="text-sm text-base-content/60">{{ profile.city }}, {{ profile.province }}</p>
-            {% endif %}
-
-            <p class="whitespace-pre-line">
-                {{ profile.bio|default:"No bio yet." }}
-            </p>
-            {% if rating_summary.count %}
-               <p class="text-sm">
-                    <span class="font-semibold">
-                         {{ rating_summary.average|floatformat:1 }} / 5
-                    </span>
-                    <span class="text-base-content/60">
-                         · {{ rating_summary.count }}
-                         review{{ rating_summary.count|pluralize }}
-                    </span>
-               </p>
-               {% else %}
-               <p class="text-sm text-base-content/60">
-                    No reviews yet.
-               </p>
-               {% endif %}
-
-            {% if user.is_authenticated and user.pk == profile.user_id %}
-                <div>
-                    <a
-                        href="{% url 'user_profile:edit' %}"
-                        class="btn btn-primary-ghost"
-                    >
-                        Edit Profile
-                    </a>
-                    <a href="{% url 'clothing_catalog:my_list' %}" class="btn btn-primary-ghost">Manage clothing</a>
-                </div>
-            {% endif %}
         </div>
+      {% endfor %}
     </div>
+  </section>
 
-    <div class="mt-8">
-        <h2 class="font-display text-h4 mb-4">
-            Available Clothing
-        </h2>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-            {% for clothing in clothing_items %}
-                <article class="card border border-neutral-40 bg-base-100">
-                    <div class="card-body">
-                        <h3 class="font-semibold">
-                            {{ clothing.name }}
-                        </h3>
-
-                        <p class="text-sm text-base-content/60">
-                            {{ clothing.get_type_display }}
-                            · {{ clothing.get_size_display }}
-                        </p>
-
-                        <a
-                            href="{{ clothing.get_absolute_url }}"
-                            class="btn btn-primary-ghost"
-                        >
-                            View Clothing
-                        </a>
-                    </div>
-                </article>
-            {% empty %}
-                <p class="text-base-content/60">
-                    No clothing available to swap yet.
-                </p>
-            {% endfor %}
+  <section aria-labelledby="swapper-heading" class="flex flex-col gap-8 border-t border-neutral-40 pt-8 md:flex-row md:items-start md:gap-12">
+    <div class="flex min-w-0 flex-1 flex-col gap-5">
+      <div class="flex items-center gap-4">
+        {% if profile.profile_picture %}
+          <img src="{{ profile.profile_picture.url }}" alt="Profile photo of {{ profile.display_name }}" width="80" height="80" loading="lazy" class="size-20 shrink-0 rounded-full object-cover">
+        {% else %}
+          <span class="flex size-20 shrink-0 items-center justify-center rounded-full bg-secondary-20 font-display text-h4 text-secondary-80" aria-hidden="true">{{ profile.display_name|first|upper }}</span>
+        {% endif %}
+        <div class="flex min-w-0 flex-col gap-1">
+          <h2 id="swapper-heading" class="break-words font-display text-h5 text-primary-base">{{ profile.display_name }}</h2>
+          <p class="break-all text-b8 text-neutral-70">@{{ profile.user.username }}</p>
+          {% if profile.city and profile.province %}<p class="flex items-start gap-1.5 text-b8 text-neutral-80">{% lucide "map-pin" size=16 class="mt-0.5 shrink-0" %}{{ profile.city }}, {{ profile.province }}</p>{% endif %}
         </div>
+      </div>
+      <p class="max-w-xl whitespace-pre-line break-words text-b7 text-neutral-80">{{ profile.bio|default:"No bio yet." }}</p>
+      {% if is_owner %}<a href="{% url 'user_profile:edit' %}" class="btn btn-primary-ghost inline-flex items-center justify-center gap-2 self-start">{% lucide "pencil" size=16 %}Edit Profile</a>{% endif %}
     </div>
-    <div id="reviews" class="mt-8">
-          <h2 class="font-display text-h4 mb-4">Reviews</h2>
-
-          <div class="space-y-4">
-               {% for review in reviews_page %}
-                    <article class="card border border-neutral-40 bg-base-100">
-                         <div class="card-body gap-3">
-                              <div class="flex flex-wrap items-center justify-between gap-2">
-                              <a
-                                   href="{% url 'user_profile:public' review.author.username %}"
-                                   class="link font-semibold"
-                              >
-                                   @{{ review.author.username }}
-                              </a>
-
-                              <span class="badge badge-outline">
-                                   {{ review.rating }} / 5
-                              </span>
-                              </div>
-
-                              <time
-                              datetime="{{ review.created_at|date:'c' }}"
-                              class="text-sm text-base-content/60"
-                              >
-                              {{ review.created_at|date:"M j, Y" }}
-                              </time>
-
-                              {% if review.comment %}
-                              <p class="whitespace-pre-line">{{ review.comment }}</p>
-                              {% else %}
-                              <p class="text-sm text-base-content/60">
-                                   No written comment.
-                              </p>
-                              {% endif %}
-                         </div>
-                    </article>
-               {% empty %}
-                    <p class="text-base-content/60">
-                         Reviews will appear here after completed exchanges.
-                    </p>
-               {% endfor %}
+    <div id="reviews" class="flex min-w-0 flex-col gap-5 scroll-mt-72 md:w-1/2">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 class="font-display text-h5 text-primary-base">Reviews</h2>
+        {% if rating_summary.count %}
+          <p class="inline-flex items-center gap-2 text-b8 text-neutral-80">{% lucide "star" size=18 class="fill-secondary-base text-secondary-base" %}<span class="font-semibold">{{ rating_summary.average|floatformat:1 }} / 5</span><span>· {{ rating_summary.count }} review{{ rating_summary.count|pluralize }}</span></p>
+        {% else %}<p class="text-b8 text-neutral-70">No reviews yet.</p>{% endif %}
+      </div>
+      {% for review in reviews_page %}
+        <article class="flex flex-col gap-3 rounded-[20px] border border-neutral-40 bg-neutral-20 p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 text-b8">
+            <a href="{% url 'user_profile:public' review.author.username %}" class="min-w-0 break-all font-semibold text-primary-base hover:underline">@{{ review.author.username }}</a>
+            <span class="inline-flex items-center gap-1 text-secondary-80">{% lucide "star" size=16 class="fill-secondary-base text-secondary-base" %}{{ review.rating }} / 5</span>
           </div>
-
-          {% if reviews_page.has_other_pages %}
-               <nav
-                    class="mt-5 flex flex-wrap items-center justify-between gap-3"
-                    aria-label="Review pages"
-               >
-                    {% if reviews_page.has_previous %}
-                         <a
-                              href="?reviews_page={{ reviews_page.previous_page_number }}#reviews"
-                              class="btn btn-primary-ghost"
-                         >
-                              Previous
-                         </a>
-                    {% endif %}
-
-                    <span class="text-sm text-base-content/60">
-                         Page {{ reviews_page.number }}
-                         of {{ reviews_page.paginator.num_pages }}
-                    </span>
-
-                    {% if reviews_page.has_next %}
-                         <a
-                              href="?reviews_page={{ reviews_page.next_page_number }}#reviews"
-                              class="btn btn-primary-ghost"
-                         >
-                              Next
-                         </a>
-                    {% endif %}
-               </nav>
-          {% endif %}
-          </div>
-</section>
+          <time datetime="{{ review.created_at|date:'c' }}" class="text-b9 text-neutral-70">{{ review.created_at|date:"M j, Y" }}</time>
+          <p class="whitespace-pre-line break-words text-b8 text-neutral-80">{{ review.comment|default:"No written comment." }}</p>
+        </article>
+      {% empty %}
+        <p class="rounded-[20px] bg-neutral-20 p-6 text-b7 text-neutral-80">Reviews will appear here after completed exchanges.</p>
+      {% endfor %}
+      {% if reviews_page.has_other_pages %}
+        <nav class="flex flex-wrap items-center justify-between gap-3" aria-label="Review pages">
+          {% if reviews_page.has_previous %}<a href="?reviews_page={{ reviews_page.previous_page_number }}#reviews" class="btn btn-primary-ghost inline-flex items-center justify-center">Previous</a>{% endif %}
+          <span class="text-b8 text-neutral-80">Page {{ reviews_page.number }} of {{ reviews_page.paginator.num_pages }}</span>
+          {% if reviews_page.has_next %}<a href="?reviews_page={{ reviews_page.next_page_number }}#reviews" class="btn btn-primary-ghost inline-flex items-center justify-center">Next</a>{% endif %}
+        </nav>
+      {% endif %}
+    </div>
+  </section>
+</div>
 {% endblock %}

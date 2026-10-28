@@ -545,6 +545,64 @@ class PublicProfileTests(TestCase):
         self.assertNotContains(response, "Someone else's shirt")
         self.assertEqual(len(response.context["clothing_items"]), 1)
 
+    def test_wardrobe_request_state_is_owner_only_and_uses_latest_pending_request(self):
+        requester = get_user_model().objects.create_user(username="wardrobe_requester")
+        details = {
+            "name": "Wardrobe denim",
+            "description": "A well-loved piece",
+            "type": Clothing.Type.OUTERWEAR,
+            "size": Clothing.Size.M,
+            "condition": Clothing.Condition.GOOD,
+        }
+        requested = Clothing.objects.create(owner=self.member, **details)
+        offered = Clothing.objects.create(owner=requester, **details)
+        swaps = [
+            SwapRequest.objects.create(
+                requester=requester,
+                requested_clothing=requested,
+                offered_clothing=offered,
+            )
+            for _ in range(2)
+        ]
+        SwapRequest.objects.create(
+            requester=requester,
+            requested_clothing=requested,
+            offered_clothing=offered,
+            status=SwapRequest.Status.REJECTED,
+        )
+        self.client.force_login(self.member)
+        response = self.client.get(self.public_url())
+        self.assertTrue(response.context["is_owner"])
+        self.assertEqual(
+            response.context["clothing_items"][0].pending_request_id, swaps[-1].pk
+        )
+        self.assertContains(response, "Requested")
+        self.assertContains(response, f'href="{swaps[-1].get_absolute_url()}"')
+        self.assertNotContains(response, f'href="{swaps[0].get_absolute_url()}"')
+        self.assertContains(response, reverse("clothing_catalog:my_list"))
+
+        for visitor in (None, requester):
+            if visitor:
+                self.client.force_login(visitor)
+            else:
+                self.client.logout()
+            response = self.client.get(self.public_url())
+            self.assertFalse(response.context["is_owner"])
+            self.assertContains(response, "Wardrobe denim")
+            self.assertNotContains(response, "View Request")
+            self.assertNotContains(response, swaps[-1].get_absolute_url())
+
+    def test_empty_wardrobe_offers_owner_listing_and_visitor_discovery(self):
+        self.client.force_login(self.member)
+        response = self.client.get(self.public_url())
+        self.assertContains(response, "My Wardrobe")
+        self.assertContains(response, "List your first piece")
+        self.assertContains(response, reverse("clothing_catalog:create"))
+        self.client.logout()
+        response = self.client.get(self.public_url())
+        self.assertContains(response, "Explore other wardrobes")
+        self.assertNotContains(response, "List your first piece")
+
     def test_private_profile_and_catalog_links_use_username(self):
         self.client.force_login(self.member)
         response = self.client.get(reverse("user_profile:detail"))
