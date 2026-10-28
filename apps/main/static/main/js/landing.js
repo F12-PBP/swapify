@@ -140,30 +140,31 @@
     const depth = animated() ? current - .5 : 0;
     scene.style.setProperty('--map-x', `${depth * -36}px`);
     scene.style.setProperty('--map-y', `${depth * -80}px`);
-    scene.style.setProperty('--world-x', `${depth * 16}px`);
-    scene.style.setProperty('--world-y', `${depth * -28}px`);
-    scene.style.setProperty('--world-scale', String(animated() ? 1 + current * .025 : 1));
+    const worldX = depth * 16;
+    const worldY = depth * -28;
+    const worldScale = animated() ? 1 + current * .025 : 1;
+    scene.style.setProperty('--world-x', `${worldX}px`);
+    scene.style.setProperty('--world-y', `${worldY}px`);
+    scene.style.setProperty('--world-scale', String(worldScale));
     scene.style.setProperty('--landmark-x', `${depth * 32}px`);
     scene.style.setProperty('--landmark-y', `${depth * -112}px`);
     scene.style.setProperty('--card-drift', `${depth * -36}px`);
     route.style.strokeDasharray = '1';
     route.style.strokeDashoffset = String(1 - current);
-    const point = route.getPointAtLength(routeLength * (.08 + current * .84));
-    const arrival = Math.max(0, (current - .65) / .35);
-    const park = arrival * arrival * (3 - 2 * arrival);
-    const x = point.x + (800 - point.x) * park;
-    const y = point.y + 70 + (605 - point.y - 70) * park;
-    car.style.setProperty('--car-x', `${(x / 880 - .91) * mapWidth}px`);
-    car.style.setProperty('--car-y', `${(y / 650 - .93) * mapHeight}px`);
+    const point = route.getPointAtLength(routeLength * current);
+    const x = ((point.x / 880 - .5) * worldScale + .5) * mapWidth + worldX;
+    const y = ((point.y / 650 - .5) * worldScale + .5) * mapHeight + worldY;
+    car.style.setProperty('--car-x', `${x}px`);
+    car.style.setProperty('--car-y', `${y}px`);
     steps.forEach((step, index) => {
-      const active = String(!animated() || index === Math.round(current * 2));
+      const active = String(!animated() || index === Math.round(current * (steps.length - 1)));
       if (step.dataset.active !== active) step.dataset.active = active;
     });
   };
   const tick = (time) => {
     const elapsed = Math.min(64, lastTime ? time - lastTime : 16);
     lastTime = time;
-    current += (target - current) * (1 - Math.exp(-elapsed / 100));
+    current += (target - current) * (1 - Math.exp(-elapsed / 120));
     if (Math.abs(target - current) < .0001) current = target;
     render();
     frame = current !== target && visible ? requestAnimationFrame(tick) : null;
@@ -174,7 +175,7 @@
         const bounds = step.getBoundingClientRect();
         return bounds.top + bounds.height / 2;
       });
-      target = Math.max(0, Math.min(1, (innerHeight * .55 - centers[0]) / (centers[2] - centers[0])));
+      target = Math.max(0, Math.min(1, (innerHeight * .55 - centers[0]) / (centers[centers.length - 1] - centers[0])));
     } else {
       target = 1;
     }
