@@ -28,10 +28,40 @@
                     </div>
                 </div>
             </div>
-            <div class="ml-4 flex flex-col gap-3 rounded-2xl border border-primary-20 bg-neutral-10 p-4 shadow-md sm:ml-12 sm:p-5">
+            <div class="ml-4 flex flex-col gap-4 rounded-2xl border border-primary-20 bg-neutral-10 p-4 shadow-md sm:ml-12 sm:p-5">
                 <p class="flex items-center gap-2 text-b9 font-semibold text-primary-base">{% lucide "messages-square" size=18 %} Start with a conversation</p>
-                <p class="mr-6 self-start rounded-2xl rounded-bl-sm bg-primary-10 px-3 py-2 text-b9 leading-relaxed text-neutral-90">Could I see a close-up of the cuff?</p>
-                <p class="ml-6 self-end rounded-2xl rounded-br-sm bg-secondary-20 px-3 py-2 text-b9 leading-relaxed text-secondary-80">Of course. Let’s check the details first.</p>
+                <div class="flex flex-col gap-3" aria-label="Example conversation between two swappers">
+                    <div class="flex max-w-[90%] flex-col gap-1 mr-6 self-start items-start">
+                        <div class="relative">
+                            <p class="rounded-2xl bg-primary-10 text-neutral-90 rounded-bl-sm px-3 py-2 text-b9 leading-relaxed motion-safe:animate-trust-question"><span class="mb-1 block text-b10 font-medium text-neutral-70">You</span>Could I see a close-up of the cuff?</p>
+                            <span class="absolute top-0 left-0 hidden items-center gap-1 rounded-2xl bg-primary-10 text-neutral-90 rounded-bl-sm px-3 py-3 motion-safe:flex motion-safe:animate-trust-typing-question" aria-hidden="true">
+                                <span class="size-1 rounded-full bg-current motion-safe:animate-journey-dot"></span>
+                                <span class="size-1 rounded-full bg-current motion-safe:animate-journey-dot [animation-delay:120ms]"></span>
+                                <span class="size-1 rounded-full bg-current motion-safe:animate-journey-dot [animation-delay:240ms]"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex max-w-[90%] flex-col gap-1 ml-6 self-end items-end">
+                        <div class="relative">
+                            <p class="rounded-2xl bg-secondary-20 text-secondary-80 rounded-br-sm px-3 py-2 text-b9 leading-relaxed motion-safe:animate-trust-reply"><span class="mb-1 block text-b10 font-medium text-neutral-70">Owner</span>Of course. There’s a little wear on the edge.</p>
+                            <span class="absolute top-0 right-0 hidden items-center gap-1 rounded-2xl bg-secondary-20 text-secondary-80 rounded-br-sm px-3 py-3 motion-safe:flex motion-safe:animate-trust-typing-reply" aria-hidden="true">
+                                <span class="size-1 rounded-full bg-current motion-safe:animate-journey-dot"></span>
+                                <span class="size-1 rounded-full bg-current motion-safe:animate-journey-dot [animation-delay:120ms]"></span>
+                                <span class="size-1 rounded-full bg-current motion-safe:animate-journey-dot [animation-delay:240ms]"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex max-w-[90%] flex-col gap-1 mr-6 self-start items-start">
+                        <div class="relative">
+                            <p class="rounded-2xl bg-primary-10 text-neutral-90 rounded-bl-sm px-3 py-2 text-b9 leading-relaxed motion-safe:animate-trust-followup"><span class="mb-1 block text-b10 font-medium text-neutral-70">You</span>Thanks for letting me know. A close-up would help.</p>
+                            <span class="absolute top-0 left-0 hidden items-center gap-1 rounded-2xl bg-primary-10 text-neutral-90 rounded-bl-sm px-3 py-3 motion-safe:flex motion-safe:animate-trust-typing-followup" aria-hidden="true">
+                                <span class="size-1 rounded-full bg-current motion-safe:animate-journey-dot"></span>
+                                <span class="size-1 rounded-full bg-current motion-safe:animate-journey-dot [animation-delay:120ms]"></span>
+                                <span class="size-1 rounded-full bg-current motion-safe:animate-journey-dot [animation-delay:240ms]"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <figcaption class="text-center text-b10 leading-relaxed text-neutral-70">An example of the details you can check. Take your time before agreeing.</figcaption>
         </figure>
