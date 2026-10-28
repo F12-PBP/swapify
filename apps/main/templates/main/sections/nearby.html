@@ -1,11 +1,11 @@
 {% load static lucide %}
 <section id="nearby" class="scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16 mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14" aria-labelledby="nearby-title" data-map-story>
-    <div class="mb-10 flex max-w-2xl flex-col gap-3">
+    <div data-reveal class="mb-10 flex max-w-2xl flex-col gap-3">
         <h2 id="nearby-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">Good finds, closer to home.</h2>
         <p class="text-b7 leading-relaxed text-neutral-80">Your next favourite might be in a wardrobe just a few streets away.</p>
     </div>
     <div class="flex flex-col items-start gap-9 lg:flex-row lg:gap-14">
-        <figure data-map-scene class="motion-reduce:relative motion-reduce:top-auto relative aspect-[880/650] w-full rounded-[28px] border border-secondary-30 bg-secondary-20 lg:sticky lg:top-32 lg:w-[65%] lg:shrink-0" aria-label="Illustrated map showing two fictional swappers, their approximate reach areas, and a route between them">
+        <figure id="nearby-map" data-map-scene class="motion-reduce:relative motion-reduce:top-auto relative aspect-[880/650] w-full rounded-[28px] border border-secondary-30 bg-secondary-20 lg:sticky lg:top-32 lg:w-[65%] lg:shrink-0" aria-label="Illustrated map showing two fictional swappers, their approximate reach areas, and a route between them">
             <div class="absolute inset-0 overflow-hidden rounded-[28px]">
                 <img src="{% static 'images/landing_page/neighbourhood.svg' %}" alt="" width="880" height="650" loading="lazy" class="translate-x-[var(--map-x,0px)] translate-y-[var(--map-y,0px)] scale-115 lg:motion-safe:will-change-transform motion-reduce:translate-none motion-reduce:scale-100 absolute inset-0 size-full object-cover">
                 <svg viewBox="0 0 880 650" class="pointer-events-none absolute inset-0 size-full translate-x-[var(--landmark-x,0px)] translate-y-[var(--landmark-y,0px)] scale-105 drop-shadow-sm lg:motion-safe:will-change-transform motion-reduce:translate-none motion-reduce:scale-100" aria-hidden="true">
@@ -38,7 +38,11 @@
                 </div>
             </div>
             <div class="pointer-events-none absolute top-0 left-0 z-20 size-0 translate-x-[var(--car-x,0px)] translate-y-[var(--car-y,0px)] lg:motion-safe:will-change-transform" data-map-car>
-                <img src="{% static 'images/landing_page/swapy/car.svg' %}" width="360" height="390" alt="Swapy connecting the two wardrobes in a little olive car" class="absolute top-0 left-0 h-auto max-w-none w-[calc(var(--map-width,320px)*.28)] sm:w-[calc(var(--map-width,320px)*.26)] lg:w-[calc(var(--map-width,320px)*.28)] -translate-x-1/2 -translate-y-1/2">
+                <img src="{% static 'images/landing_page/swapy/car.svg' %}" width="360" height="390" alt="Swapy connecting the two wardrobes in a little olive car" class="absolute top-0 left-0 h-auto max-w-none w-[calc(var(--map-width,320px)*.28)] sm:w-[calc(var(--map-width,320px)*.26)] lg:w-[calc(var(--map-width,320px)*.28)] -translate-x-1/2 -translate-y-1/2 rotate-[var(--car-tilt,0deg)]">
+            </div>
+            <div class="absolute top-3 right-3 z-20 flex gap-1 rounded-full bg-neutral-10/95 p-1" data-map-controls hidden>
+                <button type="button" class="btn btn-primary-ghost size-9! min-h-9! p-0!" aria-label="Previous map story" data-map-previous>{% lucide "chevron-left" size=18 %}</button>
+                <button type="button" class="btn btn-primary-ghost size-9! min-h-9! p-0!" aria-label="Next map story" data-map-next>{% lucide "chevron-right" size=18 %}</button>
             </div>
             <span class="absolute top-4 left-4 rounded-full bg-neutral-10/90 px-3 py-1.5 text-b10 text-secondary-80 sm:text-b9">An illustrated neighbourhood</span>
             <figcaption class="absolute right-[30%] bottom-3 left-3 rounded-xl bg-neutral-10/90 px-3 py-2 text-left text-[9px] leading-relaxed text-neutral-90 sm:text-b10">Illustration only. Areas show approximate reach, not exact or live locations.</figcaption>
@@ -46,34 +50,35 @@
         <ol class="flex w-full list-none flex-col gap-1 lg:min-w-0 lg:flex-1 lg:gap-0">
             <li class="flex flex-col justify-center border-l-2 border-secondary-30 pl-5 transition-colors duration-300 data-[active=true]:border-primary-base motion-reduce:transition-none lg:min-h-48" data-story-step="0">
                 <div class="flex flex-col gap-1 lg:gap-3">
-                    <h3 class="font-display text-h6 text-primary-base lg:text-h5">A piece to pass on.</h3>
+                    <h3 class="font-display text-h6 text-primary-base lg:text-h5"><button type="button" class="rounded-sm text-left underline-offset-4 hover:underline focus-visible:underline" aria-controls="nearby-map" data-story-select>A piece to pass on.</button></h3>
                     <p class="text-b8 leading-normal text-neutral-80 lg:leading-relaxed">Photograph a piece you no longer wear. Add its size and condition.</p>
                 </div>
             </li>
             <li class="flex flex-col justify-center border-l-2 border-secondary-30 pl-5 transition-colors duration-300 data-[active=true]:border-primary-base motion-reduce:transition-none lg:min-h-48" data-story-step="1">
                 <div class="flex flex-col gap-1 lg:gap-3">
-                    <h3 class="font-display text-h6 text-primary-base lg:text-h5">Someone nearby.</h3>
+                    <h3 class="font-display text-h6 text-primary-base lg:text-h5"><button type="button" class="rounded-sm text-left underline-offset-4 hover:underline focus-visible:underline" aria-controls="nearby-map" data-story-select>Someone nearby.</button></h3>
                     <p class="text-b8 leading-normal text-neutral-80 lg:leading-relaxed">Save your area to see approximate distances in Discover.</p>
                 </div>
             </li>
             <li class="flex flex-col justify-center border-l-2 border-secondary-30 pl-5 transition-colors duration-300 data-[active=true]:border-primary-base motion-reduce:transition-none lg:min-h-48" data-story-step="2">
                 <div class="flex flex-col gap-1 lg:gap-3">
-                    <h3 class="font-display text-h6 text-primary-base lg:text-h5">A little give and take.</h3>
+                    <h3 class="font-display text-h6 text-primary-base lg:text-h5"><button type="button" class="rounded-sm text-left underline-offset-4 hover:underline focus-visible:underline" aria-controls="nearby-map" data-story-select>A little give and take.</button></h3>
                     <p class="text-b8 leading-normal text-neutral-80 lg:leading-relaxed">See a piece you love? Offer one of yours in a swap proposal.</p>
                 </div>
             </li>
             <li class="flex flex-col justify-center border-l-2 border-secondary-30 pl-5 transition-colors duration-300 data-[active=true]:border-primary-base motion-reduce:transition-none lg:min-h-48" data-story-step="3">
                 <div class="flex flex-col gap-1 lg:gap-3">
-                    <h3 class="font-display text-h6 text-primary-base lg:text-h5">Make a plan together.</h3>
+                    <h3 class="font-display text-h6 text-primary-base lg:text-h5"><button type="button" class="rounded-sm text-left underline-offset-4 hover:underline focus-visible:underline" aria-controls="nearby-map" data-story-select>Make a plan together.</button></h3>
                     <p class="text-b8 leading-normal text-neutral-80 lg:leading-relaxed">Once accepted, chat to arrange a public meetup or delivery.</p>
                 </div>
             </li>
             <li class="flex flex-col justify-center border-l-2 border-secondary-30 pl-5 transition-colors duration-300 data-[active=true]:border-primary-base motion-reduce:transition-none lg:min-h-48" data-story-step="4">
                 <div class="flex flex-col gap-1 lg:gap-3">
-                    <h3 class="font-display text-h6 text-primary-base lg:text-h5">A fresh start for both.</h3>
+                    <h3 class="font-display text-h6 text-primary-base lg:text-h5"><button type="button" class="rounded-sm text-left underline-offset-4 hover:underline focus-visible:underline" aria-controls="nearby-map" data-story-select>A fresh start for both.</button></h3>
                     <p class="text-b8 leading-normal text-neutral-80 lg:leading-relaxed">Confirm when your piece arrives. Give theirs a new chapter.</p>
                 </div>
             </li>
         </ol>
     </div>
+    <p class="sr-only" role="status" data-map-status></p>
 </section>

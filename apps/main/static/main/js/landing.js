@@ -217,6 +217,10 @@
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const desktop = window.matchMedia('(min-width: 1024px)');
   const routeLength = route.getTotalLength();
+  const previous = story.querySelector('[data-map-previous]');
+  const next = story.querySelector('[data-map-next]');
+  const status = story.querySelector('[data-map-status]');
+  let manual = null;
   let mapWidth = scene.clientWidth;
   let mapHeight = scene.clientHeight;
   let visible = false;
@@ -246,9 +250,16 @@
     const y = ((point.y / 650 - .5) * worldScale + .5) * mapHeight + worldY;
     car.style.setProperty('--car-x', `${x}px`);
     car.style.setProperty('--car-y', `${y}px`);
+    const ahead = route.getPointAtLength(Math.min(routeLength, routeLength * current + 6));
+    const tilt = motion.matches ? 0 : Math.max(-5, Math.min(5, (ahead.y - point.y) * .5)) * Math.sin(Math.PI * current);
+    car.style.setProperty('--car-tilt', `${tilt}deg`);
+    const selected = Math.round(target * (steps.length - 1));
+    previous.disabled = selected === 0;
+    next.disabled = selected === steps.length - 1;
     steps.forEach((step, index) => {
-      const active = String(!animated() || index === Math.round(current * (steps.length - 1)));
+      const active = String(index === Math.round(current * (steps.length - 1)));
       if (step.dataset.active !== active) step.dataset.active = active;
+      step.querySelector('[data-story-select]').setAttribute('aria-current', active === 'true' ? 'step' : 'false');
     });
   };
   const tick = (time) => {
@@ -260,16 +271,16 @@
     frame = current !== target && visible ? requestAnimationFrame(tick) : null;
   };
   const update = () => {
-    if (animated()) {
+    if (animated() && manual === null) {
       const centers = steps.map((step) => {
         const bounds = step.getBoundingClientRect();
         return bounds.top + bounds.height / 2;
       });
       target = Math.max(0, Math.min(1, (innerHeight * .55 - centers[0]) / (centers[centers.length - 1] - centers[0])));
     } else {
-      target = 1;
+      target = manual ?? (motion.matches ? 1 : 0);
     }
-    if (!animated() || !visible) {
+    if (motion.matches || !visible) {
       if (frame !== null) cancelAnimationFrame(frame);
       frame = null;
       current = target;
@@ -283,7 +294,24 @@
     visible = entry.isIntersecting;
     update();
   }).observe(story);
-  window.addEventListener('scroll', () => { if (visible) update(); }, { passive: true });
+  const select = (index, fromMap = false) => {
+    index = Math.max(0, Math.min(steps.length - 1, index));
+    const button = steps[index].querySelector('[data-story-select]');
+    status.textContent = `Illustrated map: ${button.textContent}`;
+    if (animated()) {
+      manual = null;
+      steps[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      manual = index / (steps.length - 1);
+      if (!fromMap) scene.scrollIntoView({ behavior: motion.matches ? 'instant' : 'smooth', block: 'center' });
+    }
+    update();
+  };
+  steps.forEach((step, index) => step.querySelector('[data-story-select]').addEventListener('click', () => select(index)));
+  previous.addEventListener('click', () => select(Math.round(target * (steps.length - 1)) - 1, true));
+  next.addEventListener('click', () => select(Math.round(target * (steps.length - 1)) + 1, true));
+  story.querySelector('[data-map-controls]').hidden = false;
+  window.addEventListener('scroll', () => { if (visible && animated()) update(); }, { passive: true });
   const resize = () => {
     mapWidth = scene.clientWidth;
     mapHeight = scene.clientHeight;
@@ -292,7 +320,7 @@
   };
   window.addEventListener('resize', resize, { passive: true });
   motion.addEventListener('change', update);
-  desktop.addEventListener('change', update);
+  desktop.addEventListener('change', () => { manual = null; update(); });
   resize();
 })();
 
