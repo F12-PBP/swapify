@@ -142,7 +142,9 @@ class ProfileUpdateForm(forms.ModelForm):
         validators=[validate_uploaded_image],
         widget=forms.FileInput(
             attrs={
-                "class": "file-input w-full",
+                "class": "peer sr-only",
+                "data-profile-photo": "",
+                "aria-describedby": "profile-photo-help",
                 "accept": "image/jpeg,image/png,image/webp",
             }
         ),
@@ -161,7 +163,11 @@ class ProfileUpdateForm(forms.ModelForm):
             ),
             "bio": forms.Textarea(
                 attrs={
-                    "class": "textarea swap-input w-full",
+                    "class": (
+                        "textarea swap-input min-h-32 w-full rounded-2xl border-0 "
+                        "bg-neutral-30 px-5 py-3 text-b7 placeholder:text-neutral-60 "
+                        "focus:outline-primary-base"
+                    ),
                     "placeholder": "Tell other swappers a little about yourself",
                     "rows": 4,
                 }

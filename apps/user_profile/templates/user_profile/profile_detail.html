@@ -1,78 +1,69 @@
 {% extends "marketplace/base.html" %}
+{% load static lucide l10n %}
 
 {% block title %}My Profile | Swapify{% endblock %}
-
+{% block styles %}<link rel="stylesheet" href="{% static 'user_profile/vendor/leaflet/leaflet.css' %}">{% endblock %}
 {% block content %}
-<section class="mx-auto max-w-2xl" aria-labelledby="profile-title">
-    <div class="card border border-neutral-40 bg-base-100 shadow-sm">
-        <div class="card-body gap-6">
-            <header>
-               {% if profile.profile_picture %}
-               <img
-                    src="{{ profile.profile_picture.url }}"
-                    alt="Profile photo of {{ profile.display_name }}"
-                    width="96"
-                    height="96"
-                    class="rounded-full object-cover"
-                    style="width: 96px; height: 96px;"
-               >
-               {% else %}
-               <div
-                    class="flex size-24 items-center justify-center rounded-full bg-primary text-primary-content"
-                    aria-hidden="true"
-               >
-                    {{ profile.display_name|slice:":1"|upper }}
-               </div>
-               {% endif %}
-                <h1 id="profile-title" class="font-display text-h3">My Profile</h1>
-                <p class="mt-2 text-base-content/60">@{{ profile.user.username }}</p>
-            </header>
-            <dl class="space-y-4">
-                <div>
-                    <dt class="text-sm text-base-content/60">Display name</dt>
-                    <dd class="mt-1 font-medium">{{ profile.display_name }}</dd>
-                </div>
-                <div>
-                    <dt class="text-sm text-base-content/60">Bio</dt>
-                    <dd class="mt-1 whitespace-pre-line">{{ profile.bio|default:"No bio yet." }}</dd>
-                </div>
-                <div>
-                    <dt class="text-sm text-base-content/60">Location</dt>
-                    <dd class="mt-1">
-                        {% if profile.city and profile.province %}
-                            {{ profile.city }}, {{ profile.province }}
-                        {% else %}
-                            No location added yet.
-                        {% endif %}
-                    </dd>
-                </div>
-            </dl>
-            <div class="flex flex-wrap gap-3 border-t border-neutral-40 pt-5">
-                <a href="{% url 'clothing_catalog:list' %}" class="btn btn-primary">Browse Clothing</a>
-                <a href="{% url 'swap_request:list' %}" class="btn btn-primary-ghost">My Swap Requests</a>
-            </div>
-          <a
-               href="{% url 'user_profile:edit' %}"
-               class="btn btn-primary-ghost"
-               >
-               Edit Profile
-          </a>
-          {% if not profile.onboarding_completed %}
-          <a href="{% url 'user_profile:onboarding' %}" class="btn btn-primary">Finish Setting Up Your Profile</a>
+<section class="flex min-w-0 flex-col gap-10 md:gap-[60px]" aria-labelledby="profile-title">
+  <div class="relative flex items-center justify-center">
+    <a href="{% url 'user_profile:public' user.username %}" class="absolute left-0 rounded-full p-2 text-neutral-80 hover:bg-neutral-30" aria-label="Back to my wardrobe">{% lucide "arrow-left" size=24 %}</a>
+    <h1 id="profile-title" class="px-12 text-center font-display text-h3 text-primary-base md:text-h2">Profile</h1>
+  </div>
+  <div class="flex min-w-0 flex-col gap-10 lg:flex-row lg:gap-20">
+    <div class="flex min-w-0 flex-1 flex-col gap-10 lg:max-w-[545px]">
+      <div class="flex flex-col gap-8">
+        {% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}" alt="Profile photo of {{ profile.display_name }}" width="100" height="100" class="size-[100px] self-center rounded-full object-cover">{% else %}<span class="flex size-[100px] items-center justify-center self-center rounded-full bg-neutral-40 font-display text-h3 text-neutral-80" aria-hidden="true">{{ profile.display_name|first|upper }}</span>{% endif %}
+        <div class="flex flex-col gap-3">
+        <dl class="flex flex-col gap-5 text-b7 text-neutral-80">
+          <div class="flex flex-col gap-2"><dt class="font-semibold">Display Name</dt><dd class="break-words">{{ profile.display_name }}</dd></div>
+          <div class="flex flex-col gap-2"><dt class="font-semibold">Email address</dt><dd class="break-all">{{ user.email|default:"No email address added." }}</dd></div>
+          <div class="flex flex-col gap-2"><dt class="font-semibold">Bio</dt><dd class="whitespace-pre-line break-words">{{ profile.bio|default:"No bio yet." }}</dd></div>
+          <div class="flex flex-col gap-2"><dt class="font-semibold">Location</dt><dd>{% if profile.city and profile.province %}{{ profile.city }}, {{ profile.province }}{% else %}No location added yet.{% endif %}</dd></div>
+        </dl>
+        <div class="relative z-0 flex flex-col gap-3 rounded-[20px] border border-neutral-40 p-4 sm:p-5">
+          {% if profile.latitude != None and profile.longitude != None %}
+            <div class="h-[220px] w-full rounded-2xl bg-neutral-30" data-profile-map data-latitude="{{ profile.latitude|unlocalize }}" data-longitude="{{ profile.longitude|unlocalize }}" role="region" aria-label="Map of your approximate area" tabindex="0"></div>
+            <p class="text-b9 text-neutral-70" data-map-status role="status">Your approximate area. Your exact address stays private.</p>
+          {% else %}
+            <div class="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl bg-secondary-10 px-6 text-center text-b8 text-secondary-70">{% lucide "map-pin" size=32 %}<p>{% if profile.city %}Your city is saved. Use My Location in Edit Location to add an approximate map area.{% else %}Add your location to find your swapping community.{% endif %}</p></div>
           {% endif %}
-          <a href="{% url 'user_profile:onboarding' %}?step=3" class="btn btn-primary-ghost">
-               Edit Style Preferences
-          </a>
-          <a href="{% url 'user_profile:location_edit' %}" class="btn btn-primary-ghost">
-               Edit Location
-          </a>
-          <a
-               href="{% url 'user_profile:public' profile.user.username %}"
-               class="btn btn-primary-ghost"
-               >
-               View Public Profile
-          </a>
         </div>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-4">
+        <a href="{% url 'user_profile:location_edit' %}" class="btn btn-primary-ghost flex flex-1 items-center justify-center" data-profile-edit>Edit Location</a>
+        <a href="{% url 'user_profile:edit' %}" class="btn btn-primary flex flex-1 items-center justify-center" data-profile-edit>Edit Profile</a>
+      </div>
+      <a href="{% url 'user_profile:public' profile.user.username %}" class="self-start text-b8 font-semibold text-primary-base hover:underline">View Public Profile{% lucide "arrow-up-right" size=16 class="ml-1 inline" %}</a>
+      {% if not profile.onboarding_completed %}<a href="{% url 'user_profile:onboarding' %}" class="self-start text-b8 text-primary-base hover:underline">Finish Setting Up Your Profile</a>{% endif %}
     </div>
+    <div class="flex min-w-0 flex-1 flex-col gap-12 lg:pt-8 lg:gap-20">
+      <section class="flex flex-col gap-7" aria-labelledby="preferences-title">
+        <div class="flex flex-col gap-3">
+          <h2 id="preferences-title" class="text-s6 font-semibold text-neutral-80">My Preferences</h2>
+          {% include "user_profile/partials/style_choices.html" %}
+          {% if not profile.preferences %}<p class="text-b9 text-neutral-70">No style preferences selected yet.</p>{% endif %}
+        </div>
+        <a href="{% url 'user_profile:preferences_edit' %}" class="btn btn-primary flex items-center justify-center" data-profile-edit>Edit Preferences</a>
+      </section>
+      <section class="flex flex-col gap-7" aria-labelledby="review-title">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="review-title" class="text-s6 font-semibold text-neutral-80">My Rating &amp; Review</h2>
+          {% include "user_profile/partials/rating_summary.html" %}
+        </div>
+        {% if latest_review %}{% include "user_profile/partials/review_card.html" with review=latest_review %}{% else %}<p class="rounded-3xl border border-neutral-40 bg-neutral-20 p-6 text-b7 text-neutral-80">Reviews will appear here after completed exchanges.</p>{% endif %}
+        <a href="{% url 'user_profile:reviews' %}" class="btn btn-primary flex items-center justify-center">See All Reviews</a>
+      </section>
+    </div>
+  </div>
 </section>
+<dialog id="profile-edit-dialog" class="modal" aria-labelledby="profile-edit-title">
+  <div class="modal-box flex w-[calc(100%_-_2rem)] max-w-[524px] flex-col rounded-[32px] bg-neutral-10 p-6 sm:p-9" data-profile-dialog-content></div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Close edit dialog">Close</button></form>
+</dialog>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'user_profile/vendor/leaflet/leaflet.js' %}" defer></script>
+<script src="{% static 'user_profile/js/location.js' %}?v=profile-dialog-1" defer></script>
+<script src="{% static 'user_profile/js/profile.js' %}" defer></script>
 {% endblock %}

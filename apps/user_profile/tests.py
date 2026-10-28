@@ -1344,6 +1344,124 @@ class ProfileReviewTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.context["reviews_page"].number, expected_page)
 
+    def test_private_dashboard_uses_received_reviews_and_own_email(self):
+        self.member.email = "owner-private@example.com"
+        self.member.save()
+        latest = self.add_review(rating=4, comment="A thoughtful swap.")
+        self.add_review(rating=1, recipient=self.other, comment="Another member only")
+        self.client.force_login(self.member)
+        response = self.client.get(reverse("user_profile:detail"))
+        self.assertEqual(response.context["latest_review"], latest)
+        self.assertEqual(
+            response.context["rating_summary"], {"average": 4.0, "count": 1}
+        )
+        self.assertContains(response, "owner-private@example.com")
+        self.assertContains(response, "A thoughtful swap.")
+        self.assertNotContains(response, "Another member only")
+        self.assertNotContains(self.client.get(self.url), "owner-private@example.com")
+
+    def test_private_reviews_filter_keeps_overall_summary_and_member_scope(self):
+        self.add_review(rating=5, comment="Five star received")
+        self.add_review(rating=2, comment="Two star received")
+        self.add_review(rating=5, recipient=self.other, comment="Another recipient")
+        self.client.force_login(self.member)
+        url = reverse("user_profile:reviews")
+        response = self.client.get(url, {"rating": "5"})
+        self.assertEqual(
+            response.context["rating_summary"], {"average": 3.5, "count": 2}
+        )
+        self.assertContains(response, "Five star received")
+        self.assertNotContains(response, "Two star received")
+        self.assertNotContains(response, "Another recipient")
+        fragment = self.client.get(url, {"rating": "2"}, HTTP_X_PROFILE_REVIEWS="1")
+        self.assertIn("Two star received", fragment.json()["html"])
+        self.assertNotIn("Five star received", fragment.json()["html"])
+        self.assertIn("X-Profile-Reviews", fragment.headers["Vary"])
+        empty = self.client.get(url, {"rating": "1"})
+        self.assertContains(empty, "No 1-star reviews yet.")
+        invalid = self.client.get(url, {"rating": "invalid"})
+        self.assertEqual(len(invalid.context["reviews"]), 2)
+
+    def test_private_reviews_paginate_and_require_signin(self):
+        url = reverse("user_profile:reviews")
+        self.assertEqual(self.client.get(url).status_code, 302)
+        for index in range(11):
+            self.add_review(rating=5, comment=f"Received review {index}")
+        self.client.force_login(self.member)
+        response = self.client.get(url, {"rating": "5"})
+        self.assertEqual(len(response.context["reviews"]), 10)
+        self.assertContains(response, "rating=5&amp;page=2")
+        last = self.client.get(url, {"rating": "5", "page": "2"})
+        self.assertEqual(len(last.context["reviews"]), 1)
+
+
+class ProfileDialogTests(TestCase):
+    def setUp(self):
+        self.member = get_user_model().objects.create_user(username="profile-editor")
+        self.other = get_user_model().objects.create_user(username="other-profile")
+        self.client.force_login(self.member)
+
+    def test_preferences_save_clear_and_reject_unknown_values_without_onboarding(self):
+        url = reverse("user_profile:preferences_edit")
+        response = self.client.post(
+            url,
+            {"preferences": ["tops", "shoes"], "user_id": self.other.pk},
+            HTTP_X_PROFILE_DIALOG="1",
+        )
+        self.assertEqual(response.json(), {"redirect": reverse("user_profile:detail")})
+        self.member.profile.refresh_from_db()
+        self.other.profile.refresh_from_db()
+        self.assertEqual(self.member.profile.preferences, ["tops", "shoes"])
+        self.assertFalse(self.member.profile.onboarding_completed)
+        self.assertEqual(self.other.profile.preferences, [])
+        invalid = self.client.post(
+            url, {"preferences": ["unknown"]}, HTTP_X_PROFILE_DIALOG="1"
+        )
+        self.assertEqual(invalid.status_code, 422)
+        self.member.profile.refresh_from_db()
+        self.assertEqual(self.member.profile.preferences, ["tops", "shoes"])
+        self.client.post(url, {}, HTTP_X_PROFILE_DIALOG="1")
+        self.member.profile.refresh_from_db()
+        self.assertEqual(self.member.profile.preferences, [])
+
+    def test_dialog_forms_are_fragments_and_full_pages_are_fallbacks(self):
+        for name in ("edit", "preferences_edit", "location_edit"):
+            url = reverse(f"user_profile:{name}")
+            fragment = self.client.get(url, HTTP_X_PROFILE_DIALOG="1")
+            self.assertEqual(fragment.status_code, 200)
+            self.assertContains(fragment, "data-profile-form")
+            self.assertNotContains(fragment, "<html")
+            self.assertIn("X-Profile-Dialog", fragment.headers["Vary"])
+            self.assertContains(self.client.get(url), "<html")
+        invalid = self.client.post(
+            reverse("user_profile:edit"),
+            {"display_name": ""},
+            HTTP_X_PROFILE_DIALOG="1",
+        )
+        self.assertEqual(invalid.status_code, 422)
+        self.assertNotContains(invalid, "<html", status_code=422)
+        success = self.client.post(
+            reverse("user_profile:edit"),
+            {"display_name": "Edited name", "bio": "Changed bio"},
+            HTTP_X_PROFILE_DIALOG="1",
+        )
+        self.assertEqual(success.status_code, 200)
+        self.member.profile.refresh_from_db()
+        self.assertEqual(self.member.profile.display_name, "Edited name")
+
+    def test_preferences_require_authentication_and_csrf(self):
+        url = reverse("user_profile:preferences_edit")
+        protected = Client(enforce_csrf_checks=True)
+        protected.force_login(self.member)
+        self.assertEqual(
+            protected.post(url, {"preferences": ["tops"]}).status_code, 403
+        )
+        self.client.logout()
+        self.assertEqual(self.client.get(url).status_code, 302)
+        self.assertEqual(
+            self.client.post(url, {"preferences": ["tops"]}).status_code, 302
+        )
+
 
 class OnboardingTests(TestCase):
     @classmethod

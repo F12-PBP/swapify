@@ -1,6 +1,8 @@
 (() => {
+  const init = () => {
     const form = document.getElementById("location-form");
-    if (!form) return;
+    if (!form || form.dataset.locationReady) return;
+    form.dataset.locationReady = "true";
 
     const button = document.getElementById("detect-location");
     const saveButton = document.getElementById("save-location");
@@ -17,6 +19,7 @@
     let mapRevision = 0;
 
     function loadLeaflet() {
+        if (window.L) return Promise.resolve(window.L);
         if (leafletReady) return leafletReady;
         leafletReady = new Promise((resolve, reject) => {
             const css = document.createElement("link");
@@ -183,4 +186,7 @@
             fields.forEach((field) => { form.elements.namedItem(field).disabled = false; });
         }
     });
+  };
+  window.SwapLocation = { init };
+  init();
 })();

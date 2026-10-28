@@ -6,7 +6,9 @@ from .views import (
     LogoutUserView,
     MyProfileDetailView,
     MyProfileLocationUpdateView,
+    MyProfilePreferencesUpdateView,
     MyProfileUpdateView,
+    MyReviewListView,
     OnboardingView,
     PublicProfileDetailView,
     RegisterUserView,
@@ -23,6 +25,12 @@ urlpatterns = [
     path("onboarding/", OnboardingView.as_view(), name="onboarding"),
     path("logout/", LogoutUserView.as_view(), name="logout"),
     path("edit/", MyProfileUpdateView.as_view(), name="edit"),
+    path(
+        "preferences/edit/",
+        MyProfilePreferencesUpdateView.as_view(),
+        name="preferences_edit",
+    ),
+    path("reviews/", MyReviewListView.as_view(), name="reviews"),
     path(
         "location/edit/",
         MyProfileLocationUpdateView.as_view(),

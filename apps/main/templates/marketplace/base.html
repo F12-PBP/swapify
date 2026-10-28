@@ -7,6 +7,7 @@
   <title>{% block title %}Swapify{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'images/landing_page/swapify-logo.svg' %}">
   {% tailwind_css %}
+  {% block styles %}{% endblock %}
 </head>
 <body class="marketplace bg-neutral-10 font-sans text-neutral-100">
   <a class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-neutral-10 focus:p-4" href="#main-content">Skip to content</a>

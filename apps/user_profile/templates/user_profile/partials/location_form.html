@@ -1,0 +1,24 @@
+{% load lucide %}
+<form action="{% url 'user_profile:location_edit' %}" method="post" id="location-form" class="flex flex-col gap-7" data-profile-form data-resolve-url="{% url 'user_profile:location_resolve' %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ return_url }}">
+  {{ form.location_token }}
+  <{% if dialog_mode %}h2{% else %}h1{% endif %} id="profile-edit-title" class="font-display text-h4 text-primary-base">Edit Location</{% if dialog_mode %}h2{% else %}h1{% endif %}>
+  <div class="flex flex-col gap-3">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <p class="text-b8 font-semibold text-primary-60">Auto-fill your area</p>
+      <button type="button" id="detect-location" class="btn btn-primary inline-flex items-center justify-center gap-2 text-b8">{% lucide "map-pinned" size=20 %}Use My Location</button>
+    </div>
+    <p class="text-b9 text-neutral-70">With your permission, we’ll send an approximate position to OpenStreetMap’s Nominatim service to find your area. You can also enter your area manually.</p>
+    <p id="location-status" class="text-b9 text-neutral-80" role="status" aria-live="polite"></p>
+  </div>
+  {% include "user_profile/location_map.html" %}
+  {% if form.non_field_errors %}<div class="swap-field-error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  {% for field in form.visible_fields %}{% include "user_profile/auth/field.html" with field=field %}{% endfor %}
+  <label class="flex items-start gap-3 text-b9 text-neutral-90"><input type="checkbox" class="checkbox checkbox-sm shrink-0" required checked><span>I understand that my city is visible on my listings, but my exact address is private.</span></label>
+  <div class="flex gap-3">
+    <a href="{{ return_url }}" class="btn btn-primary-ghost flex flex-1 items-center justify-center" data-profile-cancel>Cancel</a>
+    <button type="submit" id="save-location" class="btn btn-primary flex-1">{% if dialog_mode %}Save Changes{% else %}Save Location{% endif %}</button>
+  </div>
+  <p class="text-b8 text-red-base" role="status" data-profile-form-status hidden></p>
+</form>

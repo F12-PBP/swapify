@@ -8,10 +8,19 @@ from django.db import transaction
 from django.db.models import Avg, Count, OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
+from django.utils.cache import patch_vary_headers
 from django.views import View
-from django.views.generic import CreateView, DetailView, TemplateView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 
+from apps.clothing_catalog.categories import STYLE_CHOICES
 from apps.clothing_catalog.models import Clothing
 from apps.review_rating.models import Review
 from apps.swap_request.models import SwapRequest
@@ -73,6 +82,57 @@ class WardrobeView(TemplateView):
         return self.render_to_response({"guest_wardrobe": True})
 
 
+def profile_style_choices():
+    labels = dict(STYLE_CHOICES)
+    return [
+        (key, labels[key])
+        for key in (
+            "tops",
+            "outerwear",
+            "bottoms",
+            "dresses",
+            "bags",
+            "accessories",
+            "shoes",
+        )
+    ]
+
+
+class ProfileDialogMixin:
+    dialog_template_name = None
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "dialog_mode": self.request.headers.get("X-Profile-Dialog") == "1",
+        }
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        patch_vary_headers(response, ["X-Profile-Dialog"])
+        return response
+
+    def get_template_names(self):
+        if self.request.headers.get("X-Profile-Dialog") == "1":
+            return [self.dialog_template_name]
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if (
+            self.request.headers.get("X-Profile-Dialog") == "1"
+            and response.status_code == 302
+        ):
+            return JsonResponse({"redirect": response.url})
+        return response
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if self.request.headers.get("X-Profile-Dialog") == "1":
+            response.status_code = 422
+        return response
+
+
 class MyProfileDetailView(LoginRequiredMixin, DetailView):
     model = Profile
     template_name = "user_profile/profile_detail.html"
@@ -81,11 +141,90 @@ class MyProfileDetailView(LoginRequiredMixin, DetailView):
     def get_object(self, queryset=None):
         return self.request.user.profile
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        reviews = Review.objects.filter(recipient=self.request.user).select_related(
+            "author__profile"
+        )
+        context["rating_summary"] = reviews.aggregate(
+            average=Avg("rating"), count=Count("pk")
+        )
+        context["latest_review"] = reviews.first()
+        context["style_choices"] = profile_style_choices()
+        return context
 
-class MyProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+
+class MyReviewListView(LoginRequiredMixin, ListView):
+    template_name = "user_profile/profile_reviews.html"
+    context_object_name = "reviews"
+    paginate_by = 10
+
+    def get_queryset(self):
+        self.received_reviews = Review.objects.filter(
+            recipient=self.request.user
+        ).select_related("author__profile")
+        self.rating = self.request.GET.get("rating", "")
+        if self.rating not in {"1", "2", "3", "4", "5"}:
+            self.rating = ""
+        return (
+            self.received_reviews.filter(rating=self.rating)
+            if self.rating
+            else self.received_reviews
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["rating"] = self.rating
+        context["rating_choices"] = range(1, 6)
+        context["rating_summary"] = self.received_reviews.aggregate(
+            average=Avg("rating"), count=Count("pk")
+        )
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get("X-Profile-Reviews") == "1":
+            response = JsonResponse(
+                {
+                    "html": render_to_string(
+                        "user_profile/partials/review_results.html",
+                        context,
+                        request=self.request,
+                    )
+                }
+            )
+        else:
+            response = super().render_to_response(context, **response_kwargs)
+        patch_vary_headers(response, ["X-Profile-Reviews"])
+        return response
+
+
+class MyProfilePreferencesUpdateView(
+    LoginRequiredMixin, ProfileDialogMixin, SuccessMessageMixin, UpdateView
+):
+    model = Profile
+    form_class = PreferencesForm
+    template_name = "user_profile/preferences_form.html"
+    dialog_template_name = "user_profile/partials/preferences_form.html"
+    success_url = reverse_lazy("user_profile:detail")
+    success_message = "Your style preferences have been updated."
+
+    def get_object(self, queryset=None):
+        return self.request.user.profile
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "style_choices": profile_style_choices(),
+        }
+
+
+class MyProfileUpdateView(
+    LoginRequiredMixin, ProfileDialogMixin, SuccessMessageMixin, UpdateView
+):
     model = Profile
     form_class = ProfileUpdateForm
     template_name = "user_profile/profile_form.html"
+    dialog_template_name = "user_profile/partials/profile_form.html"
     context_object_name = "profile"
     success_url = reverse_lazy("user_profile:detail")
     success_message = "Your profile has been updated."
@@ -114,10 +253,13 @@ class MyProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super().form_valid(form)
 
 
-class MyProfileLocationUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class MyProfileLocationUpdateView(
+    LoginRequiredMixin, ProfileDialogMixin, SuccessMessageMixin, UpdateView
+):
     model = Profile
     form_class = ProfileLocationForm
     template_name = "user_profile/location_form.html"
+    dialog_template_name = "user_profile/partials/location_form.html"
     context_object_name = "profile"
     success_url = reverse_lazy("user_profile:detail")
     success_message = "Your location has been updated."

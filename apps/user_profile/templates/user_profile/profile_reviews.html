@@ -1,0 +1,20 @@
+{% extends "marketplace/base.html" %}
+{% load static lucide %}
+{% block title %}My Rating &amp; Review | Swapify{% endblock %}
+{% block content %}
+<div class="relative">
+<a href="{% url 'user_profile:detail' %}" class="absolute left-0 top-0 rounded-full p-2 text-neutral-80 hover:bg-neutral-30 lg:-left-12" aria-label="Back to profile">{% lucide "arrow-left" size=24 %}</a>
+<section class="mx-auto flex max-w-[720px] min-w-0 flex-col gap-10 md:gap-[60px]" aria-labelledby="reviews-title" data-profile-reviews>
+  <h1 id="reviews-title" class="pl-12 font-display text-h4 text-primary-base md:text-h3 lg:pl-0">My Rating &amp; Review</h1>
+  <div class="flex flex-col gap-10">
+  <nav class="flex flex-wrap gap-3" aria-label="Filter reviews by rating">
+    <a href="{% url 'user_profile:reviews' %}" class="market-chip {% if not rating %}market-chip-active{% endif %}" {% if not rating %}aria-current="true"{% endif %} data-review-filter="">All</a>
+    {% for value in rating_choices %}<a href="?rating={{ value }}" class="market-chip inline-flex items-center gap-2 {% if rating == value|stringformat:'s' %}market-chip-active{% endif %}" {% if rating == value|stringformat:'s' %}aria-current="true"{% endif %} aria-label="{{ value }} star reviews" data-review-filter="{{ value }}">{% lucide "star" size=24 %}{{ value }}</a>{% endfor %}
+  </nav>
+  <div data-review-results>{% include "user_profile/partials/review_results.html" %}</div>
+  <p class="text-b8 text-red-base" role="status" data-review-error></p>
+  </div>
+</section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'user_profile/js/profile.js' %}" defer></script>{% endblock %}
