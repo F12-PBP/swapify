@@ -15,7 +15,13 @@ from apps.swap_request.models import SwapRequest
 
 from .forms import UpdateTransactionForm
 from .models import Transaction
-from .services import confirm_receipt, start_transaction
+from .services import (
+    cancel_ready_transaction,
+    confirm_receipt,
+    start_transaction,
+    unvalidate_resi,
+    validate_resi,
+)
 
 
 class TransactionParticipantMixin(LoginRequiredMixin):
@@ -38,6 +44,7 @@ class TransactionDetailView(TransactionParticipantMixin, DetailView):
         context = super().get_context_data(**kwargs)
         exchange = self.object
         is_requester = self.request.user.pk == exchange.swap_request.requester_id
+        context["is_requester"] = is_requester
         context["my_received"] = (
             exchange.requester_received if is_requester else exchange.owner_received
         )
@@ -91,7 +98,65 @@ class TransactionStartView(TransactionParticipantMixin, View):
             for message in error.messages:
                 messages.error(request, message)
         else:
-            messages.success(request, "Exchange started. Details are now locked.")
+            if exchange.status == Transaction.Status.IN_PROGRESS:
+                messages.success(request, "Exchange started. Details are now locked.")
+            else:
+                messages.success(
+                    request, "You are ready. Waiting for the other party to be ready."
+                )
+        return redirect("transaction_detail", pk=exchange.pk)
+
+
+class TransactionCancelView(TransactionParticipantMixin, View):
+    def post(self, request, pk):
+        exchange = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            cancel_ready_transaction(exchange.pk, request.user)
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+        else:
+            messages.success(
+                request, "You have unreadied yourself. You can now change the details."
+            )
+        return redirect("transaction_detail", pk=exchange.pk)
+
+
+class ResiValidatetView(TransactionParticipantMixin, View):
+    def post(self, request, pk):
+        exchange = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            validate_resi(exchange.pk, request.user)
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+        else:
+            messages.success(
+                request,
+                (
+                    "You have validated the other's resi. Waiting for the other to "
+                    "validate yours before exchange can be started!"
+                ),
+            )
+        return redirect("transaction_detail", pk=exchange.pk)
+
+
+class ResiUnvalidatetView(TransactionParticipantMixin, View):
+    def post(self, request, pk):
+        exchange = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            unvalidate_resi(exchange.pk, request.user)
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+        else:
+            messages.success(
+                request,
+                (
+                    "You have unvalidated the other's resi. Please check thoroughly "
+                    "before validating!"
+                ),
+            )
         return redirect("transaction_detail", pk=exchange.pk)
 
 
