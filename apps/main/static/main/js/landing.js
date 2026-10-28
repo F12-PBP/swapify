@@ -206,17 +206,6 @@
 })();
 
 (() => {
-  const journey = document.querySelector('[data-landing-journey]');
-  if (!journey) return;
-  const observer = new IntersectionObserver(([entry]) => {
-    if (!entry.isIntersecting) return;
-    journey.querySelectorAll('[data-journey-step]').forEach((step) => { step.dataset.arrived = 'true'; });
-    observer.disconnect();
-  }, { threshold: .2 });
-  observer.observe(journey);
-})();
-
-(() => {
   const items = [...document.querySelectorAll('[data-faq-item]')];
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const running = new Map();
