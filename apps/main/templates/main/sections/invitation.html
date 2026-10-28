@@ -1,0 +1,32 @@
+{% load static lucide %}
+<section id="fresh-start" class="landing-shell pb-16 lg:pb-24" aria-labelledby="invitation-title">
+  <div class="flex flex-col overflow-hidden rounded-[32px] bg-secondary-20 lg:flex-row lg:items-center">
+    <div class="flex flex-col items-start gap-5 px-7 pt-10 sm:px-10 lg:w-1/2 lg:px-14 lg:py-16">
+      <p class="landing-eyebrow">Loved before. Ready for more.</p>
+      <h2 id="invitation-title" class="landing-heading">Give your wardrobe<br>a fresh start.</h2>
+      <p class="max-w-md text-b7 leading-relaxed text-neutral-80">Somewhere, someone is ready to love that piece again. Find what feels like you, and pass a little possibility on.</p>
+      <div class="mt-2 flex flex-wrap gap-3">
+        <a href="{% url 'clothing_catalog:list' %}" class="btn btn-primary gap-2">Explore clothing {% lucide "arrow-right" size=18 %}</a>
+        {% if request.user.is_authenticated %}
+          <a href="{% url 'clothing_catalog:my_list' %}" class="btn btn-primary-ghost">Visit my wardrobe</a>
+        {% else %}
+          <a href="{% url 'user_profile:register' %}" class="btn btn-primary-ghost">Create an account</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="relative mt-5 aspect-[6/5] w-full lg:mt-0 lg:w-1/2" aria-label="Swapy holding a heart between two pieces ready for a new chapter" role="img">
+      <div class="absolute top-[14%] right-[7%] bottom-[6%] left-[6%] rounded-full bg-secondary-30/60"></div>
+      <figure class="absolute top-[12%] left-[4%] flex w-[35%] -rotate-12 flex-col rounded-xl bg-neutral-10 p-2 pb-4 shadow-md">
+        <img src="{% static 'clothing_catalog/images/discovery/imgImagePreLovedCreamKnitwear.png' %}" width="236" height="260" alt="" loading="lazy" class="aspect-[4/5] w-full rounded-md object-cover">
+        <figcaption class="mt-2 text-center font-display text-b8 text-primary-base sm:text-b7">Loved before.</figcaption>
+      </figure>
+      <figure class="absolute top-[8%] right-[3%] flex w-[35%] rotate-12 flex-col rounded-xl bg-neutral-10 p-2 pb-4 shadow-md">
+        <img src="{% static 'clothing_catalog/images/discovery/imgImageVintageBlueDenimJacket.png' %}" width="236" height="260" alt="" loading="lazy" class="aspect-[4/5] w-full rounded-md object-cover">
+        <figcaption class="mt-2 text-center font-display text-b8 text-primary-base sm:text-b7">Loved again.</figcaption>
+      </figure>
+      <img src="{% static 'images/landing_page/swapy/love.svg' %}" width="340" height="380" alt="" loading="lazy" class="absolute bottom-[2%] left-[24%] w-[55%]">
+      <span class="absolute bottom-[16%] left-[9%] -rotate-12 text-primary-60" aria-hidden="true">{% lucide "heart" size=28 %}</span>
+      <span class="absolute right-[10%] bottom-[10%] rotate-12 text-secondary-70" aria-hidden="true">{% lucide "sparkles" size=30 %}</span>
+    </div>
+  </div>
+</section>
