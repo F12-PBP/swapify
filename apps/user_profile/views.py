@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import CreateView, DetailView, UpdateView
+from django.views.generic import CreateView, DetailView, TemplateView, UpdateView
 
 from apps.clothing_catalog.models import Clothing
 from apps.review_rating.models import Review
@@ -62,6 +62,15 @@ class RegisterUserView(CreateView):
 
 class LogoutUserView(LogoutView):
     next_page = reverse_lazy("main:home")
+
+
+class WardrobeView(TemplateView):
+    template_name = "user_profile/profile_public.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("user_profile:public", username=request.user.username)
+        return self.render_to_response({"guest_wardrobe": True})
 
 
 class MyProfileDetailView(LoginRequiredMixin, DetailView):

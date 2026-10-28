@@ -1,14 +1,14 @@
 {% extends "marketplace/base.html" %}
 {% load lucide %}
 
-{% block title %}{{ profile.display_name }}’s wardrobe | Swapify{% endblock %}
+{% block title %}{% if guest_wardrobe %}My Wardrobe{% else %}{{ profile.display_name }}’s wardrobe{% endif %} | Swapify{% endblock %}
 
 {% block content %}
 <div class="flex min-w-0 flex-col gap-12 md:gap-16">
   <section aria-labelledby="wardrobe-heading" class="flex min-w-0 flex-col gap-8 md:gap-10">
     <div class="flex flex-wrap items-start justify-between gap-5">
       <div class="flex min-w-0 flex-col gap-3">
-        <h1 id="wardrobe-heading" class="break-words font-display text-h3 text-primary-base md:text-h2">{% if is_owner %}My Wardrobe{% else %}{{ profile.display_name }}’s Wardrobe{% endif %}</h1>
+        <h1 id="wardrobe-heading" class="break-words font-display text-h3 text-primary-base md:text-h2">{% if is_owner or guest_wardrobe %}My Wardrobe{% else %}{{ profile.display_name }}’s Wardrobe{% endif %}</h1>
         <p class="text-b7 text-neutral-80 md:text-b6">Thoughtfully listed. Ready for their next chapter.</p>
       </div>
       {% if is_owner %}
@@ -17,6 +17,18 @@
     </div>
     <h2 id="available-clothing-heading" class="sr-only">Available clothing</h2>
     <div class="flex flex-wrap items-stretch gap-6" aria-labelledby="available-clothing-heading">
+      {% if guest_wardrobe %}
+        <div class="flex min-h-[432px] w-full flex-col items-center justify-center gap-5 rounded-3xl bg-secondary-10 px-6 py-12 text-center shadow-[4px_4px_16px_rgb(0_0_0/0.04)]">
+          {% lucide "shield-check" size=44 class="text-secondary-70" %}
+          <div class="flex flex-col items-center gap-6">
+            <div class="flex flex-col gap-2">
+              <h2 class="font-display text-h5 text-secondary-80">Every great find starts with a member.</h2>
+              <p class="max-w-3xl text-b7 text-secondary-60">Sign in to save your details, manage your wardrobe, and keep your conversations in one place.</p>
+            </div>
+            <a href="{% url 'user_profile:login' %}?next={% url 'user_profile:wardrobe' %}" class="btn btn-primary inline-flex items-center justify-center gap-3">Sign in{% lucide "arrow-right" size=24 %}</a>
+          </div>
+        </div>
+      {% else %}
       {% for clothing in clothing_items %}
         {% include "clothing_catalog/partials/product_card.html" with variant="wardrobe" %}
       {% empty %}
@@ -31,9 +43,11 @@
           {% endif %}
         </div>
       {% endfor %}
+      {% endif %}
     </div>
   </section>
 
+  {% if not guest_wardrobe %}
   <section aria-labelledby="swapper-heading" class="flex flex-col gap-8 border-t border-neutral-40 pt-8 md:flex-row md:items-start md:gap-12">
     <div class="flex min-w-0 flex-1 flex-col gap-5">
       <div class="flex items-center gap-4">
@@ -79,5 +93,6 @@
       {% endif %}
     </div>
   </section>
+  {% endif %}
 </div>
 {% endblock %}

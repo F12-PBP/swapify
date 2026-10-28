@@ -432,6 +432,36 @@ class ProfileEditingTests(TestCase):
             )
 
 
+class WardrobeEntryTests(TestCase):
+    def test_guest_wardrobe_has_signin_prompt_without_private_profile(self):
+        response = self.client.get(reverse("user_profile:wardrobe"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Every great find starts with a member.")
+        self.assertContains(response, 'id="add-item-signin"')
+        self.assertContains(response, "data-add-item-signin")
+        self.assertContains(
+            response,
+            reverse("user_profile:login")
+            + "?next="
+            + reverse("clothing_catalog:create"),
+        )
+        self.assertNotContains(response, 'id="swapper-heading"')
+        self.assertNotContains(response, "No clothing available to swap yet.")
+
+    def test_signed_in_wardrobe_entry_opens_members_public_wardrobe(self):
+        member = get_user_model().objects.create_user(username="wardrobe-entry")
+        self.client.force_login(member)
+        self.assertRedirects(
+            self.client.get(reverse("user_profile:wardrobe")),
+            reverse("user_profile:public", args=[member.username]),
+        )
+        response = self.client.get(
+            reverse("user_profile:public", args=[member.username])
+        )
+        self.assertNotContains(response, 'id="add-item-signin"')
+        self.assertNotContains(response, "data-add-item-signin")
+
+
 class PublicProfileTests(TestCase):
     @classmethod
     def setUpTestData(cls):

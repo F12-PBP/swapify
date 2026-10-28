@@ -10,12 +10,14 @@ from .views import (
     OnboardingView,
     PublicProfileDetailView,
     RegisterUserView,
+    WardrobeView,
 )
 
 app_name = "user_profile"
 
 urlpatterns = [
     path("", MyProfileDetailView.as_view(), name="detail"),
+    path("wardrobe/", WardrobeView.as_view(), name="wardrobe"),
     path("login/", LoginUserView.as_view(), name="login"),
     path("register/", RegisterUserView.as_view(), name="register"),
     path("onboarding/", OnboardingView.as_view(), name="onboarding"),

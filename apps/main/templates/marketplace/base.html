@@ -24,6 +24,18 @@
     {% block content %}{% endblock %}
   </main>
   {% include "components/footer/footer.html" %}
+  {% if not user.is_authenticated %}
+    <dialog id="add-item-signin" class="modal" aria-labelledby="add-item-signin-title">
+      <div class="modal-box flex w-[calc(100%_-_2rem)] max-w-[418px] flex-col gap-7 rounded-[32px] bg-neutral-10 p-9">
+        <h2 id="add-item-signin-title" class="text-center font-display text-h4 text-primary-base">Sign in to Add Item to Your Wardrobe</h2>
+        <div class="flex flex-col gap-3">
+          <a href="{% url 'user_profile:login' %}?next={% url 'clothing_catalog:create' %}" class="btn btn-primary flex items-center justify-center">Sign in</a>
+          <form method="dialog"><button type="submit" class="btn w-full border-0 bg-neutral-20 text-primary-base">Later</button></form>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop"><button aria-label="Close sign-in prompt">Close</button></form>
+    </dialog>
+  {% endif %}
   {% block dialogs %}{% endblock %}
   <script src="{% static 'js/design-system-dropdown.js' %}" defer></script>
   <script src="{% static 'main/js/marketplace-navbar.js' %}?v=shared-layout-1" defer></script>
