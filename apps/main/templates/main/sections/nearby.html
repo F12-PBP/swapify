@@ -14,7 +14,7 @@
                 <div class="absolute inset-0 translate-x-[var(--world-x,0px)] translate-y-[var(--world-y,0px)] scale-[var(--world-scale,1)] lg:motion-safe:will-change-transform motion-reduce:translate-none motion-reduce:scale-100">
                     <svg viewBox="0 0 880 650" class="absolute inset-0 size-full" aria-hidden="true">
                         <circle cx="235" cy="250" r="151" class="fill-primary-base/5 stroke-primary-base/20" stroke-dasharray="6 9"/>
-                        <circle cx="652" cy="320" r="155" class="fill-secondary-base/15 stroke-secondary-70/40" stroke-dasharray="6 9"/>
+                        <circle cx="800" cy="605" r="155" class="fill-secondary-base/15 stroke-secondary-70/40" stroke-dasharray="6 9"/>
                         <path d="M235 340C235 380 180 390 195 425S275 465 315 425 365 360 420 370 455 450 510 435 565 375 610 375Q660 375 675 420L695 485Q700 512 740 515T795 555L800 605" class="fill-none stroke-primary-base/30" stroke-width="4" stroke-linecap="round" stroke-dasharray="7 9"/>
                         <path d="M235 340C235 380 180 390 195 425S275 465 315 425 365 360 420 370 455 450 510 435 565 375 610 375Q660 375 675 420L695 485Q700 512 740 515T795 555L800 605" class="fill-none stroke-primary-base" stroke-width="5" stroke-linecap="round" pathLength="1" data-map-route/>
                     </svg>
@@ -25,11 +25,14 @@
                     <div class="absolute top-[13%] left-[33%] w-[14%] translate-y-[var(--card-drift,0px)] motion-reduce:translate-none rotate-6 rounded-xl border border-neutral-40 bg-neutral-10 p-1 shadow-md">
                         <img src="{% static 'images/landing_page/clothing/shirt.svg' %}" width="320" height="320" alt="A shirt ready to swap" class="w-full">
                     </div>
-                    <div class="absolute top-[49.2%] left-[74.1%] z-10 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
-                        <span class="flex size-11 items-center justify-center rounded-full border-4 border-neutral-10 bg-secondary-30 text-secondary-80 shadow-md sm:size-16" aria-hidden="true">{% lucide "user-round" size=28 %}</span>
-                        <span class="absolute -top-7 rounded-full bg-neutral-10 px-2 py-0.5 text-b10 font-semibold whitespace-nowrap text-secondary-80 sm:text-b9">Swapper · B</span>
+                    <div class="absolute top-[93.0769%] left-[90.9091%] z-10 size-0">
+                        <span class="absolute bottom-0 left-0 h-[calc(var(--map-width,320px)*.18)] -translate-x-1/2 border-l border-dashed border-secondary-70" aria-hidden="true"></span>
+                        <div class="absolute bottom-[calc(var(--map-width,320px)*.18)] left-0 flex -translate-x-1/2 flex-col items-center gap-1">
+                            <span class="rounded-full bg-neutral-10 px-2 py-0.5 text-b10 font-semibold whitespace-nowrap text-secondary-80 sm:text-b9">Swapper · B</span>
+                            <span class="flex size-11 items-center justify-center rounded-full border-4 border-neutral-10 bg-secondary-30 text-secondary-80 shadow-md sm:size-16" aria-hidden="true">{% lucide "user-round" size=28 %}</span>
+                        </div>
                     </div>
-                    <div class="absolute top-[24%] right-[6%] w-[14%] translate-y-[calc(var(--card-drift,0px)*-1)] motion-reduce:translate-none -rotate-6 rounded-xl border border-neutral-40 bg-neutral-10 p-1 shadow-md">
+                    <div class="absolute top-[48%] left-[66%] w-[14%] translate-y-[calc(var(--card-drift,0px)*-1)] motion-reduce:translate-none -rotate-6 rounded-xl border border-neutral-40 bg-neutral-10 p-1 shadow-md">
                         <img src="{% static 'images/landing_page/clothing/jacket.svg' %}" width="320" height="320" alt="A jacket in a nearby wardrobe" class="w-full">
                     </div>
                 </div>
