@@ -47,38 +47,38 @@ html {
   }
 
 
-  --animate-journey-photo: journey-photo 7s ease-in-out infinite;
-  --animate-journey-camera: journey-camera 7s ease-in-out infinite;
-  --animate-journey-focus: journey-focus 7s ease-in-out infinite;
-  --animate-journey-exposure: journey-exposure 7s ease-in-out infinite;
-  --animate-journey-shutter: journey-shutter 7s ease-in-out infinite;
-  --animate-journey-flash: journey-flash 7s ease-in-out infinite;
-  --animate-journey-listed: journey-listed 7s ease-in-out infinite;
-  --animate-journey-tick: journey-tick 7s ease-in-out infinite;
-  --animate-journey-spark: journey-spark 7s ease-in-out infinite;
-  --animate-journey-cursor: journey-cursor 9.6s ease-in-out infinite;
-  --animate-journey-press: journey-press 9.6s ease-in-out infinite;
-  --animate-journey-lens: journey-lens 9.6s ease-in-out infinite;
-  --animate-journey-lens-content: journey-lens-content 9.6s ease-in-out infinite;
-  --animate-journey-query: journey-query 9.6s steps(5, end) infinite;
-  --animate-journey-caret: journey-caret 9.6s steps(5, end) infinite;
-  --animate-journey-click: journey-click 9.6s ease-out infinite;
-  --animate-journey-hover-first: journey-hover-first 9.6s ease-in-out infinite;
-  --animate-journey-hover-third: journey-hover-third 9.6s ease-in-out infinite;
-  --animate-journey-hover-selected: journey-hover-selected 9.6s ease-in-out infinite;
-  --animate-journey-hover-wash-first: journey-hover-wash-first 9.6s ease-in-out infinite;
-  --animate-journey-hover-wash-third: journey-hover-wash-third 9.6s ease-in-out infinite;
-  --animate-journey-selected: journey-selected 9.6s ease-in-out infinite;
-  --animate-journey-conversation: journey-conversation 7.6s ease-in-out infinite;
-  --animate-journey-conversation-reply: journey-conversation-reply 7.6s ease-in-out infinite;
-  --animate-journey-message: journey-message 7.6s ease-in-out infinite;
-  --animate-journey-reply: journey-reply 7.6s ease-in-out infinite;
-  --animate-journey-typing: journey-typing 7.6s ease-in-out infinite;
-  --animate-journey-reply-typing: journey-reply-typing 7.6s ease-in-out infinite;
+  --animate-journey-photo: journey-photo 6.4s ease-in-out infinite;
+  --animate-journey-camera: journey-camera 6.4s ease-in-out infinite;
+  --animate-journey-focus: journey-focus 6.4s ease-in-out infinite;
+  --animate-journey-exposure: journey-exposure 6.4s ease-in-out infinite;
+  --animate-journey-shutter: journey-shutter 6.4s ease-in-out infinite;
+  --animate-journey-flash: journey-flash 6.4s ease-in-out infinite;
+  --animate-journey-listed: journey-listed 6.4s ease-in-out infinite;
+  --animate-journey-tick: journey-tick 6.4s ease-in-out infinite;
+  --animate-journey-spark: journey-spark 6.4s ease-in-out infinite;
+  --animate-journey-cursor: journey-cursor 8.4s ease-in-out infinite;
+  --animate-journey-press: journey-press 8.4s ease-in-out infinite;
+  --animate-journey-lens: journey-lens 8.4s ease-in-out infinite;
+  --animate-journey-lens-content: journey-lens-content 8.4s ease-in-out infinite;
+  --animate-journey-query: journey-query 8.4s steps(5, end) infinite;
+  --animate-journey-caret: journey-caret 8.4s steps(5, end) infinite;
+  --animate-journey-click: journey-click 8.4s ease-out infinite;
+  --animate-journey-hover-first: journey-hover-first 8.4s ease-in-out infinite;
+  --animate-journey-hover-third: journey-hover-third 8.4s ease-in-out infinite;
+  --animate-journey-hover-selected: journey-hover-selected 8.4s ease-in-out infinite;
+  --animate-journey-hover-wash-first: journey-hover-wash-first 8.4s ease-in-out infinite;
+  --animate-journey-hover-wash-third: journey-hover-wash-third 8.4s ease-in-out infinite;
+  --animate-journey-selected: journey-selected 8.4s ease-in-out infinite;
+  --animate-journey-conversation: journey-conversation 6.8s ease-in-out infinite;
+  --animate-journey-conversation-reply: journey-conversation-reply 6.8s ease-in-out infinite;
+  --animate-journey-message: journey-message 6.8s ease-in-out infinite;
+  --animate-journey-reply: journey-reply 6.8s ease-in-out infinite;
+  --animate-journey-typing: journey-typing 6.8s ease-in-out infinite;
+  --animate-journey-reply-typing: journey-reply-typing 6.8s ease-in-out infinite;
   --animate-journey-dot: journey-dot 800ms ease-in-out infinite;
-  --animate-journey-confirm: journey-confirm 7.6s ease-in-out infinite;
-  --animate-journey-confirm-tick: journey-confirm-tick 7.6s ease-in-out infinite;
-  --animate-journey-confirm-ring: journey-confirm-ring 7.6s ease-out infinite;
+  --animate-journey-confirm: journey-confirm 6.8s ease-in-out infinite;
+  --animate-journey-confirm-tick: journey-confirm-tick 6.8s ease-in-out infinite;
+  --animate-journey-confirm-ring: journey-confirm-ring 6.8s ease-out infinite;
 
   @keyframes journey-photo {
     0%, 100% { transform: translateY(0) rotate(0); }
@@ -122,65 +122,65 @@ html {
     30%, 65% { opacity: 1; transform: scale(1.025); }
   }
   @keyframes journey-cursor {
-    0%, 4%, 93%, 100% { transform: translate(176px, 142px); }
-    11%, 30% { transform: translate(245px, 52px); }
-    38%, 43% { transform: translate(94px, 129px); }
-    50%, 55% { transform: translate(270px, 126px); }
-    64%, 81% { transform: translate(185px, 131px); }
+    0%, 4%, 96%, 100% { transform: translate(176px, 142px); }
+    11%, 24% { transform: translate(245px, 52px); }
+    33%, 41% { transform: translate(94px, 129px); }
+    52%, 60% { transform: translate(270px, 126px); }
+    71%, 86% { transform: translate(185px, 131px); }
   }
   @keyframes journey-press {
-    0%, 10%, 18%, 64%, 72%, 100% { transform: scale(1); }
-    13%, 67% { transform: scale(.84); }
+    0%, 10%, 18%, 71%, 79%, 100% { transform: scale(1); }
+    13%, 74% { transform: scale(.84); }
   }
   @keyframes journey-lens {
-    0%, 24%, 94%, 100% { transform: translate(274px, 183px); }
-    37%, 43% { transform: translate(99px, 127px); }
-    50%, 56% { transform: translate(278px, 126px); }
-    64%, 81% { transform: translate(188px, 126px); }
+    0%, 20%, 97%, 100% { transform: translate(274px, 183px); }
+    33%, 41% { transform: translate(99px, 127px); }
+    52%, 60% { transform: translate(278px, 126px); }
+    71%, 86% { transform: translate(188px, 126px); }
   }
   @keyframes journey-lens-content {
-    0%, 24%, 94%, 100% { transform: scale(1.55) translate(-274px, -183px); }
-    37%, 43% { transform: scale(1.55) translate(-99px, -127px); }
-    50%, 56% { transform: scale(1.55) translate(-278px, -126px); }
-    64%, 81% { transform: scale(1.55) translate(-188px, -126px); }
+    0%, 20%, 97%, 100% { transform: scale(1.55) translate(-274px, -183px); }
+    33%, 41% { transform: scale(1.55) translate(-99px, -127px); }
+    52%, 60% { transform: scale(1.55) translate(-278px, -126px); }
+    71%, 86% { transform: scale(1.55) translate(-188px, -126px); }
   }
   @keyframes journey-query {
-    0%, 14%, 92%, 100% { width: 0; }
-    30%, 84% { width: 30px; }
+    0%, 14%, 97%, 100% { width: 0; }
+    26%, 90% { width: 30px; }
   }
   @keyframes journey-caret {
-    0%, 13%, 85%, 100% { opacity: 0; transform: translateX(0); }
+    0%, 13%, 91%, 100% { opacity: 0; transform: translateX(0); }
     14% { opacity: 1; transform: translateX(0); }
-    30%, 84% { opacity: 1; transform: translateX(29px); }
+    26%, 90% { opacity: 1; transform: translateX(29px); }
   }
   @keyframes journey-click {
-    0%, 65%, 78%, 100% { opacity: 0; transform: scale(.6); }
-    67% { opacity: .6; transform: scale(.8); }
-    75% { opacity: 0; transform: scale(1.8); }
+    0%, 72%, 85%, 100% { opacity: 0; transform: scale(.6); }
+    74% { opacity: .6; transform: scale(.8); }
+    82% { opacity: 0; transform: scale(1.8); }
   }
   @keyframes journey-hover-first {
-    0%, 31%, 49%, 100% { transform: translateY(0); }
-    37%, 43% { transform: translateY(-3px); }
+    0%, 27%, 47%, 100% { transform: translateY(0); }
+    33%, 41% { transform: translateY(-3px); }
   }
   @keyframes journey-hover-third {
-    0%, 44%, 62%, 100% { transform: translateY(0); }
-    50%, 56% { transform: translateY(-3px); }
+    0%, 46%, 66%, 100% { transform: translateY(0); }
+    52%, 60% { transform: translateY(-3px); }
   }
   @keyframes journey-hover-selected {
-    0%, 57%, 92%, 100% { transform: translateY(0); }
-    64%, 82% { transform: translateY(-3px); }
+    0%, 65%, 96%, 100% { transform: translateY(0); }
+    71%, 86% { transform: translateY(-3px); }
   }
   @keyframes journey-hover-wash-first {
-    0%, 31%, 49%, 100% { opacity: 0; }
-    37%, 43% { opacity: .15; }
+    0%, 27%, 47%, 100% { opacity: 0; }
+    33%, 41% { opacity: .15; }
   }
   @keyframes journey-hover-wash-third {
-    0%, 44%, 62%, 100% { opacity: 0; }
-    50%, 56% { opacity: .15; }
+    0%, 46%, 66%, 100% { opacity: 0; }
+    52%, 60% { opacity: .15; }
   }
   @keyframes journey-selected {
-    0%, 63%, 94%, 100% { opacity: 0; }
-    68%, 84% { opacity: 1; }
+    0%, 70%, 97%, 100% { opacity: 0; }
+    75%, 90% { opacity: 1; }
   }
   @keyframes journey-conversation {
     0%, 100% { transform: translateY(0); }
