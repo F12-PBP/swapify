@@ -849,7 +849,6 @@ button.btn:disabled {
   line-height: var(--text-b8--line-height);
 }
 .auth-page [hidden] { display: none !important; }
-.auth-login, .auth-register { transform: translateY(-2.5rem); }
 #onboarding {
   --onboarding-duration: 600ms;
   --onboarding-easing: cubic-bezier(0.4, 0, 0.2, 1);
@@ -915,9 +914,6 @@ button.btn:disabled {
 .auth-page a:focus-visible, .auth-page button:focus-visible {
   outline: 2px solid var(--color-primary-base);
   outline-offset: 4px;
-}
-@media (max-width: 639px), (max-height: 850px) {
-  .auth-login, .auth-register { transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   #onboarding.is-ready,

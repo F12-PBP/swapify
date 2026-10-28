@@ -2,14 +2,7 @@
 <section id="testimonials" class="w-full scroll-mt-24 bg-primary-10 md:scroll-mt-40 xl:scroll-mt-60" aria-labelledby="testimonials-title">
     <div class="relative mx-auto h-30 w-full max-w-[1440px] md:h-20 xl:h-15">
         <div data-swapy-stage class="pointer-events-none absolute right-8 bottom-0 h-[204px] w-[263px] origin-bottom-right scale-75 overflow-hidden xl:right-[114px] xl:scale-100" aria-hidden="true">
-            <div data-swapy class="relative h-[310px] w-[263px]">
-                <img src="{% static 'images/landing_page/testimonials/swapy-body.svg' %}" alt="" class="absolute top-32 left-[62px] block max-w-none">
-                <img data-swapy-hand src="{% static 'images/landing_page/testimonials/swapy-left-hand.svg' %}" alt="" class="absolute top-[155.12px] left-[5.12px] block max-w-none">
-                <div data-swapy-head class="absolute top-[38px] left-[57px] h-[183px] w-[161px]">
-                    <img data-swapy-eyes-open src="{% static 'images/landing_page/testimonials/swapy-head.svg' %}" alt="" class="absolute top-0 left-0 block max-w-none">
-                    <img data-swapy-eyes-closed src="{% static 'images/landing_page/testimonials/swapy-head-wink.svg' %}" alt="" class="absolute top-0 left-0 block max-w-none opacity-0">
-                </div>
-            </div>
+            {% include "components/brand/swapy.html" %}
         </div>
     </div>
 

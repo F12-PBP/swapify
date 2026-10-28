@@ -3,6 +3,40 @@
 import uuid
 
 from django.db import migrations, models
+from django.db.migrations.exceptions import IrreversibleError
+
+
+class AlterTransactionId(migrations.AlterField):
+    """Keep existing IDs and their foreign keys consistent on PostgreSQL."""
+
+    reversible = False
+
+    def database_forwards(self, app_label, schema_editor, from_state, to_state):
+        if schema_editor.connection.vendor != "postgresql":
+            return super().database_forwards(
+                app_label, schema_editor, from_state, to_state
+            )
+
+        original_using_sql = schema_editor._using_sql
+
+        def using_sql(new_field, old_field):
+            if (
+                schema_editor._field_data_type(old_field) == "bigint"
+                and schema_editor._field_data_type(new_field) == "uuid"
+            ):
+                # The same deterministic conversion also applies to referencing
+                # columns when Django rebuilds foreign key constraints.
+                return " USING LPAD(TO_HEX(%(column)s), 32, '0')::uuid"
+            return original_using_sql(new_field, old_field)
+
+        schema_editor._using_sql = using_sql
+        try:
+            super().database_forwards(app_label, schema_editor, from_state, to_state)
+        finally:
+            schema_editor._using_sql = original_using_sql
+
+    def database_backwards(self, app_label, schema_editor, from_state, to_state):
+        raise IrreversibleError("New UUID transaction IDs cannot become integer IDs.")
 
 
 class Migration(migrations.Migration):
@@ -11,7 +45,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        AlterTransactionId(
             model_name="transaction",
             name="id",
             field=models.UUIDField(
