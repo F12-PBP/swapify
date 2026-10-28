@@ -47,9 +47,6 @@ class HomeView(TemplateView):
             }
             for piece in STYLE_PIECES
         ]
-        context["demo_choices"] = [
-            (piece["key"], piece["label"]) for piece in STYLE_PIECES
-        ]
         return context
 
 

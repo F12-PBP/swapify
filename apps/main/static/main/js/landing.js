@@ -124,7 +124,10 @@
       if (image.getAttribute('src') !== piece.image) image.src = piece.image;
       image.alt = `${index === 0 ? 'Your' : 'Their'} demo piece: ${piece.label}`;
     });
-    window.SwapDropdown?.sync(demo);
+    demo.querySelectorAll('[data-demo-choice]').forEach((choice) => {
+      const input = demo.querySelector(`[name="${choice.dataset.demoInput}"]`);
+      choice.setAttribute('aria-pressed', String(choice.dataset.demoChoice === input.value));
+    });
   };
   const celebrate = (complete) => {
     mascot.dataset.complete = String(complete);
@@ -132,11 +135,14 @@
   };
   const finish = () => animations.forEach((animation) => animation.finish());
 
-  demo.addEventListener('change', () => {
-    if (busy) return;
-    render();
-    celebrate(false);
-    result.textContent = 'Demo choices updated.';
+  demo.querySelectorAll('[data-demo-choice]').forEach((choice) => {
+    choice.addEventListener('click', () => {
+      if (busy) return;
+      demo.querySelector(`[name="${choice.dataset.demoInput}"]`).value = choice.dataset.demoChoice;
+      render();
+      celebrate(false);
+      result.textContent = 'Demo choices updated. Ready to swap these pieces.';
+    });
   });
   reset.addEventListener('click', () => {
     yours.value = 'knit';
@@ -168,11 +174,19 @@
         const y = before[index].top - after.top;
         const scaleX = before[index].width / after.width;
         const scaleY = before[index].height / after.height;
-        return image.animate([
-          { transform: `translate(${x}px, ${y}px) scale(${scaleX}, ${scaleY})` },
-          { transform: `translate(${x / 2}px, ${y / 2 + (index ? 28 : -28)}px) rotate(${index ? -4 : 4}deg)`, offset: .5 },
-          { transform: 'translate(0, 0) scale(1) rotate(0)' },
-        ], { duration: 950, easing: 'cubic-bezier(.4, 0, .2, 1)', fill: 'both' });
+        const keyframes = Array.from({ length: 51 }, (_, step) => {
+          const t = step / 50;
+          const progress = (1 - Math.cos(Math.PI * t)) / 2;
+          const arc = Math.sin(Math.PI * progress);
+          const lift = (index ? 1 : -1) * Math.min(64, before[index].height * .3);
+          const sx = scaleX + (1 - scaleX) * progress + arc * .025;
+          const sy = scaleY + (1 - scaleY) * progress + arc * .025;
+          return {
+            offset: t,
+            transform: step === 50 ? 'translate(0, 0) scale(1) rotate(0)' : `translate(${x * (1 - progress)}px, ${y * (1 - progress) + arc * lift}px) scale(${sx}, ${sy}) rotate(${(index ? -1 : 1) * arc * 6}deg)`,
+          };
+        });
+        return image.animate(keyframes, { duration: 1050, easing: 'linear', fill: 'both' });
       });
       await Promise.allSettled(animations.map((animation) => animation.finished));
     }

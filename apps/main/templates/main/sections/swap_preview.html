@@ -15,8 +15,13 @@
                 <figure class="relative aspect-square rounded-2xl bg-secondary-10" data-demo-piece>
                     <img src="{% static 'images/landing_page/clothing/knit.svg' %}" width="320" height="320" alt="Your demo piece: cosy knit" class="pointer-events-none relative z-1 size-full object-contain">
                 </figure>
-                <div data-demo-picker>
-                    {% include "components/dropdown.html" with dropdown_id="demo-yours" name="your_piece" label="Choose your demo piece" choices=demo_choices value="knit" size="sm" %}
+                <div data-demo-picker class="flex flex-wrap gap-2" role="group" aria-label="Choose your demo piece">
+                    <input type="hidden" name="your_piece" value="knit">
+                    {% for piece in style_pieces %}
+                        <button type="button" class="btn btn-primary-ghost h-12! min-h-12! w-[calc((100%_-_.5rem)/2)] px-2! aria-pressed:border-primary-base aria-pressed:bg-primary-20 aria-pressed:ring-2 aria-pressed:ring-primary-base sm:w-12" data-demo-choice="{{ piece.key }}" data-demo-input="your_piece" aria-label="Your piece: {{ piece.label }}" aria-pressed="{% if piece.key == 'knit' %}true{% else %}false{% endif %}" title="{{ piece.label }}">
+                            <img src="{{ piece.image }}" width="32" height="32" alt="" class="size-8 object-contain">
+                        </button>
+                    {% endfor %}
                 </div>
                 <p class="text-b10 text-neutral-80 sm:text-b9">A favourite ready for a new story.</p>
             </article>
@@ -39,8 +44,13 @@
                 <figure class="relative aspect-square rounded-2xl bg-primary-10" data-demo-piece>
                     <img src="{% static 'images/landing_page/clothing/jacket.svg' %}" width="320" height="320" alt="Their demo piece: denim jacket" class="pointer-events-none relative z-1 size-full object-contain">
                 </figure>
-                <div data-demo-picker>
-                    {% include "components/dropdown.html" with dropdown_id="demo-theirs" name="their_piece" label="Choose their demo piece" choices=demo_choices value="jacket" size="sm" %}
+                <div data-demo-picker class="flex flex-wrap gap-2" role="group" aria-label="Choose their demo piece">
+                    <input type="hidden" name="their_piece" value="jacket">
+                    {% for piece in style_pieces %}
+                        <button type="button" class="btn btn-primary-ghost h-12! min-h-12! w-[calc((100%_-_.5rem)/2)] px-2! aria-pressed:border-primary-base aria-pressed:bg-primary-20 aria-pressed:ring-2 aria-pressed:ring-primary-base sm:w-12" data-demo-choice="{{ piece.key }}" data-demo-input="their_piece" aria-label="Their piece: {{ piece.label }}" aria-pressed="{% if piece.key == 'jacket' %}true{% else %}false{% endif %}" title="{{ piece.label }}">
+                            <img src="{{ piece.image }}" width="32" height="32" alt="" class="size-8 object-contain">
+                        </button>
+                    {% endfor %}
                 </div>
                 <p class="text-b10 text-neutral-80 sm:text-b9">Someone else’s soon-to-be favourite.</p>
             </article>
