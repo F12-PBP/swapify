@@ -1,13 +1,13 @@
 {% load static lucide %}
-<section id="nearby" class="landing-section landing-shell" aria-labelledby="nearby-title" data-map-story>
+<section id="nearby" class="scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16 mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14" aria-labelledby="nearby-title" data-map-story>
     <div class="mb-10 flex max-w-2xl flex-col gap-3">
-        <h2 id="nearby-title" class="landing-heading">Good finds, closer to home.</h2>
+        <h2 id="nearby-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">Good finds, closer to home.</h2>
         <p class="text-b7 leading-relaxed text-neutral-80">Your next favourite might be in a wardrobe just a few streets away.</p>
     </div>
     <div class="flex flex-col items-start gap-9 lg:flex-row lg:gap-14">
-        <figure class="map-story-scene relative aspect-[880/650] w-full overflow-hidden rounded-[28px] border border-secondary-30 bg-secondary-20 lg:sticky lg:top-32 lg:w-[65%] lg:shrink-0" aria-label="Illustrated map showing two fictional swappers, their approximate reach areas, and a route between them">
-            <img src="{% static 'images/landing_page/neighbourhood.svg' %}" alt="" width="880" height="650" loading="lazy" class="map-story-background absolute inset-0 size-full object-cover">
-            <svg viewBox="0 0 880 650" class="map-story-reach absolute inset-0 size-full" aria-hidden="true">
+        <figure data-map-scene class="motion-reduce:relative motion-reduce:top-auto relative aspect-[880/650] w-full overflow-hidden rounded-[28px] border border-secondary-30 bg-secondary-20 lg:sticky lg:top-32 lg:w-[65%] lg:shrink-0" aria-label="Illustrated map showing two fictional swappers, their approximate reach areas, and a route between them">
+            <img src="{% static 'images/landing_page/neighbourhood.svg' %}" alt="" width="880" height="650" loading="lazy" class="translate-y-[var(--map-drift,0px)] scale-106 motion-reduce:translate-none motion-reduce:scale-100 absolute inset-0 size-full object-cover">
+            <svg viewBox="0 0 880 650" class="translate-y-[calc(var(--map-drift,0px)*-.3)] motion-reduce:translate-none absolute inset-0 size-full" aria-hidden="true">
                 <circle cx="235" cy="250" r="151" class="fill-primary-base/5 stroke-primary-base/20" stroke-dasharray="6 9"/>
                 <circle cx="652" cy="320" r="155" class="fill-secondary-base/15 stroke-secondary-70/40" stroke-dasharray="6 9"/>
                 <path d="M235 275C265 480 530 525 652 345" class="fill-none stroke-primary-base/30" stroke-width="4" stroke-linecap="round" stroke-dasharray="7 9"/>
@@ -34,22 +34,22 @@
             <figcaption class="absolute right-3 bottom-3 left-3 rounded-xl bg-neutral-10/90 px-3 py-2 text-center text-[9px] leading-relaxed text-neutral-90 sm:text-b10">Illustration only. Areas show approximate reach, not exact or live locations.</figcaption>
         </figure>
         <ol class="flex w-full flex-col gap-7 lg:min-w-0 lg:flex-1 lg:gap-0">
-            <li class="map-story-step flex items-start gap-4 lg:min-h-64 lg:items-center" data-story-step="0">
-                <span class="map-story-number flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary-20 text-b8 font-semibold text-secondary-80">1</span>
+            <li class="group/map-step flex items-start gap-4 lg:min-h-64 lg:items-center" data-story-step="0">
+                <span class="transition-colors duration-300 group-data-[active=true]/map-step:bg-primary-base group-data-[active=true]/map-step:text-neutral-10 motion-reduce:transition-none flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary-20 text-b8 font-semibold text-secondary-80">1</span>
                 <div class="flex flex-col gap-3">
                     <h3 class="font-display text-h5 text-primary-base">A piece to pass on.</h3>
                     <p class="text-b8 leading-relaxed text-neutral-80">That shirt you never reach for could be just what someone else is looking for. Give it a good photo and an honest description.</p>
                 </div>
             </li>
-            <li class="map-story-step flex items-start gap-4 lg:min-h-64 lg:items-center" data-story-step="1">
-                <span class="map-story-number flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary-20 text-b8 font-semibold text-secondary-80">2</span>
+            <li class="group/map-step flex items-start gap-4 lg:min-h-64 lg:items-center" data-story-step="1">
+                <span class="transition-colors duration-300 group-data-[active=true]/map-step:bg-primary-base group-data-[active=true]/map-step:text-neutral-10 motion-reduce:transition-none flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary-20 text-b8 font-semibold text-secondary-80">2</span>
                 <div class="flex flex-col gap-3">
                     <h3 class="font-display text-h5 text-primary-base">Someone nearby.</h3>
                     <p class="text-b8 leading-relaxed text-neutral-80">Save your area to explore approximate distances in Discover. A few shared streets can lead to a very good find.</p>
                 </div>
             </li>
-            <li class="map-story-step flex items-start gap-4 lg:min-h-64 lg:items-center" data-story-step="2">
-                <span class="map-story-number flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary-20 text-b8 font-semibold text-secondary-80">3</span>
+            <li class="group/map-step flex items-start gap-4 lg:min-h-64 lg:items-center" data-story-step="2">
+                <span class="transition-colors duration-300 group-data-[active=true]/map-step:bg-primary-base group-data-[active=true]/map-step:text-neutral-10 motion-reduce:transition-none flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary-20 text-b8 font-semibold text-secondary-80">3</span>
                 <div class="flex flex-col gap-3">
                     <h3 class="font-display text-h5 text-primary-base">Make a plan together.</h3>
                     <p class="text-b8 leading-relaxed text-neutral-80">After a proposal is accepted, chat to agree on a safe public meetup or arrange delivery. The details are yours to decide together.</p>

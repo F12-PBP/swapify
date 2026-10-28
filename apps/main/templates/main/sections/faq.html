@@ -1,34 +1,34 @@
 {% load static lucide %}
-<section id="faq" class="landing-section landing-shell" aria-labelledby="faq-title">
+<section id="faq" class="scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16 mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14" aria-labelledby="faq-title">
     <div class="mb-8 flex items-end justify-between gap-5">
         <div class="flex max-w-3xl flex-col gap-3">
-            <h2 id="faq-title" class="landing-heading">A few things you might be wondering.</h2>
+            <h2 id="faq-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">A few things you might be wondering.</h2>
         </div>
         <img src="{% static 'images/landing_page/swapy/idea.svg' %}" width="365" height="395" alt="Swapy has a little idea" loading="lazy" class="hidden w-28 shrink-0 -rotate-6 sm:block lg:w-36">
     </div>
     <div class="flex flex-col gap-3">
-        <details class="landing-faq rounded-2xl border border-neutral-40 bg-neutral-10" name="landing-faq">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">Does swapping cost anything?<span class="shrink-0" aria-hidden="true">{% lucide "plus" size=20 %}</span>
+        <details class="group/faq rounded-2xl border border-neutral-40 bg-neutral-10" name="group/faq">
+            <summary class="flex cursor-pointer list-none [&::-webkit-details-marker]:hidden group-open/faq:pb-4 items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">Does swapping cost anything?<span class="shrink-0 group-open/faq:rotate-45" aria-hidden="true">{% lucide "plus" size=20 %}</span>
             </summary>
             <p class="max-w-3xl px-5 pb-6 text-b8 leading-relaxed text-neutral-80 sm:px-7">The pieces on Swapify are offered for exchange, with no purchase price. If you choose delivery, discuss shipping costs with your swap partner and agree on them before sending anything.</p>
         </details>
-        <details class="landing-faq rounded-2xl border border-neutral-40 bg-neutral-10" name="landing-faq">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">What can I list?<span class="shrink-0" aria-hidden="true">{% lucide "plus" size=20 %}</span>
+        <details class="group/faq rounded-2xl border border-neutral-40 bg-neutral-10" name="group/faq">
+            <summary class="flex cursor-pointer list-none [&::-webkit-details-marker]:hidden group-open/faq:pb-4 items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">What can I list?<span class="shrink-0 group-open/faq:rotate-45" aria-hidden="true">{% lucide "plus" size=20 %}</span>
             </summary>
             <p class="max-w-3xl px-5 pb-6 text-b8 leading-relaxed text-neutral-80 sm:px-7">Start with clothing you no longer reach for that someone else could enjoy. Add clear photos, the size, and an honest description of its condition, including any flaws. Only list pieces you own and are ready to swap.</p>
         </details>
-        <details class="landing-faq rounded-2xl border border-neutral-40 bg-neutral-10" name="landing-faq">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">How does a swap proposal work?<span class="shrink-0" aria-hidden="true">{% lucide "plus" size=20 %}</span>
+        <details class="group/faq rounded-2xl border border-neutral-40 bg-neutral-10" name="group/faq">
+            <summary class="flex cursor-pointer list-none [&::-webkit-details-marker]:hidden group-open/faq:pb-4 items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">How does a swap proposal work?<span class="shrink-0 group-open/faq:rotate-45" aria-hidden="true">{% lucide "plus" size=20 %}</span>
             </summary>
             <p class="max-w-3xl px-5 pb-6 text-b8 leading-relaxed text-neutral-80 sm:px-7">Open a piece you like and offer one of your available listings in return. Its owner can review your proposal and accept or decline it. Sending a proposal starts the conversation; it doesn’t mean the exchange has happened.</p>
         </details>
-        <details class="landing-faq rounded-2xl border border-neutral-40 bg-neutral-10" name="landing-faq">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">How do meetup and delivery work?<span class="shrink-0" aria-hidden="true">{% lucide "plus" size=20 %}</span>
+        <details class="group/faq rounded-2xl border border-neutral-40 bg-neutral-10" name="group/faq">
+            <summary class="flex cursor-pointer list-none [&::-webkit-details-marker]:hidden group-open/faq:pb-4 items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">How do meetup and delivery work?<span class="shrink-0 group-open/faq:rotate-45" aria-hidden="true">{% lucide "plus" size=20 %}</span>
             </summary>
-            <p class="max-w-3xl px-5 pb-6 text-b8 leading-relaxed text-neutral-80 sm:px-7">After acceptance, agree on a public meetup or arrange delivery together in Messages. Confirm the place and time, or the packaging, shipping costs, and tracking details. Swapify doesn’t book a courier for you. <a class="landing-link" href="{% url 'main:safety' %}">Read our safety guidance</a> before making a plan.</p>
+            <p class="max-w-3xl px-5 pb-6 text-b8 leading-relaxed text-neutral-80 sm:px-7">After acceptance, agree on a public meetup or arrange delivery together in Messages. Confirm the place and time, or the packaging, shipping costs, and tracking details. Swapify doesn’t book a courier for you. <a class="inline-flex items-center gap-2 text-b8 font-semibold text-primary-base underline decoration-primary-30 underline-offset-4" href="{% url 'main:safety' %}">Read our safety guidance</a> before making a plan.</p>
         </details>
-        <details class="landing-faq rounded-2xl border border-neutral-40 bg-neutral-10" name="landing-faq">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">What happens after acceptance?<span class="shrink-0" aria-hidden="true">{% lucide "plus" size=20 %}</span>
+        <details class="group/faq rounded-2xl border border-neutral-40 bg-neutral-10" name="group/faq">
+            <summary class="flex cursor-pointer list-none [&::-webkit-details-marker]:hidden group-open/faq:pb-4 items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">What happens after acceptance?<span class="shrink-0 group-open/faq:rotate-45" aria-hidden="true">{% lucide "plus" size=20 %}</span>
             </summary>
             <p class="max-w-3xl px-5 pb-6 text-b8 leading-relaxed text-neutral-80 sm:px-7">A chat and an exchange record help you arrange the next steps. Check the piece when you receive it, then confirm the exchange through your swap details. After completion, you can leave a review to help the next person get to know your swap partner.</p>
         </details>

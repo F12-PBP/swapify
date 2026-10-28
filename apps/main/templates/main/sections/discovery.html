@@ -1,10 +1,10 @@
 {% load static lucide %}
-<section id="discover" class="landing-section landing-shell" aria-labelledby="discovery-title">
+<section id="discover" class="scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16 mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14" aria-labelledby="discovery-title">
     <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div class="flex flex-col gap-3">
-            <h2 id="discovery-title" class="landing-heading">Discover the possibilities.</h2>
+            <h2 id="discovery-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">Discover the possibilities.</h2>
         </div>
-        <a href="{% url 'clothing_catalog:list' %}" class="landing-link">Explore all finds {% lucide "arrow-right" size=18 %}</a>
+        <a href="{% url 'clothing_catalog:list' %}" class="inline-flex items-center gap-2 text-b8 font-semibold text-primary-base underline decoration-primary-30 underline-offset-4">Explore all finds {% lucide "arrow-right" size=18 %}</a>
     </div>
     <div class="flex flex-wrap items-stretch gap-3 lg:gap-5">
         {% for clothing in featured_clothing %}

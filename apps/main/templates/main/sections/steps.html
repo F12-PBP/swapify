@@ -1,12 +1,12 @@
 {% load static lucide %}
-<section id="how-it-works" class="landing-section landing-shell" aria-labelledby="steps-title">
+<section id="how-it-works" class="scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16 mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14" aria-labelledby="steps-title">
     <div class="mb-10 flex max-w-2xl flex-col gap-3">
-        <h2 id="steps-title" class="landing-heading">From your wardrobe to theirs.</h2>
+        <h2 id="steps-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">From your wardrobe to theirs.</h2>
         <p class="text-b7 leading-relaxed text-neutral-80">A piece you’ve loved. A find you’ll love next. A conversation that brings it together.</p>
     </div>
     <ol class="flex flex-col gap-10 md:flex-row md:gap-8" data-landing-journey>
-        <li class="journey-step relative flex min-w-0 flex-1 flex-col gap-5">
-            <img src="{% static 'images/landing_page/steps/prepare.svg' %}" width="380" height="260" alt="A shirt photographed and checked, ready for its listing" loading="lazy" class="w-full">
+        <li data-journey-step class="group/journey relative flex min-w-0 flex-1 flex-col gap-5">
+            <img src="{% static 'images/landing_page/steps/prepare.svg' %}" width="380" height="260" alt="A shirt photographed and checked, ready for its listing" loading="lazy" class="w-full motion-safe:group-data-[arrived=true]/journey:animate-landing-journey motion-safe:[animation-delay:0ms]">
             <div class="flex items-start gap-3">
                 <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary-30 text-b9 font-semibold text-secondary-80">1</span>
                 <div class="flex flex-col gap-2">
@@ -16,8 +16,8 @@
             </div>
             <span class="absolute top-1/2 -right-7 hidden text-secondary-60 md:block" aria-hidden="true">{% lucide "arrow-right" size=24 %}</span>
         </li>
-        <li class="journey-step relative flex min-w-0 flex-1 flex-col gap-5">
-            <img src="{% static 'images/landing_page/steps/match.svg' %}" width="380" height="260" alt="A clothing catalog with a denim jacket selected for a possible swap" loading="lazy" class="w-full">
+        <li data-journey-step class="group/journey relative flex min-w-0 flex-1 flex-col gap-5">
+            <img src="{% static 'images/landing_page/steps/match.svg' %}" width="380" height="260" alt="A clothing catalog with a denim jacket selected for a possible swap" loading="lazy" class="w-full motion-safe:group-data-[arrived=true]/journey:animate-landing-journey motion-safe:[animation-delay:100ms]">
             <div class="flex items-start gap-3">
                 <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary-30 text-b9 font-semibold text-secondary-80">2</span>
                 <div class="flex flex-col gap-2">
@@ -27,8 +27,8 @@
             </div>
             <span class="absolute top-1/2 -right-7 hidden text-secondary-60 md:block" aria-hidden="true">{% lucide "arrow-right" size=24 %}</span>
         </li>
-        <li class="journey-step flex min-w-0 flex-1 flex-col gap-5">
-            <img src="{% static 'images/landing_page/steps/agree.svg' %}" width="380" height="260" alt="Two members chatting and confirming the details of their exchange" loading="lazy" class="w-full">
+        <li data-journey-step class="group/journey flex min-w-0 flex-1 flex-col gap-5">
+            <img src="{% static 'images/landing_page/steps/agree.svg' %}" width="380" height="260" alt="Two members chatting and confirming the details of their exchange" loading="lazy" class="w-full motion-safe:group-data-[arrived=true]/journey:animate-landing-journey motion-safe:[animation-delay:200ms]">
             <div class="flex items-start gap-3">
                 <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary-30 text-b9 font-semibold text-secondary-80">3</span>
                 <div class="flex flex-col gap-2">

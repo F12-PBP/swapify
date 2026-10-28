@@ -120,7 +120,7 @@
 (() => {
   const story = document.querySelector('[data-map-story]');
   if (!story) return;
-  const scene = story.querySelector('.map-story-scene');
+  const scene = story.querySelector('[data-map-scene]');
   const route = story.querySelector('[data-map-route]');
   const car = story.querySelector('[data-map-car]');
   const steps = [...story.querySelectorAll('[data-story-step]')];
@@ -164,7 +164,7 @@
   if (!journey) return;
   const observer = new IntersectionObserver(([entry]) => {
     if (!entry.isIntersecting) return;
-    journey.querySelectorAll('.journey-step').forEach((step) => { step.dataset.arrived = 'true'; });
+    journey.querySelectorAll('[data-journey-step]').forEach((step) => { step.dataset.arrived = 'true'; });
     observer.disconnect();
   }, { threshold: .2 });
   observer.observe(journey);
