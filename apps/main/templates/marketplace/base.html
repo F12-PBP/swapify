@@ -4,21 +4,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Discover | Swapify{% endblock %}</title>
+  <title>{% block title %}Swapify{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'images/landing_page/swapify-logo.svg' %}">
   {% tailwind_css %}
 </head>
 <body class="marketplace bg-neutral-10 font-sans text-neutral-100">
   <a class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-neutral-10 focus:p-4" href="#main-content">Skip to content</a>
-  {% include "clothing_catalog/marketplace/header.html" %}
+  {% include "components/marketplace/header.html" %}
   <main id="main-content" class="market-container min-h-[60vh] py-8 md:py-10 lg:py-12">
-    {% if messages %}<div class="mb-6 flex flex-col gap-2" role="status">{% for message in messages %}<p class="rounded-xl bg-secondary-10 p-4 text-b8">{{ message }}</p>{% endfor %}</div>{% endif %}
+    {% if messages %}
+      <div class="mb-6 flex flex-col gap-2" role="status">
+        {% for message in messages %}
+          <div class="alert swap-alert swap-alert-{{ message.tags|default:'info' }}">
+            <p class="swap-alert-body">{{ message }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
   {% include "components/footer/footer.html" %}
   {% block dialogs %}{% endblock %}
   <script src="{% static 'js/design-system-dropdown.js' %}" defer></script>
-  <script src="{% static 'clothing_catalog/js/navbar.js' %}?v=marquee-1" defer></script>
+  <script src="{% static 'main/js/marketplace-navbar.js' %}?v=shared-layout-1" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

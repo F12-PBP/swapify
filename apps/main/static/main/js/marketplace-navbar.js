@@ -10,6 +10,13 @@
   updateOffset();
   new ResizeObserver(updateOffset).observe(navbar);
 
+  const search = navbar.querySelector("#market-search");
+  search?.addEventListener("pointerdown", (event) => {
+    if (document.activeElement === search || event.button !== 0) return;
+    event.preventDefault();
+    search.focus({ preventScroll: true });
+  });
+
   const marquee = navbar.querySelector("[data-market-marquee]");
   const toggle = marquee?.querySelector("[data-marquee-toggle]");
   if (toggle) {

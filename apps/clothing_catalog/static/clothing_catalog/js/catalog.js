@@ -17,11 +17,6 @@
 
   search.setAttribute("aria-controls", "catalog-results");
   search.setAttribute("autocomplete", "off");
-  search.addEventListener("pointerdown", (event) => {
-    if (document.activeElement === search || event.button !== 0) return;
-    event.preventDefault();
-    search.focus({ preventScroll: true });
-  });
   document.querySelectorAll("[data-filter-apply]").forEach((button) => { button.hidden = true; });
 
   const canonicalURL = (url, state) => {

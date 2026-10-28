@@ -1,4 +1,4 @@
-{% extends "clothing_catalog/marketplace/base.html" %}
+{% extends "marketplace/base.html" %}
 {% load static lucide %}
 {% block title %}{{ clothing.name }} | Swapify{% endblock %}
 {% block content %}
@@ -58,7 +58,7 @@
     <p class="rounded-3xl bg-neutral-20 p-8 text-b7 text-neutral-80">More lovely finds are on their way. Check back soon for another piece to love.</p>
   {% endif %}
 </section>
-{% include "clothing_catalog/marketplace/listing_cta.html" %}
+{% include "clothing_catalog/partials/listing_cta.html" %}
 {% endblock %}
 {% block dialogs %}{% include "swap_request/partials/propose_dialog.html" %}{% endblock %}
 {% block scripts %}<script src="{% static 'clothing_catalog/js/marketplace.js' %}" defer></script>{% endblock %}

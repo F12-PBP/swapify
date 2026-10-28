@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "marketplace/base.html" %}
 
 {% block title %}{{ profile.display_name }} | Swapify{% endblock %}
 
 {% block content %}
-<section class="mx-auto max-w-3xl px-4 py-10 md:px-6">
+<section class="mx-auto max-w-3xl">
     <div class="card border border-neutral-40 bg-base-100 shadow-sm">
         <div class="card-body gap-4">
           {% if profile.profile_picture %}
@@ -62,6 +62,7 @@
                     >
                         Edit Profile
                     </a>
+                    <a href="{% url 'clothing_catalog:my_list' %}" class="btn btn-primary-ghost">Manage clothing</a>
                 </div>
             {% endif %}
         </div>

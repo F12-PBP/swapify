@@ -1,5 +1,6 @@
-{% extends "clothing_catalog/marketplace/base.html" %}
+{% extends "marketplace/base.html" %}
 {% load static %}
+{% block title %}Discover | Swapify{% endblock %}
 {% block content %}
 <div class="flex flex-col gap-8">
   {% include "clothing_catalog/discovery/onboarding_reminder.html" %}
@@ -11,7 +12,7 @@
   <div id="catalog-feedback" role="status" aria-live="polite" class="invisible min-h-6 text-b9 text-neutral-80"><span data-catalog-status></span><button type="button" data-catalog-retry class="ml-2 cursor-pointer font-semibold text-primary-base underline" hidden>Try again</button></div>
   <div id="catalog-results" aria-busy="false">{% include "clothing_catalog/partials/discovery_results.html" %}</div>
 </section>
-{% include "clothing_catalog/marketplace/listing_cta.html" %}
+{% include "clothing_catalog/partials/listing_cta.html" %}
 {% endblock %}
 {% block dialogs %}{% include "clothing_catalog/discovery/filter_dialog.html" %}{% include "swap_request/partials/propose_dialog.html" %}{% endblock %}
 {% block scripts %}<script src="{% static 'clothing_catalog/js/catalog.js' %}?v=20261027" defer></script><script src="{% static 'clothing_catalog/js/marketplace.js' %}" defer></script>{% endblock %}

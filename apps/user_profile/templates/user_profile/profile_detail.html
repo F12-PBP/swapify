@@ -1,14 +1,9 @@
-{% extends "base.html" %}
+{% extends "marketplace/base.html" %}
 
 {% block title %}My Profile | Swapify{% endblock %}
 
 {% block content %}
-<section class="mx-auto max-w-2xl px-4 py-10 md:px-6" aria-labelledby="profile-title">
-     {% for message in messages %}
-     <div class="alert alert-success mb-4" role="status">
-          {{ message }}
-     </div>
-     {% endfor %}
+<section class="mx-auto max-w-2xl" aria-labelledby="profile-title">
     <div class="card border border-neutral-40 bg-base-100 shadow-sm">
         <div class="card-body gap-6">
             <header>

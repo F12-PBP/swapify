@@ -1,21 +1,9 @@
-{% extends "base.html" %}
+{% extends "marketplace/base.html" %}
 
 {% block title %}Chat dengan {{ partner.get_username }} · Swapify{% endblock %}
 
 {% block content %}
-<div class="px-4 pb-16">
-
-    {# Pesan dari django.contrib.messages (mis. "Chat ini sudah tidak aktif.") #}
-    {% if messages %}
-        <div class="mb-4 space-y-2">
-            {% for message in messages %}
-                <div role="alert"
-                    class="alert {% if 'error' in message.tags %}alert-error{% elif 'success' in message.tags %}alert-success{% elif 'warning' in message.tags %}alert-warning{% else %}alert-info{% endif %}">
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+<div class="pb-16">
 
     <div class="card bg-base-100 border border-base-300 overflow-hidden">
 
@@ -121,6 +109,9 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
 <script>
 (function () {
     "use strict";

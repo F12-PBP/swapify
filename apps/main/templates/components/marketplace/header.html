@@ -1,11 +1,13 @@
-{% load static lucide %}
+{% load static lucide marketplace %}
+{% marketplace_section request as active_section %}
+{% if user.is_authenticated %}{% url 'user_profile:public' user.username as wardrobe_url %}{% else %}{% url 'user_profile:detail' as wardrobe_url %}{% endif %}
 <header class="sticky top-0 z-40 bg-neutral-10 shadow-sm" data-market-navbar>
   {% url 'user_profile:location_edit' as location_url %}
-  {% include "clothing_catalog/marketplace/marquee.html" %}
+  {% include "components/marketplace/marquee.html" %}
   <div class="market-container flex flex-wrap items-center justify-between gap-x-5 gap-y-3 py-4 lg:flex-nowrap lg:gap-10 lg:py-6">
-    {% include "clothing_catalog/marketplace/logo.html" %}
+    {% include "components/marketplace/logo.html" %}
     <form method="get" action="{% url 'clothing_catalog:list' %}#finds" role="search" class="order-last flex h-12 w-full items-center gap-3 rounded-full border border-neutral-40 bg-neutral-20 px-5 lg:order-none lg:max-w-[620px] lg:flex-1">
-      <button type="submit" aria-label="Search clothing" class="cursor-pointer p-1"><img src="{% static 'clothing_catalog/images/discovery/imgIcon2.svg' %}" alt=""></button>
+      <button type="submit" aria-label="Search clothing" class="cursor-pointer p-1"><img src="{% static 'main/icons/marketplace/search.svg' %}" alt=""></button>
       <label for="market-search" class="sr-only">Search clothing</label>
       <input id="market-search" name="search" type="search" value="{{ filters.search }}" placeholder="Find your next favourite..." maxlength="150" class="min-w-0 flex-1 bg-transparent text-b9 text-neutral-100 outline-none placeholder:text-neutral-70">
       {% if filters.type %}<input type="hidden" name="type" value="{{ filters.type }}">{% endif %}
@@ -16,9 +18,9 @@
     </form>
     <div class="flex shrink-0 items-center gap-4 lg:gap-8">
       <a href="{% if user.is_authenticated %}{{ location_url }}?next={% url 'clothing_catalog:list' %}{% else %}{% url 'user_profile:login' %}?next={{ location_url|add:'?next=/clothing-catalog/'|urlencode }}{% endif %}" class="flex items-center gap-2" aria-label="Choose your discovery location">
-        <img src="{% static 'clothing_catalog/images/discovery/imgIcon3.svg' %}" alt="">
+        <img src="{% static 'main/icons/marketplace/location.svg' %}" alt="">
         <span class="hidden flex-col gap-1 text-left sm:flex"><span class="max-w-36 truncate text-b9">{% if user.is_authenticated and user.profile.city %}{{ user.profile.city }}{% else %}Choose location{% endif %}</span><span class="text-b10 text-neutral-70">Discover near you</span></span>
-        <img class="hidden sm:block" src="{% static 'clothing_catalog/images/discovery/imgIcon4.svg' %}" alt="">
+        <img class="hidden sm:block" src="{% static 'main/icons/marketplace/chevron-down.svg' %}" alt="">
       </a>
       {% if user.is_authenticated %}
         <details class="relative">
@@ -36,10 +38,10 @@
   <div class="border-y border-neutral-30">
     <nav class="market-container flex items-center justify-between gap-4 py-3" aria-label="Marketplace">
       <div class="flex min-w-0 items-center gap-x-5 overflow-x-auto whitespace-nowrap md:gap-x-6">
-        <a href="{% url 'clothing_catalog:list' %}" class="market-nav {% if request.resolver_match.view_name == 'clothing_catalog:list' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if request.resolver_match.view_name == 'clothing_catalog:list' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'clothing_catalog/images/discovery/imgIcon5.svg' %}" alt="">Discover</a>
-        <a href="{% url 'swap_request:list' %}" class="market-nav border-transparent"><img class="hidden sm:block" src="{% static 'clothing_catalog/images/discovery/imgIcon6.svg' %}" alt="">My swaps</a>
-        <a href="{% url 'chat:list' %}" class="market-nav border-transparent"><img class="hidden sm:block" src="{% static 'clothing_catalog/images/discovery/imgIcon7.svg' %}" alt="">Messages</a>
-        <a href="{% url 'clothing_catalog:my_list' %}" class="market-nav border-transparent"><img class="hidden sm:block" src="{% static 'clothing_catalog/images/discovery/imgIcon8.svg' %}" alt="">My wardrobe</a>
+        <a href="{% url 'clothing_catalog:list' %}" class="market-nav {% if active_section == 'discover' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'discover' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/discover.svg' %}" alt="">Discover</a>
+        <a href="{% url 'swap_request:list' %}" class="market-nav {% if active_section == 'swaps' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'swaps' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/swaps.svg' %}" alt="">My swaps</a>
+        <a href="{% url 'chat:list' %}" class="market-nav {% if active_section == 'messages' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'messages' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/messages.svg' %}" alt="">Messages</a>
+        <a href="{{ wardrobe_url }}" class="market-nav {% if active_section == 'wardrobe' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'wardrobe' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/wardrobe.svg' %}" alt="">My wardrobe</a>
       </div>
       <a class="market-button shrink-0" href="{% url 'clothing_catalog:create' %}">{% lucide "plus" size=20 %}Add Item</a>
     </nav>

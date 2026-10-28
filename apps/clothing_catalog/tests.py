@@ -41,11 +41,9 @@ class ClothingViewTests(TestCase):
         self.assertEqual(list_response.status_code, 200)
         self.assertContains(list_response, self.clothing.name)
         self.assertTemplateUsed(list_response, "clothing_catalog/clothing_list.html")
-        self.assertTemplateUsed(list_response, "clothing_catalog/marketplace/base.html")
+        self.assertTemplateUsed(list_response, "marketplace/base.html")
         self.assertEqual(detail_response.status_code, 200)
-        self.assertTemplateUsed(
-            detail_response, "clothing_catalog/marketplace/base.html"
-        )
+        self.assertTemplateUsed(detail_response, "marketplace/base.html")
         self.assertContains(detail_response, self.clothing.description)
 
     def test_personal_wardrobe_keeps_own_reserved_items_and_status_filters(self):

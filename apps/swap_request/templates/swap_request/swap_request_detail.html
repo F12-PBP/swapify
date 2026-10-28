@@ -1,16 +1,11 @@
-{% extends "base.html" %}
+{% extends "marketplace/base.html" %}
 
 {% block title %}Swap Request{% endblock %}
 
 {% block content %}
-<section class="px-4 py-10 md:px-6">
+<section class="w-full">
     <a class="btn btn-ghost btn-sm mb-6" href="{% url 'swap_request:list' %}">← Kembali ke swap request</a>
 
-    {% for message in messages %}
-        <div class="alert swap-alert swap-alert-{{ message.tags }} mb-4" role="status">
-            <p class="swap-alert-body">{{ message }}</p>
-        </div>
-    {% endfor %}
 
     <div class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-6">

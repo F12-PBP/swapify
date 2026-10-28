@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "marketplace/base.html" %}
 {% load static %}
 
 {% block title %}Edit Location | Swapify{% endblock %}
 
 {% block content %}
-<section class="mx-auto max-w-2xl px-4 py-10 md:px-6" aria-labelledby="location-title">
+<section class="mx-auto max-w-2xl" aria-labelledby="location-title">
     <div class="card border border-neutral-40 bg-base-100 shadow-sm">
         <div class="card-body gap-6">
             <h1 id="location-title" class="font-display text-h3">Edit Location</h1>
@@ -52,5 +52,8 @@
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
 <script src="{% static 'user_profile/js/location.js' %}?v=map-1" defer></script>
 {% endblock %}

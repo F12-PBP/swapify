@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "marketplace/base.html" %}
 
 {% block title %}Pesan · Swapify{% endblock %}
 
 {% block content %}
-<div class="px-4 pb-16">
+<div class="pb-16">
 
     <div class="mb-6">
         <h1 class="text-2xl md:text-3xl font-bold">Pesan</h1>
@@ -12,17 +12,6 @@
         </p>
     </div>
 
-    {# Pesan dari django.contrib.messages (mis. "Chat hanya tersedia setelah swap request diterima.") #}
-    {% if messages %}
-        <div class="mb-4 space-y-2">
-            {% for message in messages %}
-                <div role="alert"
-                    class="alert {% if 'error' in message.tags %}alert-error{% elif 'success' in message.tags %}alert-success{% elif 'warning' in message.tags %}alert-warning{% else %}alert-info{% endif %}">
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
 
     <div class="space-y-3">
         {% for room in chat_rooms %}
