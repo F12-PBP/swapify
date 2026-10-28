@@ -40,3 +40,9 @@
     .journey-step:nth-child(3) img { animation-delay: 200ms; }
   }
 }
+
+@layer components {
+  .landing-faq summary::-webkit-details-marker { display: none; }
+  .landing-faq[open] summary { padding-bottom: 1rem; }
+  .landing-faq[open] summary > span { rotate: 45deg; }
+}
