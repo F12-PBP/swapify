@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Welcome | Swapify{% endblock %}</title>
   {% tailwind_css v="auth-location-map-1" %}
+  {% block head %}{% endblock %}
   <link rel="icon" href="{% static 'images/landing_page/swapify-logo.svg' %}" type="image/svg+xml">
 </head>
 <body class="auth-page flex min-h-svh flex-col bg-neutral-10 font-sans text-neutral-100">
@@ -23,6 +24,7 @@
   <main class="flex w-full flex-1 flex-col {% block main_class %}items-center justify-center px-5 py-12 sm:px-8{% endblock %}">
     {% block content %}{% endblock %}
   </main>
+  {% block decoration %}{% endblock %}
   {% block scripts %}{% endblock %}
 </body>
 </html>
