@@ -169,3 +169,68 @@
   }, { threshold: .2 });
   observer.observe(journey);
 })();
+
+(() => {
+  const items = [...document.querySelectorAll('[data-faq-item]')];
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const running = new Map();
+
+  const expand = (item, expanded) => {
+    const summary = item.querySelector('summary');
+    const answer = item.querySelector('[data-faq-answer]');
+    const from = item.getBoundingClientRect().height;
+    const opacity = getComputedStyle(answer).opacity;
+    const previous = running.get(item);
+    previous?.height.cancel();
+    previous?.content.cancel();
+    running.delete(item);
+    item.open = true;
+    item.dataset.expanded = String(expanded);
+    summary.setAttribute('aria-expanded', String(expanded));
+
+    if (motion.matches) {
+      item.open = expanded;
+      return;
+    }
+
+    const border = getComputedStyle(item);
+    const collapsed = summary.getBoundingClientRect().height + parseFloat(border.borderTopWidth) + parseFloat(border.borderBottomWidth);
+    const to = expanded ? item.getBoundingClientRect().height : collapsed;
+    const height = item.animate([{ height: `${from}px` }, { height: `${to}px` }], {
+      duration: 360, easing: 'cubic-bezier(.25, .8, .25, 1)', fill: 'both',
+    });
+    const content = answer.animate([{ opacity }, { opacity: expanded ? 1 : 0 }], {
+      duration: 240, easing: 'ease-out', fill: 'both',
+    });
+    running.set(item, { height, content });
+    height.finished.then(() => {
+      if (running.get(item)?.height !== height) return;
+      item.open = expanded;
+      height.cancel();
+      content.cancel();
+      running.delete(item);
+    }).catch(() => {});
+  };
+
+  items.forEach((item) => {
+    item.dataset.expanded = String(item.open);
+    const summary = item.querySelector('summary');
+    summary.setAttribute('aria-expanded', String(item.open));
+    summary.addEventListener('click', (event) => {
+      event.preventDefault();
+      const expanded = item.dataset.expanded !== 'true';
+      if (expanded) {
+        items.filter((other) => other !== item && other.dataset.expanded === 'true').forEach((other) => expand(other, false));
+      }
+      expand(item, expanded);
+    });
+  });
+  const finish = () => running.forEach(({ height, content }) => {
+    height.finish();
+    content.finish();
+  });
+  window.addEventListener('resize', finish, { passive: true });
+  motion.addEventListener('change', () => {
+    if (motion.matches) finish();
+  });
+})();
