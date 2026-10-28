@@ -1,4 +1,7 @@
+import uuid
+
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.urls import reverse
 
@@ -22,6 +25,34 @@ class ClothingViewTests(TestCase):
             size=Clothing.Size.M,
             condition=Clothing.Condition.GOOD,
         )
+
+    def test_clothing_items_have_unique_uuid_fields_and_integer_primary_keys(self):
+        another_item = Clothing.objects.create(
+            owner=self.owner,
+            name="Canvas Jacket",
+            description="A durable jacket.",
+            type=Clothing.Type.OUTERWEAR,
+            size=Clothing.Size.M,
+            condition=Clothing.Condition.GOOD,
+        )
+
+        self.assertIsInstance(self.clothing.uuid, uuid.UUID)
+        self.assertIsInstance(another_item.uuid, uuid.UUID)
+        self.assertNotEqual(self.clothing.uuid, another_item.uuid)
+        self.assertIsInstance(self.clothing.pk, int)
+
+    def test_clothing_uuid_must_be_unique(self):
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Clothing.objects.create(
+                    owner=self.owner,
+                    name="Duplicate UUID",
+                    description="UUID values must be unique.",
+                    type=Clothing.Type.TOP,
+                    size=Clothing.Size.M,
+                    condition=Clothing.Condition.GOOD,
+                    uuid=self.clothing.uuid,
+                )
 
     def test_catalog_shows_empty_state(self):
         self.clothing.delete()
@@ -163,10 +194,12 @@ class ClothingViewTests(TestCase):
             reverse("clothing_catalog:create") + "?next=" + swap_url, data
         )
         self.assertEqual(response.url, swap_url)
+        existing_ids = set(Clothing.objects.values_list("pk", flat=True))
         external = self.client.post(
             reverse("clothing_catalog:create") + "?next=https://example.com/", data
         )
-        self.assertEqual(external.url, Clothing.objects.latest("pk").get_absolute_url())
+        new_offer = Clothing.objects.exclude(pk__in=existing_ids).get()
+        self.assertEqual(external.url, new_offer.get_absolute_url())
 
     def test_create_form_prevents_repeated_submission(self):
         self.client.force_login(self.owner)
@@ -345,6 +378,17 @@ class DiscoveryViewTests(TestCase):
             reverse("clothing_catalog:list"), {"search": "no-such-piece"}
         )
         self.assertContains(empty, "No pieces match")
+
+    def test_see_all_finds_link_navigates_to_full_unfiltered_catalog(self):
+        response = self.client.get(
+            reverse("clothing_catalog:list"), {"search": "no-such-piece"}
+        )
+
+        self.assertRegex(
+            response.content.decode(),
+            r'<a class="market-secondary text-b8" '
+            r'href="/clothing-catalog/#finds">See all finds</a>',
+        )
 
     def test_live_search_returns_only_results_and_current_filter_state(self):
         response = self.client.get(

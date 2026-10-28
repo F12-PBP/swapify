@@ -16,6 +16,6 @@
   <div class="mt-8 flex flex-col items-center gap-4 rounded-3xl border border-dashed border-neutral-50 bg-neutral-20 px-6 py-16 text-center">
     <h3 class="font-display text-h5 text-primary-base">A good find is worth waiting for.</h3>
     <p class="text-b8 text-neutral-80">No pieces match this search yet. Try another search or check back soon.</p>
-    <a class="market-secondary text-b8" data-catalog-link href="{% url 'clothing_catalog:list' %}#finds">See all finds</a>
+    <a class="market-secondary text-b8" href="{% url 'clothing_catalog:list' %}#finds">See all finds</a>
   </div>
 {% endif %}
