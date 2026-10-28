@@ -20,3 +20,15 @@
     .landing-hero-scene { transform: none; transition: none; }
   }
 }
+
+@layer components {
+  .map-story-background { transform: translateY(var(--map-drift, 0px)) scale(1.06); }
+  .map-story-reach { transform: translateY(calc(var(--map-drift, 0px) * -.3)); }
+  .map-story-number { transition: background-color 300ms, color 300ms; }
+  .map-story-step[data-active="true"] .map-story-number { background: var(--color-primary-base); color: var(--color-neutral-10); }
+  @media (prefers-reduced-motion: reduce) {
+    .map-story-scene { position: relative; top: auto; }
+    .map-story-background, .map-story-reach { transform: none; }
+    .map-story-number { transition: none; }
+  }
+}
