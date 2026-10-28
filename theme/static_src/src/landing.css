@@ -3,7 +3,6 @@
   .landing-shell { @apply mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14; }
   .landing-section { @apply scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16; }
   .landing-heading { @apply font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2; }
-  .landing-eyebrow { @apply text-b9 font-semibold tracking-[0.16em] text-secondary-70 uppercase; }
   .landing-link { @apply inline-flex items-center gap-2 text-b8 font-semibold text-primary-base underline decoration-primary-30 underline-offset-4; }
   .landing-page :where(a, button, summary, select):focus-visible { outline: 2px solid var(--color-primary-base); outline-offset: 5px; }
   .landing-hero-title { font-size: clamp(2.4rem, 4.9vw, 4rem); line-height: 1.04; letter-spacing: -0.055em; }
