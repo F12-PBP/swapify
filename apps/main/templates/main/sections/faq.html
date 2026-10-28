@@ -1,14 +1,14 @@
 {% load static lucide %}
 <section id="faq" class="scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16 mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14" aria-labelledby="faq-title">
-    <div class="relative mb-8 flex items-end justify-between gap-5 pr-12 sm:pr-28">
+    <div class="mb-8 flex items-end justify-between gap-5 pb-24 sm:pr-64 sm:pb-0">
         <div class="flex max-w-3xl flex-col gap-3">
             <h2 id="faq-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">A few things you might be wondering.</h2>
         </div>
-        <div class="pointer-events-none absolute right-0 bottom-0 h-16 w-20 overflow-hidden sm:h-20 sm:w-28" data-faq-mascot>
-            <img src="{% static 'images/landing_page/swapy/idea.svg' %}" width="360" height="390" alt="Swapy has a little idea" loading="lazy" class="absolute top-0 left-0 h-auto w-full">
-        </div>
     </div>
-    <div class="flex flex-col gap-3">
+    <div class="relative flex flex-col gap-3">
+        <div class="pointer-events-none absolute right-0 bottom-full h-32 w-52 overflow-hidden sm:right-6 sm:h-44 sm:w-72" data-faq-mascot>
+            <img src="{% static 'images/landing_page/swapy/idea.svg' %}" width="360" height="390" alt="Swapy has a little idea" loading="lazy" class="absolute -top-6 left-0 h-auto w-full sm:-top-9">
+        </div>
         <details class="group/faq overflow-clip rounded-2xl border border-neutral-40 bg-neutral-10" data-faq-item>
             <summary class="flex rounded-2xl focus-visible:-outline-offset-4! cursor-pointer list-none [&::-webkit-details-marker]:hidden items-center justify-between gap-4 px-5 py-5 text-b7 font-semibold text-primary-base sm:px-7">Does swapping cost anything?<span class="shrink-0 transition-transform duration-300 ease-out group-data-[expanded=true]/faq:rotate-45 motion-reduce:transition-none" aria-hidden="true">{% lucide "plus" size=20 %}</span>
             </summary>
