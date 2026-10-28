@@ -10,9 +10,11 @@
 {% block content %}
     {% include "main/sections/hero.html" %}
     {% include "main/sections/discovery.html" %}
+    {% include "main/sections/swap_preview.html" %}
     {% include "main/sections/steps.html" %}
     {% include "main/sections/benefits.html" %}
     {% include "main/sections/testimonials.html" %}
-    <script src="{% static 'main/js/landing.js' %}" defer></script>
+    <script src="{% static 'js/design-system-dropdown.js' %}" defer></script>
+    <script src="{% static 'main/js/landing.js' %}?v=swap-demo-1" defer></script>
     <script src="{% static 'main/js/testimonials.js' %}" defer></script>
 {% endblock %}
