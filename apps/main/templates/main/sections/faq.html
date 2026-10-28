@@ -1,10 +1,12 @@
 {% load static lucide %}
 <section id="faq" class="scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16 mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14" aria-labelledby="faq-title">
-    <div class="mb-8 flex items-end justify-between gap-5">
+    <div class="relative mb-8 flex items-end justify-between gap-5 pr-12 sm:pr-28">
         <div class="flex max-w-3xl flex-col gap-3">
             <h2 id="faq-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">A few things you might be wondering.</h2>
         </div>
-        <img src="{% static 'images/landing_page/swapy/idea.svg' %}" width="365" height="395" alt="Swapy has a little idea" loading="lazy" class="hidden w-28 shrink-0 -rotate-6 sm:block lg:w-36">
+        <div class="pointer-events-none absolute right-0 bottom-0 h-16 w-20 overflow-hidden sm:h-20 sm:w-28" data-faq-mascot>
+            <img src="{% static 'images/landing_page/swapy/idea.svg' %}" width="360" height="390" alt="Swapy has a little idea" loading="lazy" class="absolute top-0 left-0 h-auto w-full">
+        </div>
     </div>
     <div class="flex flex-col gap-3">
         <details class="group/faq overflow-clip rounded-2xl border border-neutral-40 bg-neutral-10" data-faq-item>

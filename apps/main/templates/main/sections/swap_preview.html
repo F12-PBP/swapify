@@ -13,14 +13,14 @@
             <article class="order-1 flex w-[calc((100%_-_1rem)/2)] min-w-0 flex-col gap-4 rounded-3xl border border-neutral-40 bg-neutral-20 p-3 sm:p-5 lg:flex-1" data-demo-side="yours">
                 <h3 class="text-b8 font-semibold text-primary-base lg:text-b7">Your piece</h3>
                 <figure class="relative aspect-square rounded-2xl bg-secondary-10" data-demo-piece>
-                    <img src="{% static 'images/landing_page/clothing/knit.svg' %}" width="320" height="320" alt="Your demo piece: cosy knit" class="relative size-full object-contain">
+                    <img src="{% static 'images/landing_page/clothing/knit.svg' %}" width="320" height="320" alt="Your demo piece: cosy knit" class="pointer-events-none relative z-1 size-full object-contain">
                 </figure>
                 <div data-demo-picker>
                     {% include "components/dropdown.html" with dropdown_id="demo-yours" name="your_piece" label="Choose your demo piece" choices=demo_choices value="knit" size="sm" %}
                 </div>
                 <p class="text-b10 text-neutral-80 sm:text-b9">A favourite ready for a new story.</p>
             </article>
-            <div class="order-3 flex w-full flex-col items-center gap-4 text-center lg:order-2 lg:w-52 lg:shrink-0">
+            <div class="relative z-10 order-3 flex h-80 w-full shrink-0 flex-col items-center gap-4 pt-2 text-center lg:order-2 lg:h-auto lg:w-52 lg:self-stretch lg:pt-10">
                 <span class="text-secondary-70" aria-hidden="true">{% lucide "arrow-left-right" size=42 %}</span>
                 <div class="relative">
                     <button type="button" class="btn btn-primary" data-demo-swap disabled>Swap these pieces</button>
@@ -28,16 +28,16 @@
                         {% lucide "rotate-ccw" size=19 %}
                     </button>
                 </div>
-                <div class="group/demo-pose relative h-32 w-28" data-demo-mascot data-complete="false" aria-hidden="true">
-                    <img src="{% static 'images/landing_page/swapy/hello.svg' %}" width="340" height="380" alt="" class="absolute inset-0 size-full object-contain opacity-100 transition-[opacity,scale] duration-500 ease-out group-data-[complete=true]/demo-pose:scale-95 group-data-[complete=true]/demo-pose:opacity-0 motion-reduce:transition-none" data-demo-ready>
-                    <img src="{% static 'images/landing_page/swapy/celebrate.svg' %}" width="340" height="380" alt="" class="absolute inset-0 size-full scale-95 object-contain opacity-0 transition-[opacity,scale] duration-500 ease-out group-data-[complete=true]/demo-pose:scale-100 group-data-[complete=true]/demo-pose:opacity-100 motion-reduce:transition-none" data-demo-celebrate>
+                <div class="group/demo-pose absolute bottom-0 left-1/2 h-56 w-52 -translate-x-1/2 lg:h-72 lg:w-64" data-demo-mascot data-complete="false" aria-hidden="true">
+                    <img src="{% static 'images/landing_page/swapy/hello.svg' %}" width="340" height="380" alt="" class="absolute inset-0 size-full object-contain opacity-100 transition-opacity duration-400 ease-out group-data-[complete=true]/demo-pose:opacity-0 motion-reduce:transition-none" data-demo-ready>
+                    <img src="{% static 'images/landing_page/swapy/celebrate.svg' %}" width="340" height="380" alt="" class="absolute inset-0 size-full object-contain opacity-0 transition-opacity duration-400 ease-out group-data-[complete=true]/demo-pose:opacity-100 motion-reduce:transition-none" data-demo-celebrate>
                 </div>
                 <p class="sr-only" role="status" aria-live="polite" data-demo-result></p>
             </div>
             <article class="order-2 flex w-[calc((100%_-_1rem)/2)] min-w-0 flex-col gap-4 rounded-3xl border border-neutral-40 bg-neutral-20 p-3 sm:p-5 lg:order-3 lg:flex-1" data-demo-side="theirs">
                 <h3 class="text-b8 font-semibold text-primary-base lg:text-b7">Their piece</h3>
                 <figure class="relative aspect-square rounded-2xl bg-primary-10" data-demo-piece>
-                    <img src="{% static 'images/landing_page/clothing/jacket.svg' %}" width="320" height="320" alt="Their demo piece: denim jacket" class="relative size-full object-contain">
+                    <img src="{% static 'images/landing_page/clothing/jacket.svg' %}" width="320" height="320" alt="Their demo piece: denim jacket" class="pointer-events-none relative z-1 size-full object-contain">
                 </figure>
                 <div data-demo-picker>
                     {% include "components/dropdown.html" with dropdown_id="demo-theirs" name="their_piece" label="Choose their demo piece" choices=demo_choices value="jacket" size="sm" %}

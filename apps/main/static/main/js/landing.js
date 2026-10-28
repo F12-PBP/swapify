@@ -127,6 +127,8 @@
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const desktop = window.matchMedia('(min-width: 1024px)');
   const routeLength = route.getTotalLength();
+  let mapWidth = scene.clientWidth;
+  let mapHeight = scene.clientHeight;
   let visible = false;
   let frame = null;
   let current = 0;
@@ -147,8 +149,12 @@
     route.style.strokeDasharray = '1';
     route.style.strokeDashoffset = String(1 - current);
     const point = route.getPointAtLength(routeLength * (.08 + current * .84));
-    car.style.setProperty('--car-x', `${point.x / 880 * 100}%`);
-    car.style.setProperty('--car-y', `${(point.y + 70) / 650 * 100}%`);
+    const arrival = Math.max(0, (current - .65) / .35);
+    const park = arrival * arrival * (3 - 2 * arrival);
+    const x = point.x + (800 - point.x) * park;
+    const y = point.y + 70 + (605 - point.y - 70) * park;
+    car.style.setProperty('--car-x', `${(x / 880 - .91) * mapWidth}px`);
+    car.style.setProperty('--car-y', `${(y / 650 - .93) * mapHeight}px`);
     steps.forEach((step, index) => {
       const active = String(!animated() || index === Math.round(current * 2));
       if (step.dataset.active !== active) step.dataset.active = active;
@@ -187,10 +193,16 @@
     update();
   }).observe(story);
   window.addEventListener('scroll', () => { if (visible) update(); }, { passive: true });
-  window.addEventListener('resize', update, { passive: true });
+  const resize = () => {
+    mapWidth = scene.clientWidth;
+    mapHeight = scene.clientHeight;
+    scene.style.setProperty('--map-width', `${mapWidth}px`);
+    update();
+  };
+  window.addEventListener('resize', resize, { passive: true });
   motion.addEventListener('change', update);
   desktop.addEventListener('change', update);
-  update();
+  resize();
 })();
 
 (() => {
