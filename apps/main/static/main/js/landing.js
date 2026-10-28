@@ -126,33 +126,67 @@
   const steps = [...story.querySelectorAll('[data-story-step]')];
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const desktop = window.matchMedia('(min-width: 1024px)');
+  const routeLength = route.getTotalLength();
   let visible = false;
-  let frame;
-  const update = () => {
-    frame = null;
-    const animated = desktop.matches && !motion.matches;
-    const centers = steps.map((step) => {
-      const bounds = step.getBoundingClientRect();
-      return bounds.top + bounds.height / 2;
-    });
-    const progress = animated ? Math.max(0, Math.min(1, (innerHeight * .55 - centers[0]) / (centers[2] - centers[0]))) : 1;
-    const connection = progress;
+  let frame = null;
+  let current = 0;
+  let target = 0;
+  let lastTime = 0;
+  const animated = () => desktop.matches && !motion.matches;
+
+  const render = () => {
+    const depth = animated() ? current - .5 : 0;
+    scene.style.setProperty('--map-x', `${depth * -36}px`);
+    scene.style.setProperty('--map-y', `${depth * -80}px`);
+    scene.style.setProperty('--world-x', `${depth * 16}px`);
+    scene.style.setProperty('--world-y', `${depth * -28}px`);
+    scene.style.setProperty('--world-scale', String(animated() ? 1 + current * .025 : 1));
+    scene.style.setProperty('--landmark-x', `${depth * 32}px`);
+    scene.style.setProperty('--landmark-y', `${depth * -112}px`);
+    scene.style.setProperty('--card-drift', `${depth * -36}px`);
     route.style.strokeDasharray = '1';
-    route.style.strokeDashoffset = String(1 - connection);
-    const point = route.getPointAtLength(route.getTotalLength() * (.08 + connection * .84));
-    car.style.left = `${point.x / 880 * 100}%`;
-    car.style.top = `${(point.y + 70) / 650 * 100}%`;
-    scene.style.setProperty('--map-drift', `${animated ? progress * -18 : 0}px`);
-    steps.forEach((step, index) => { step.dataset.active = String(!animated || index === Math.round(progress * 2)); });
+    route.style.strokeDashoffset = String(1 - current);
+    const point = route.getPointAtLength(routeLength * (.08 + current * .84));
+    car.style.setProperty('--car-x', `${point.x / 880 * 100}%`);
+    car.style.setProperty('--car-y', `${(point.y + 70) / 650 * 100}%`);
+    steps.forEach((step, index) => {
+      const active = String(!animated() || index === Math.round(current * 2));
+      if (step.dataset.active !== active) step.dataset.active = active;
+    });
   };
-  const schedule = () => {
-    if (visible && !frame) frame = requestAnimationFrame(update);
+  const tick = (time) => {
+    const elapsed = Math.min(64, lastTime ? time - lastTime : 16);
+    lastTime = time;
+    current += (target - current) * (1 - Math.exp(-elapsed / 100));
+    if (Math.abs(target - current) < .0001) current = target;
+    render();
+    frame = current !== target && visible ? requestAnimationFrame(tick) : null;
+  };
+  const update = () => {
+    if (animated()) {
+      const centers = steps.map((step) => {
+        const bounds = step.getBoundingClientRect();
+        return bounds.top + bounds.height / 2;
+      });
+      target = Math.max(0, Math.min(1, (innerHeight * .55 - centers[0]) / (centers[2] - centers[0])));
+    } else {
+      target = 1;
+    }
+    if (!animated() || !visible) {
+      if (frame !== null) cancelAnimationFrame(frame);
+      frame = null;
+      current = target;
+      render();
+    } else if (frame === null) {
+      lastTime = 0;
+      frame = requestAnimationFrame(tick);
+    }
   };
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
-    if (visible) update();
+    update();
   }).observe(story);
-  window.addEventListener('scroll', schedule, { passive: true });
+  window.addEventListener('scroll', () => { if (visible) update(); }, { passive: true });
   window.addEventListener('resize', update, { passive: true });
   motion.addEventListener('change', update);
   desktop.addEventListener('change', update);

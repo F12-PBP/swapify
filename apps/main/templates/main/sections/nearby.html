@@ -6,49 +6,54 @@
     </div>
     <div class="flex flex-col items-start gap-9 lg:flex-row lg:gap-14">
         <figure data-map-scene class="motion-reduce:relative motion-reduce:top-auto relative aspect-[880/650] w-full overflow-hidden rounded-[28px] border border-secondary-30 bg-secondary-20 lg:sticky lg:top-32 lg:w-[65%] lg:shrink-0" aria-label="Illustrated map showing two fictional swappers, their approximate reach areas, and a route between them">
-            <img src="{% static 'images/landing_page/neighbourhood.svg' %}" alt="" width="880" height="650" loading="lazy" class="translate-y-[var(--map-drift,0px)] scale-106 motion-reduce:translate-none motion-reduce:scale-100 absolute inset-0 size-full object-cover">
-            <svg viewBox="0 0 880 650" class="translate-y-[calc(var(--map-drift,0px)*-.3)] motion-reduce:translate-none absolute inset-0 size-full" aria-hidden="true">
-                <circle cx="235" cy="250" r="151" class="fill-primary-base/5 stroke-primary-base/20" stroke-dasharray="6 9"/>
-                <circle cx="652" cy="320" r="155" class="fill-secondary-base/15 stroke-secondary-70/40" stroke-dasharray="6 9"/>
-                <path d="M235 275C265 480 530 525 652 345" class="fill-none stroke-primary-base/30" stroke-width="4" stroke-linecap="round" stroke-dasharray="7 9"/>
-                <path d="M235 275C265 480 530 525 652 345" class="fill-none stroke-primary-base" stroke-width="5" stroke-linecap="round" pathLength="1" data-map-route/>
+            <img src="{% static 'images/landing_page/neighbourhood.svg' %}" alt="" width="880" height="650" loading="lazy" class="translate-x-[var(--map-x,0px)] translate-y-[var(--map-y,0px)] scale-115 lg:motion-safe:will-change-transform motion-reduce:translate-none motion-reduce:scale-100 absolute inset-0 size-full object-cover">
+            <svg viewBox="0 0 880 650" class="pointer-events-none absolute inset-0 size-full translate-x-[var(--landmark-x,0px)] translate-y-[var(--landmark-y,0px)] scale-105 drop-shadow-sm lg:motion-safe:will-change-transform motion-reduce:translate-none motion-reduce:scale-100" aria-hidden="true">
+                <g class="fill-secondary-50 stroke-secondary-70" stroke-width="3"><path d="M321 143v28m0-55c-28 13-27 41 0 37 27 4 28-24 0-37Z"/><path d="M754 176v28m0-55c-28 13-27 41 0 37 27 4 28-24 0-37Z"/><path d="M81 397v28m0-55c-28 13-27 41 0 37 27 4 28-24 0-37Z"/><path d="M658 586v28m0-55c-28 13-27 41 0 37 27 4 28-24 0-37Z"/></g>
             </svg>
-            <div class="absolute top-[33%] left-[23%] z-10 flex flex-col items-center gap-1">
-                <span class="flex size-11 items-center justify-center rounded-full border-4 border-neutral-10 bg-primary-20 text-primary-base shadow-md sm:size-16" aria-hidden="true">{% lucide "user-round" size=28 %}</span>
-                <span class="rounded-full bg-neutral-10 px-2 py-0.5 text-b10 font-semibold text-primary-base sm:text-b9">You · A</span>
-            </div>
-            <div class="absolute top-[13%] left-[33%] w-[14%] rotate-6 rounded-xl border border-neutral-40 bg-neutral-10 p-1 shadow-md">
-                <img src="{% static 'images/landing_page/clothing/shirt.svg' %}" width="320" height="320" alt="A shirt ready to swap" class="w-full">
-            </div>
-            <div class="absolute top-[44%] right-[22%] z-10 flex flex-col items-center gap-1">
-                <span class="flex size-11 items-center justify-center rounded-full border-4 border-neutral-10 bg-secondary-30 text-secondary-80 shadow-md sm:size-16" aria-hidden="true">{% lucide "user-round" size=28 %}</span>
-                <span class="absolute -top-7 rounded-full bg-neutral-10 px-2 py-0.5 text-b10 font-semibold whitespace-nowrap text-secondary-80 sm:text-b9">Swapper · B</span>
-            </div>
-            <div class="absolute top-[24%] right-[6%] w-[14%] -rotate-6 rounded-xl border border-neutral-40 bg-neutral-10 p-1 shadow-md">
-                <img src="{% static 'images/landing_page/clothing/jacket.svg' %}" width="320" height="320" alt="A jacket in a nearby wardrobe" class="w-full">
-            </div>
-            <div class="absolute top-[68%] left-[55%] w-[18%] -translate-x-1/2 -translate-y-1/2" data-map-car>
-                <img src="{% static 'images/landing_page/swapy/car.svg' %}" width="360" height="390" alt="Swapy connecting the two wardrobes in a little olive car" class="h-auto w-full">
+            <div class="absolute inset-0 translate-x-[var(--world-x,0px)] translate-y-[var(--world-y,0px)] scale-[var(--world-scale,1)] lg:motion-safe:will-change-transform motion-reduce:translate-none motion-reduce:scale-100">
+                <svg viewBox="0 0 880 650" class="absolute inset-0 size-full" aria-hidden="true">
+                    <circle cx="235" cy="250" r="151" class="fill-primary-base/5 stroke-primary-base/20" stroke-dasharray="6 9"/>
+                    <circle cx="652" cy="320" r="155" class="fill-secondary-base/15 stroke-secondary-70/40" stroke-dasharray="6 9"/>
+                    <path d="M235 275C265 480 530 525 652 345" class="fill-none stroke-primary-base/30" stroke-width="4" stroke-linecap="round" stroke-dasharray="7 9"/>
+                    <path d="M235 275C265 480 530 525 652 345" class="fill-none stroke-primary-base" stroke-width="5" stroke-linecap="round" pathLength="1" data-map-route/>
+                </svg>
+                <div class="absolute top-[38.5%] left-[26.7%] z-10 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
+                    <span class="flex size-11 items-center justify-center rounded-full border-4 border-neutral-10 bg-primary-20 text-primary-base shadow-md sm:size-16" aria-hidden="true">{% lucide "user-round" size=28 %}</span>
+                    <span class="rounded-full bg-neutral-10 px-2 py-0.5 text-b10 font-semibold text-primary-base sm:text-b9">You · A</span>
+                </div>
+                <div class="absolute top-[13%] left-[33%] w-[14%] translate-y-[var(--card-drift,0px)] motion-reduce:translate-none rotate-6 rounded-xl border border-neutral-40 bg-neutral-10 p-1 shadow-md">
+                    <img src="{% static 'images/landing_page/clothing/shirt.svg' %}" width="320" height="320" alt="A shirt ready to swap" class="w-full">
+                </div>
+                <div class="absolute top-[49.2%] left-[74.1%] z-10 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
+                    <span class="flex size-11 items-center justify-center rounded-full border-4 border-neutral-10 bg-secondary-30 text-secondary-80 shadow-md sm:size-16" aria-hidden="true">{% lucide "user-round" size=28 %}</span>
+                    <span class="absolute -top-7 rounded-full bg-neutral-10 px-2 py-0.5 text-b10 font-semibold whitespace-nowrap text-secondary-80 sm:text-b9">Swapper · B</span>
+                </div>
+                <div class="absolute top-[24%] right-[6%] w-[14%] translate-y-[calc(var(--card-drift,0px)*-1)] motion-reduce:translate-none -rotate-6 rounded-xl border border-neutral-40 bg-neutral-10 p-1 shadow-md">
+                    <img src="{% static 'images/landing_page/clothing/jacket.svg' %}" width="320" height="320" alt="A jacket in a nearby wardrobe" class="w-full">
+                </div>
+                <div class="pointer-events-none absolute inset-0 translate-x-[var(--car-x,26.7%)] translate-y-[var(--car-y,55%)] lg:motion-safe:will-change-transform" data-map-car>
+                    <img src="{% static 'images/landing_page/swapy/car.svg' %}" width="360" height="390" alt="Swapy connecting the two wardrobes in a little olive car" class="absolute top-0 left-0 h-auto w-[18%] -translate-x-1/2 -translate-y-1/2">
+                </div>
             </div>
             <span class="absolute top-4 left-4 rounded-full bg-neutral-10/90 px-3 py-1.5 text-b10 text-secondary-80 sm:text-b9">An illustrated neighbourhood</span>
             <figcaption class="absolute right-3 bottom-3 left-3 rounded-xl bg-neutral-10/90 px-3 py-2 text-center text-[9px] leading-relaxed text-neutral-90 sm:text-b10">Illustration only. Areas show approximate reach, not exact or live locations.</figcaption>
         </figure>
         <ol class="flex w-full flex-col gap-7 lg:min-w-0 lg:flex-1 lg:gap-0">
-            <li class="group/map-step flex items-start gap-4 lg:min-h-64 lg:items-center" data-story-step="0">
+            <li class="group/map-step flex items-start gap-4 lg:min-h-80 lg:items-center" data-story-step="0">
                 <span class="transition-colors duration-300 group-data-[active=true]/map-step:bg-primary-base group-data-[active=true]/map-step:text-neutral-10 motion-reduce:transition-none flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary-20 text-b8 font-semibold text-secondary-80">1</span>
                 <div class="flex flex-col gap-3">
                     <h3 class="font-display text-h5 text-primary-base">A piece to pass on.</h3>
                     <p class="text-b8 leading-relaxed text-neutral-80">That shirt you never reach for could be just what someone else is looking for. Give it a good photo and an honest description.</p>
                 </div>
             </li>
-            <li class="group/map-step flex items-start gap-4 lg:min-h-64 lg:items-center" data-story-step="1">
+            <li class="group/map-step flex items-start gap-4 lg:min-h-80 lg:items-center" data-story-step="1">
                 <span class="transition-colors duration-300 group-data-[active=true]/map-step:bg-primary-base group-data-[active=true]/map-step:text-neutral-10 motion-reduce:transition-none flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary-20 text-b8 font-semibold text-secondary-80">2</span>
                 <div class="flex flex-col gap-3">
                     <h3 class="font-display text-h5 text-primary-base">Someone nearby.</h3>
                     <p class="text-b8 leading-relaxed text-neutral-80">Save your area to explore approximate distances in Discover. A few shared streets can lead to a very good find.</p>
                 </div>
             </li>
-            <li class="group/map-step flex items-start gap-4 lg:min-h-64 lg:items-center" data-story-step="2">
+            <li class="group/map-step flex items-start gap-4 lg:min-h-80 lg:items-center" data-story-step="2">
                 <span class="transition-colors duration-300 group-data-[active=true]/map-step:bg-primary-base group-data-[active=true]/map-step:text-neutral-10 motion-reduce:transition-none flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary-20 text-b8 font-semibold text-secondary-80">3</span>
                 <div class="flex flex-col gap-3">
                     <h3 class="font-display text-h5 text-primary-base">Make a plan together.</h3>
