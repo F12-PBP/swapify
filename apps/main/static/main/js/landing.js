@@ -360,3 +360,76 @@
     if (motion.matches) finish();
   });
 })();
+(() => {
+  const chat = document.querySelector('[data-trust-chat]');
+  if (!chat) return;
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const rows = [...chat.querySelectorAll('[data-chat-row]')];
+  const buttons = [...chat.querySelectorAll('[data-chat-question]')];
+  const status = chat.querySelector('[data-chat-status]');
+  const messages = {
+    condition: ['Could I see a close-up of the cuff?', 'Of course. I’ll send a close-up of the cuff and seams.', 'Thanks! That helps me check the condition.'],
+    exchange: ['How would we arrange the exchange?', 'Let’s agree in Messages on a public meetup or delivery.', 'Sounds good. We can confirm the details together.'],
+  };
+  let timers = [];
+  let animations = [];
+  let started = false;
+  let selected = 'condition';
+  const stop = () => {
+    timers.forEach(clearTimeout);
+    timers = [];
+    animations.forEach((animation) => animation.cancel());
+    animations = [];
+  };
+  const show = (row, animate) => {
+    row.dataset.state = 'sent';
+    row.querySelector('[data-chat-message]').removeAttribute('aria-hidden');
+    if (animate) {
+      animations.push(row.querySelector('[data-chat-message]').animate([
+        { opacity: 0, transform: 'translateY(8px) scale(.98)' },
+        { opacity: 1, transform: 'translateY(0) scale(1)' },
+      ], { duration: 380, easing: 'cubic-bezier(.22, 1, .36, 1)' }));
+    }
+  };
+  const finish = () => {
+    stop();
+    rows.forEach((row) => show(row, false));
+    status.textContent = `Example reply: ${messages[selected][1]}`;
+  };
+  const play = (key) => {
+    stop();
+    started = true;
+    selected = key;
+    buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.chatQuestion === key)));
+    rows.forEach((row, index) => {
+      row.querySelector('[data-chat-copy]').textContent = messages[key][index];
+      row.dataset.state = 'waiting';
+      row.querySelector('[data-chat-message]').setAttribute('aria-hidden', 'true');
+    });
+    if (motion.matches) {
+      finish();
+      status.textContent = `Example reply: ${messages[key][1]}`;
+      return;
+    }
+    show(rows[0], true);
+    status.textContent = 'Example question sent. Your swap partner is typing.';
+    timers.push(setTimeout(() => { rows[1].dataset.state = 'typing'; }, 250));
+    timers.push(setTimeout(() => {
+      show(rows[1], true);
+      status.textContent = `Example reply: ${messages[key][1]}`;
+    }, 1550));
+    timers.push(setTimeout(() => show(rows[2], true), 2350));
+  };
+  chat.querySelector('[data-chat-controls]').hidden = false;
+  buttons.forEach((button) => button.addEventListener('click', () => play(button.dataset.chatQuestion)));
+  new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && !started) play(selected);
+    else if (!entry.isIntersecting && started) finish();
+  }, { threshold: .2 }).observe(chat);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) finish(); });
+  motion.addEventListener('change', () => { if (motion.matches) finish(); });
+
+  const photo = document.querySelector('[data-trust-photo]');
+  const detail = document.querySelector('[data-trust-detail]');
+  photo.addEventListener('click', () => detail.showModal());
+})();
