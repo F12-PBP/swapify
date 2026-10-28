@@ -35,29 +35,32 @@
   const button = demo.querySelector('[data-demo-swap]');
   const reset = demo.querySelector('[data-demo-reset]');
   const result = demo.querySelector('[data-demo-result]');
+  const mascot = demo.querySelector('[data-demo-mascot]');
   const figures = [...demo.querySelectorAll('[data-demo-piece]')];
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let animations = [];
   let busy = false;
+
   const render = () => {
     [yours, theirs].forEach((input, index) => {
       const piece = pieces.find((item) => item.key === input.value);
       const image = figures[index].querySelector('img');
-      image.src = piece.image;
+      if (image.getAttribute('src') !== piece.image) image.src = piece.image;
       image.alt = `${index === 0 ? 'Your' : 'Their'} demo piece: ${piece.label}`;
     });
     window.SwapDropdown?.sync(demo);
   };
   const celebrate = (complete) => {
-    demo.querySelector('[data-demo-ready]').hidden = complete;
-    demo.querySelector('[data-demo-celebrate]').hidden = !complete;
-    reset.hidden = !complete;
+    mascot.dataset.complete = String(complete);
+    reset.disabled = !complete;
   };
+  const finish = () => animations.forEach((animation) => animation.finish());
+
   demo.addEventListener('change', () => {
     if (busy) return;
     render();
     celebrate(false);
-    result.textContent = 'Ready for a different little swap?';
+    result.textContent = 'Demo choices updated.';
   });
   reset.addEventListener('click', () => {
     yours.value = 'knit';
@@ -72,21 +75,32 @@
     if (busy) return;
     busy = true;
     button.disabled = true;
+    celebrate(false);
     demo.querySelectorAll('[data-demo-picker]').forEach((picker) => { picker.inert = true; });
-    reset.hidden = true;
-    const bounds = figures.map((figure) => figure.getBoundingClientRect());
+    const images = figures.map((figure) => figure.querySelector('img'));
+    const before = images.map((image) => image.getBoundingClientRect());
+
+    [yours.value, theirs.value] = [theirs.value, yours.value];
+    figures[0].replaceChildren(images[1]);
+    figures[1].replaceChildren(images[0]);
+    render();
+
     if (!motion.matches) {
-      animations = figures.map((figure, index) => {
-        const destination = bounds[1 - index];
-        return figure.animate([
-          { transform: 'translate(0, 0) rotate(0)' },
-          { transform: `translate(${destination.x - bounds[index].x}px, ${destination.y - bounds[index].y}px) rotate(${index ? -8 : 8}deg)` },
-        ], { duration: 650, easing: 'cubic-bezier(.45, 0, .2, 1)', fill: 'forwards' });
+      animations = images.map((image, index) => {
+        const after = image.getBoundingClientRect();
+        const x = before[index].left - after.left;
+        const y = before[index].top - after.top;
+        const scaleX = before[index].width / after.width;
+        const scaleY = before[index].height / after.height;
+        return image.animate([
+          { transform: `translate(${x}px, ${y}px) scale(${scaleX}, ${scaleY})` },
+          { transform: `translate(${x / 2}px, ${y / 2 + (index ? 28 : -28)}px) rotate(${index ? -4 : 4}deg)`, offset: .5 },
+          { transform: 'translate(0, 0) scale(1) rotate(0)' },
+        ], { duration: 950, easing: 'cubic-bezier(.4, 0, .2, 1)', fill: 'both' });
       });
       await Promise.allSettled(animations.map((animation) => animation.finished));
     }
-    [yours.value, theirs.value] = [theirs.value, yours.value];
-    render();
+
     animations.forEach((animation) => animation.cancel());
     animations = [];
     celebrate(true);
@@ -98,8 +112,9 @@
     button.disabled = false;
   });
   motion.addEventListener('change', () => {
-    if (motion.matches) animations.forEach((animation) => animation.finish());
+    if (motion.matches) finish();
   });
+  window.addEventListener('resize', finish, { passive: true });
 })();
 
 (() => {
