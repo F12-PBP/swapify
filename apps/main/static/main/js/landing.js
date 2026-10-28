@@ -14,16 +14,92 @@
   const finePointer = window.matchMedia('(pointer: fine)');
   const reset = () => {
     scene.style.removeProperty('--pointer-x');
-    scene.style.removeProperty('--pointer-y');
   };
   scene.addEventListener('pointermove', (event) => {
     if (motion.matches || !finePointer.matches) return;
     const bounds = scene.getBoundingClientRect();
-    scene.style.setProperty('--pointer-x', `${(event.clientX - bounds.left - bounds.width / 2) / 60}px`);
-    scene.style.setProperty('--pointer-y', `${(event.clientY - bounds.top - bounds.height / 2) / 60}px`);
+    scene.style.setProperty('--pointer-x', `${(event.clientX - bounds.left - bounds.width / 2) / 30}px`);
   });
   scene.addEventListener('pointerleave', reset);
-  motion.addEventListener('change', reset);
+  let greetingAnimation = null;
+  motion.addEventListener('change', () => { reset(); if (motion.matches) greetingAnimation?.finish(); });
+  const greeting = scene.querySelector('[data-hero-greet]');
+  greeting.addEventListener('click', async () => {
+    scene.querySelector('[data-hero-status]').textContent = "Swapy says hello! Ready to find your next favourite?";
+    if (motion.matches) return;
+    greeting.disabled = true;
+    const mascot = scene.querySelector('[data-hero-mascot]');
+    const shadow = scene.querySelector('[data-hero-shadow]');
+    const loops = [...mascot.getAnimations({ subtree: true }), ...shadow.getAnimations()];
+    loops.forEach((animation) => animation.pause());
+    const resting = getComputedStyle(mascot).transform;
+    const animation = mascot.animate([
+      { transform: resting },
+      { transform: 'translateY(-22%) rotate(-5deg)', offset: .4 },
+      { transform: 'translateY(0) scale(1.035, .965)', offset: .75 },
+      { transform: resting },
+    ], { duration: 900, easing: 'cubic-bezier(.4, 0, .2, 1)' });
+    const shadowResting = getComputedStyle(shadow);
+    const shadowAnimation = shadow.animate([
+      { transform: shadowResting.transform, opacity: shadowResting.opacity },
+      { transform: 'scale(.65, .75)', opacity: .4, offset: .4 },
+      { transform: 'scale(1)', opacity: 1, offset: .75 },
+      { transform: shadowResting.transform, opacity: shadowResting.opacity },
+    ], { duration: 900, easing: 'cubic-bezier(.4, 0, .2, 1)' });
+    greetingAnimation = animation;
+    await animation.finished.catch(() => {});
+    shadowAnimation.cancel();
+    const bounds = scene.getBoundingClientRect();
+    if (!motion.matches && !document.hidden && bounds.bottom > 0 && bounds.top < innerHeight) loops.forEach((loop) => loop.play());
+    greetingAnimation = null;
+    greeting.disabled = false;
+  });
+})();
+
+(() => {
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const reveals = new Set();
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.filter((entry) => entry.isIntersecting).forEach(({ target }) => {
+      revealObserver.unobserve(target);
+      if (motion.matches) return;
+      const siblings = [...target.parentElement.children].filter((node) => node.hasAttribute('data-reveal'));
+      const animation = target.animate([
+        { opacity: 0, transform: 'translateY(20px)' },
+        { opacity: 1, transform: 'translateY(0)' },
+      ], { duration: 650, delay: Math.max(0, siblings.indexOf(target)) * 65, easing: 'cubic-bezier(.22, 1, .36, 1)', fill: 'both' });
+      reveals.add(animation);
+      animation.finished.then(() => { animation.cancel(); reveals.delete(animation); }).catch(() => reveals.delete(animation));
+    });
+  }, { threshold: .05 });
+  document.querySelectorAll('[data-reveal]').forEach((node) => revealObserver.observe(node));
+
+  const sections = [...document.querySelectorAll('main section')].map((section) => ({
+    section, visible: false, nodes: [...section.querySelectorAll('[data-ambient], [class*="animate-journey-"]')],
+  })).filter(({ nodes }) => nodes.length);
+  const playback = ({ visible, nodes }) => nodes.forEach((node) => {
+    node.style.animationPlayState = visible && !document.hidden ? 'running' : 'paused';
+  });
+  const ambientObserver = new IntersectionObserver((entries) => entries.forEach((entry) => {
+    const record = sections.find(({ section }) => section === entry.target);
+    record.visible = entry.isIntersecting;
+    playback(record);
+  }));
+  sections.forEach((record) => { playback(record); ambientObserver.observe(record.section); });
+  document.addEventListener('visibilitychange', () => sections.forEach(playback));
+  motion.addEventListener('change', () => { if (motion.matches) reveals.forEach((animation) => animation.finish()); });
+
+  document.querySelectorAll('[data-journey-action]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!motion.matches) {
+        button.querySelector('svg').getAnimations({ subtree: true }).forEach((animation) => {
+          const duration = animation.effect.getTiming().duration;
+          if (typeof duration === 'number' && duration > 1000) animation.currentTime = duration * Number(button.dataset.journeyAction);
+        });
+      }
+      document.querySelector('[data-journey-status]').textContent = `${button.getAttribute('aria-label')}. This is a demonstration of the process.`;
+    });
+  });
 })();
 
 (() => {

@@ -1,7 +1,7 @@
 {% load static lucide %}
 <section id="fresh-start" class="mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14 pb-16 lg:pb-24" aria-labelledby="invitation-title">
     <div class="flex flex-col overflow-hidden rounded-[32px] bg-secondary-20 lg:flex-row lg:items-center">
-        <div class="flex flex-col items-start gap-5 px-7 pt-10 sm:px-10 lg:w-1/2 lg:px-14 lg:py-16">
+        <div data-reveal class="flex flex-col items-start gap-5 px-7 pt-10 sm:px-10 lg:w-1/2 lg:px-14 lg:py-16">
             <h2 id="invitation-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">Give your wardrobe<br>a fresh start.</h2>
             <p class="max-w-md text-b7 leading-relaxed text-neutral-80">Somewhere, someone is ready to love that piece again. Find what feels like you, and pass a little possibility on.</p>
             <div class="mt-2 flex flex-wrap gap-3">
@@ -16,10 +16,10 @@
         <div class="relative mt-5 aspect-[6/5] w-full lg:mt-0 lg:w-1/2" aria-label="Swapy holding a heart between two pieces ready for a new chapter" role="img">
             <div class="absolute top-[14%] right-[7%] bottom-[6%] left-[6%] rounded-full bg-secondary-30/60">
             </div>
-            <figure class="absolute top-[14%] left-[4%] flex w-[33%] -rotate-12 flex-col rounded-xl bg-neutral-10 p-2 shadow-md">
+            <figure data-ambient class="motion-safe:animate-landing-float absolute top-[14%] left-[4%] flex w-[33%] -rotate-12 flex-col rounded-xl bg-neutral-10 p-2 shadow-md">
                 <img src="{% static 'clothing_catalog/images/discovery/imgImagePreLovedCreamKnitwear.png' %}" width="236" height="260" alt="" loading="lazy" class="aspect-[4/5] w-full rounded-md object-cover">
             </figure>
-            <figure class="absolute top-[4%] right-[4%] flex w-[27%] rotate-12 flex-col rounded-xl bg-neutral-10 p-2 shadow-md">
+            <figure data-ambient class="motion-safe:animate-landing-float absolute top-[4%] right-[4%] flex w-[27%] rotate-12 flex-col rounded-xl bg-neutral-10 p-2 shadow-md">
                 <img src="{% static 'clothing_catalog/images/discovery/imgImageVintageBlueDenimJacket.png' %}" width="236" height="260" alt="" loading="lazy" class="aspect-[4/5] w-full rounded-md object-cover">
             </figure>
             <img src="{% static 'images/landing_page/swapy/love.svg' %}" width="340" height="380" alt="" loading="lazy" class="absolute right-[4%] bottom-[3%] w-[64%]">

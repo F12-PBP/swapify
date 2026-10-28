@@ -1,32 +1,33 @@
 {% load lucide %}
 <section id="how-it-works" class="scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16 mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14" aria-labelledby="steps-title">
-    <div class="mb-10 flex max-w-2xl flex-col gap-3">
+    <div data-reveal class="mb-10 flex max-w-2xl flex-col gap-3">
         <h2 id="steps-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">From your wardrobe to theirs.</h2>
         <p class="text-b7 leading-relaxed text-neutral-80">A piece you’ve loved. A find you’ll love next. A conversation that brings it together.</p>
     </div>
     <ol class="flex list-none flex-col gap-10 md:flex-row md:gap-8">
-        <li class="relative flex min-w-0 flex-1 flex-col gap-5">
-            {% include "main/sections/illustrations/prepare.html" %}
+        <li data-reveal class="relative flex min-w-0 flex-1 flex-col gap-5">
+            <button type="button" data-journey-action="0.24" class="block w-full rounded-[28px] transition-transform duration-300 motion-safe:hover:-translate-y-1 motion-safe:focus-visible:-translate-y-1" aria-label="Take an example photo">{% include "main/sections/illustrations/prepare.html" %}</button>
             <div class="flex flex-col gap-2">
                 <h3 class="font-display text-h5 text-primary-base">List your piece.</h3>
                 <p class="text-b8 leading-relaxed text-neutral-80">Take clear photos. Add the size, condition, and the little details someone would want to know.</p>
             </div>
             <span class="absolute top-1/2 -right-7 hidden text-secondary-60 md:block" aria-hidden="true">{% lucide "arrow-right" size=24 %}</span>
         </li>
-        <li class="relative flex min-w-0 flex-1 flex-col gap-5">
-            {% include "main/sections/illustrations/match.html" %}
+        <li data-reveal class="relative flex min-w-0 flex-1 flex-col gap-5">
+            <button type="button" data-journey-action="0.28" class="block w-full rounded-[28px] transition-transform duration-300 motion-safe:hover:-translate-y-1 motion-safe:focus-visible:-translate-y-1" aria-label="Browse the example pieces">{% include "main/sections/illustrations/match.html" %}</button>
             <div class="flex flex-col gap-2">
                 <h3 class="font-display text-h5 text-primary-base">Find your match.</h3>
                 <p class="text-b8 leading-relaxed text-neutral-80">Explore the catalog. See something you like? Offer one of your available pieces in a swap proposal.</p>
             </div>
             <span class="absolute top-1/2 -right-7 hidden text-secondary-60 md:block" aria-hidden="true">{% lucide "arrow-right" size=24 %}</span>
         </li>
-        <li class="flex min-w-0 flex-1 flex-col gap-5">
-            {% include "main/sections/illustrations/agree.html" %}
+        <li data-reveal class="flex min-w-0 flex-1 flex-col gap-5">
+            <button type="button" data-journey-action="0.33" class="block w-full rounded-[28px] transition-transform duration-300 motion-safe:hover:-translate-y-1 motion-safe:focus-visible:-translate-y-1" aria-label="Send an example message">{% include "main/sections/illustrations/agree.html" %}</button>
             <div class="flex flex-col gap-2">
                 <h3 class="font-display text-h5 text-primary-base">Agree and exchange.</h3>
                 <p class="text-b8 leading-relaxed text-neutral-80">Once accepted, chat to arrange a meetup or delivery. Confirm the exchange when your piece arrives.</p>
             </div>
         </li>
     </ol>
+    <p class="sr-only" role="status" data-journey-status></p>
 </section>

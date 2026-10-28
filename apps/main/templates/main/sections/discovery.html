@@ -1,6 +1,6 @@
 {% load static lucide %}
 <section id="discover" class="scroll-mt-24 py-14 lg:scroll-mt-32 lg:py-16 mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14" aria-labelledby="discovery-title">
-    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div data-reveal class="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div class="flex flex-col gap-3">
             <h2 id="discovery-title" class="font-display text-h3 font-medium tracking-[-0.04em] text-primary-base md:text-h2">Discover the possibilities.</h2>
         </div>
@@ -8,7 +8,7 @@
     </div>
     <div class="flex flex-wrap items-stretch gap-3 lg:gap-5">
         {% for clothing in featured_clothing %}
-            <a href="{{ clothing.get_absolute_url }}" class="group flex w-[calc((100%_-_.75rem)/2)] min-w-0 flex-col overflow-hidden rounded-2xl border border-neutral-40 bg-neutral-10 transition-shadow hover:shadow-lg lg:w-[calc((100%_-_3.75rem)/4)]">
+            <a href="{{ clothing.get_absolute_url }}" data-reveal class="group flex w-[calc((100%_-_.75rem)/2)] min-w-0 flex-col overflow-hidden rounded-2xl border border-neutral-40 bg-neutral-10 transition-[box-shadow,translate] duration-300 hover:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:focus-visible:-translate-y-1 lg:w-[calc((100%_-_3.75rem)/4)]">
                 <figure class="relative aspect-[4/4.4] overflow-hidden bg-secondary-10">
                     {% if clothing.image_url %}
                         <img src="{{ clothing.image_url }}" alt="{{ clothing.name }}" width="600" height="660" loading="lazy" class="size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-105" data-clothing-photo data-fallback="{% static 'images/landing_page/clothing/'|add:clothing.landing_illustration|add:'.svg' %}">
@@ -25,7 +25,7 @@
             </a>
         {% endfor %}
         {% for piece in inspiration_pieces %}
-            <a href="{% url 'clothing_catalog:list' %}?type={{ piece.type }}#finds" class="group flex w-[calc((100%_-_.75rem)/2)] min-w-0 flex-col overflow-hidden rounded-2xl border border-neutral-40 bg-neutral-10 lg:w-[calc((100%_-_3.75rem)/4)]">
+            <a href="{% url 'clothing_catalog:list' %}?type={{ piece.type }}#finds" data-reveal class="group flex w-[calc((100%_-_.75rem)/2)] min-w-0 flex-col overflow-hidden rounded-2xl border border-neutral-40 bg-neutral-10 lg:w-[calc((100%_-_3.75rem)/4)]">
                 <div class="aspect-[4/4.4] overflow-hidden bg-secondary-10 p-3">
                     <img src="{% static 'images/landing_page/clothing/'|add:piece.key|add:'.svg' %}" alt="{{ piece.name }} — style illustration" width="320" height="320" loading="lazy" class="size-full object-contain transition-transform duration-500 motion-safe:group-hover:scale-105">
                 </div>

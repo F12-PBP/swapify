@@ -47,6 +47,31 @@ html {
   }
 
 
+  --animate-landing-float: landing-float 4.8s ease-in-out infinite;
+  --animate-swapy-hop: swapy-hop 1.6s infinite;
+  --animate-swapy-shadow: swapy-shadow 1.6s infinite;
+  --animate-swapy-wink: swapy-wink 1.6s infinite;
+
+  @keyframes landing-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes swapy-hop {
+    0% { transform: translateY(0) scale(1); animation-timing-function: cubic-bezier(.2, .65, .35, 1); }
+    38% { transform: translateY(-18%) scale(.99, 1.015); animation-timing-function: cubic-bezier(.65, 0, .8, .35); }
+    70% { transform: translateY(0) scale(1); }
+    77% { transform: translateY(0) scale(1.035, .965); }
+    88%, 100% { transform: translateY(0) scale(1); }
+  }
+  @keyframes swapy-shadow {
+    0%, 70%, 100% { opacity: 1; transform: scale(1); }
+    38% { opacity: .45; transform: scale(.68, .78); }
+  }
+  @keyframes swapy-wink {
+    0%, 69%, 88%, 100% { opacity: 0; }
+    70%, 85% { opacity: 1; }
+  }
+
   --animate-journey-photo: journey-photo 6.4s ease-in-out infinite;
   --animate-journey-camera: journey-camera 6.4s ease-in-out infinite;
   --animate-journey-focus: journey-focus 6.4s ease-in-out infinite;

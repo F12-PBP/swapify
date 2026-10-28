@@ -2,30 +2,48 @@
 <section id="hero" class="mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-14 pt-6 lg:pt-10" aria-labelledby="hero-title">
     <div class="relative isolate flex flex-col overflow-hidden rounded-[32px] border border-primary-20/60 bg-primary-10 px-6 pt-8 sm:px-10 sm:pt-10 lg:min-h-[620px] lg:flex-row lg:items-center lg:px-12 lg:py-16">
         <div class="motion-safe:animate-landing-arrive z-10 flex flex-col items-start gap-5 sm:gap-7 lg:w-[51%] lg:shrink-0">
-            <h1 id="hero-title" class="text-[clamp(2.4rem,4.9vw,4rem)] leading-[1.04] tracking-[-0.055em] max-w-[550px] font-display font-medium text-primary-base">
-                Your next favourite<br>
-                is <em class="font-normal text-secondary-70">already<br class="hidden lg:block"> out there.</em>
+            <h1 id="hero-title" class="text-[clamp(2.4rem,4.2vw,3.5rem)] leading-[1.04] tracking-[-0.055em] max-w-[550px] font-display font-medium text-primary-base">
+                Swap What You<br>
+                <em class="font-normal text-primary-50">Don't Wear.</em><br>
+                Discover What<br>
+                <em class="font-normal text-secondary-base">You Will.</em>
             </h1>
-            <p class="max-w-sm text-b8 leading-relaxed sm:text-b7 text-neutral-90 lg:text-b6">Swap pre-loved clothing with people near you. Better for your wardrobe, better for the planet.</p>
+            <p class="max-w-sm text-b8 leading-relaxed sm:text-b7 text-neutral-90 lg:text-b6"><span class="font-semibold">Swapify</span> connects you with real people to trade secondhand items. No cash, no clutter, just the thrill of discovering something new.</p>
             <div class="flex flex-wrap gap-3">
                 <a href="{% url 'clothing_catalog:list' %}" class="btn btn-primary gap-3">Explore clothing {% lucide "arrow-right" size=18 %}</a>
                 <a href="#how-it-works" class="btn btn-primary-ghost">See how it works</a>
             </div>
         </div>
-        <div class="bg-radial-[ellipse_at_50%_60%] from-primary-20 to-transparent to-70% translate-x-[var(--pointer-x,0px)] translate-y-[var(--pointer-y,0px)] transition-transform duration-600 ease-out motion-safe:animate-landing-scene motion-reduce:translate-none motion-reduce:transition-none relative mt-4 aspect-[1.12] w-full self-center lg:absolute lg:right-0 lg:bottom-8 lg:mt-0 lg:w-[53%]" data-hero-scene aria-label="Swapy waves hello among a shirt, jeans, and a denim jacket">
-            <figure class="absolute flex flex-col items-center rounded-2xl border border-neutral-40 bg-neutral-10 p-2 shadow-lg top-[4%] left-[6%] w-[29%] -rotate-12">
+        <div class="bg-radial-[ellipse_at_50%_60%] from-primary-20 to-transparent to-70% motion-safe:animate-landing-scene relative mt-4 aspect-[1.12] w-full self-center lg:absolute lg:right-0 lg:bottom-8 lg:mt-0 lg:w-[53%]" data-hero-scene aria-label="Swapy bounces among a shirt, jeans, and a denim jacket">
+            <figure data-ambient class="motion-safe:animate-landing-float [animation-delay:-0.0s] translate-x-[calc(var(--pointer-x,0px)*1)] transition-[translate] duration-500 ease-out motion-reduce:translate-none absolute flex flex-col items-center rounded-2xl border border-neutral-40 bg-neutral-10 p-2 shadow-lg top-[4%] left-[6%] w-[29%] -rotate-12">
+                <a href="{% url 'clothing_catalog:list' %}?type=top#finds" class="flex w-full flex-col items-center rounded-xl transition-transform duration-300 motion-safe:hover:scale-105 motion-safe:focus-visible:scale-105" aria-label="Explore top in the catalog">
                 <img src="{% static 'images/landing_page/clothing/shirt.svg' %}" alt="A cream linen shirt" width="320" height="320" class="aspect-square w-full object-contain">
                 <figcaption class="pb-1 font-display text-[9px] text-neutral-90 sm:text-b8">A lighter layer.</figcaption>
+                </a>
             </figure>
-            <figure class="absolute flex flex-col items-center rounded-2xl border border-neutral-40 bg-neutral-10 p-2 shadow-lg top-0 right-[6%] w-[27%] rotate-12">
+            <figure data-ambient class="motion-safe:animate-landing-float [animation-delay:-1.2s] translate-x-[calc(var(--pointer-x,0px)*0.65)] transition-[translate] duration-500 ease-out motion-reduce:translate-none absolute flex flex-col items-center rounded-2xl border border-neutral-40 bg-neutral-10 p-2 shadow-lg top-0 right-[6%] w-[27%] rotate-12">
+                <a href="{% url 'clothing_catalog:list' %}?type=bottom#finds" class="flex w-full flex-col items-center rounded-xl transition-transform duration-300 motion-safe:hover:scale-105 motion-safe:focus-visible:scale-105" aria-label="Explore bottom in the catalog">
                 <img src="{% static 'images/landing_page/clothing/jeans.svg' %}" alt="A pair of blue jeans" width="320" height="320" class="aspect-square w-full object-contain">
                 <figcaption class="pb-1 font-display text-[9px] text-neutral-90 sm:text-b8">A perfect fit.</figcaption>
+                </a>
             </figure>
-            <figure class="absolute flex flex-col items-center rounded-2xl border border-neutral-40 bg-neutral-10 p-2 shadow-lg right-[1%] bottom-[11%] w-[28%] rotate-[9deg]">
+            <figure data-ambient class="motion-safe:animate-landing-float [animation-delay:-2.4s] translate-x-[calc(var(--pointer-x,0px)*1.35)] transition-[translate] duration-500 ease-out motion-reduce:translate-none absolute flex flex-col items-center rounded-2xl border border-neutral-40 bg-neutral-10 p-2 shadow-lg right-[1%] bottom-[11%] w-[28%] rotate-[9deg]">
+                <a href="{% url 'clothing_catalog:list' %}?type=outerwear#finds" class="flex w-full flex-col items-center rounded-xl transition-transform duration-300 motion-safe:hover:scale-105 motion-safe:focus-visible:scale-105" aria-label="Explore outerwear in the catalog">
                 <img src="{% static 'images/landing_page/clothing/jacket.svg' %}" alt="A pre-loved denim jacket" width="320" height="320" class="aspect-square w-full object-contain">
                 <figcaption class="pb-1 font-display text-[9px] text-neutral-90 sm:text-b8">Another chapter.</figcaption>
+                </a>
             </figure>
-            <img src="{% static 'images/landing_page/swapy/hello.svg' %}" alt="Swapy, the Swapify mascot, waving hello" width="340" height="380" fetchpriority="high" class="absolute bottom-[10%] left-[22%] w-[56%] drop-shadow-sm">
+            <div class="absolute bottom-[10%] left-[22%] aspect-[340/380] w-[56%]">
+                <img src="{% static 'images/landing_page/hero/swapy-shadow.svg' %}" width="177" height="37" alt="" data-hero-shadow class="absolute bottom-[5%] left-[24%] w-[52%] origin-center motion-safe:animate-swapy-shadow" data-ambient>
+                <button type="button" class="group/swapy absolute inset-0 rounded-full" aria-label="Say hello to Swapy" data-hero-greet>
+                    <span class="absolute inset-0 origin-bottom motion-safe:animate-swapy-hop" data-hero-mascot data-ambient>
+                        <img src="{% static 'images/landing_page/hero/swapy-hero.svg' %}" alt="Swapy holding shopping bags" width="288" height="288" fetchpriority="high" class="absolute inset-0 size-full object-contain">
+                        <img src="{% static 'images/landing_page/hero/swapy-hero-wink.svg' %}" alt="" width="288" height="288" class="absolute inset-0 size-full object-contain opacity-0 motion-safe:animate-swapy-wink group-hover/swapy:opacity-100! group-focus-visible/swapy:opacity-100!" data-ambient>
+                    </span>
+                </button>
+                <span class="pointer-events-none absolute right-0 bottom-0 rounded-full bg-primary-base px-3 py-1 text-b10 font-semibold text-neutral-10 shadow-sm">Hi, I'm Swapy!</span>
+            </div>
+            <p class="sr-only" role="status" data-hero-status></p>
         </div>
     </div>
 </section>
