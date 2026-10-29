@@ -1,6 +1,6 @@
 <form action="{% url 'user_profile:preferences_edit' %}" method="post" class="flex flex-col gap-7" data-profile-form>
   {% csrf_token %}
-  <{% if dialog_mode %}h2{% else %}h1{% endif %} id="profile-edit-title" class="font-display text-h4 text-primary-base">Edit Style Preferences</{% if dialog_mode %}h2{% else %}h1{% endif %}>
+  <{% if dialog_mode %}h2{% else %}h1{% endif %} id="profile-edit-title" class="{% if dialog_mode %}pr-9 {% endif %}font-display text-h4 text-primary-base">Edit Style Preferences</{% if dialog_mode %}h2{% else %}h1{% endif %}>
   {% include "user_profile/partials/style_choices.html" with editable=True %}
   {% for error in form.preferences.errors %}<p class="swap-field-error" role="alert">{{ error }}</p>{% endfor %}
   {% if form.non_field_errors %}<div class="swap-field-error" role="alert">{{ form.non_field_errors }}</div>{% endif %}

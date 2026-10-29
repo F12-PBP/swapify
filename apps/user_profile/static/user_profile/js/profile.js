@@ -44,6 +44,13 @@
   if (dialog) {
     const content = dialog.querySelector('[data-profile-dialog-content]');
     let loading;
+    let lifecycle = 0;
+    const cleanup = () => {
+      releasePhoto?.();
+      releasePhoto = undefined;
+      window.SwapLocation?.destroy(content);
+      content.replaceChildren();
+    };
     const initialize = () => {
       releasePhoto?.();
       releasePhoto = initPhoto(content);
@@ -56,22 +63,26 @@
       link.addEventListener('click', async (event) => {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
+        const revision = ++lifecycle;
         loading?.abort();
-        loading = new AbortController();
-        content.innerHTML = '<h2 id="profile-edit-title" class="font-display text-h4 text-primary-base">Loading…</h2><p role="status" class="text-b8 text-neutral-80">Opening your profile settings.</p>';
-        dialog.showModal();
+        cleanup();
+        const request = new AbortController();
+        loading = request;
+        content.innerHTML = '<h2 id="profile-edit-title" class="pr-9 font-display text-h4 text-primary-base">Loading…</h2><p role="status" class="text-b8 text-neutral-80">Opening your profile settings.</p>';
+        window.SwapDialogs.open(dialog);
         try {
           const response = await fetch(link.href, {
-            headers: { 'X-Profile-Dialog': '1' }, signal: loading.signal,
+            headers: { 'X-Profile-Dialog': '1' }, signal: request.signal,
           });
+          if (revision !== lifecycle || !dialog.open) return;
           if (response.redirected) { window.location.assign(response.url); return; }
           if (!response.ok) throw new Error();
           const html = await response.text();
-          if (!dialog.open) return;
+          if (revision !== lifecycle || !dialog.open) return;
           content.innerHTML = html;
           initialize();
         } catch (error) {
-          if (error.name === 'AbortError') return;
+          if (error.name === 'AbortError' || revision !== lifecycle || !dialog.open) return;
           dialog.close();
           window.location.assign(link.href);
         }
@@ -80,15 +91,19 @@
     content.addEventListener('click', (event) => {
       if (event.target.closest('[data-profile-cancel]')) {
         event.preventDefault();
-        dialog.close();
+        if (dialog.dataset.submitting !== 'true') dialog.close();
       }
     });
     content.addEventListener('submit', async (event) => {
       const form = event.target.closest('[data-profile-form]');
       if (!form) return;
       event.preventDefault();
+      const revision = lifecycle;
       const button = form.querySelector('button[type="submit"]');
-      if (button.disabled) return;
+      if (dialog.dataset.submitting === 'true') return;
+      dialog.dataset.submitting = 'true';
+      const closeButton = dialog.querySelector('[data-dialog-close]');
+      closeButton.disabled = true;
       button.disabled = true;
       form.setAttribute('aria-busy', 'true');
       const status = form.querySelector('[data-profile-form-status]');
@@ -99,27 +114,40 @@
           method: 'POST', body: new FormData(form),
           headers: { 'X-Profile-Dialog': '1' },
         });
+        if (revision !== lifecycle || !dialog.open) return;
         if (response.redirected) { window.location.assign(response.url); return; }
         if (response.status === 422) {
+          const html = await response.text();
+          if (revision !== lifecycle || !dialog.open) return;
           window.SwapLocation?.destroy(content);
-          content.innerHTML = await response.text();
+          content.innerHTML = html;
           initialize();
           return;
         }
         if (!response.ok) throw new Error();
         const result = await response.json();
+        if (revision !== lifecycle || !dialog.open) return;
         window.location.assign(result.redirect);
       } catch {
+        if (revision !== lifecycle || !dialog.open) return;
         status.textContent = 'Your changes could not be saved. Please try again.';
         button.disabled = false;
         form.removeAttribute('aria-busy');
+      } finally {
+        dialog.dataset.submitting = 'false';
+        closeButton.disabled = false;
       }
     });
     dialog.addEventListener('close', () => {
+      if (dialog.open) return;
+      const revision = ++lifecycle;
       loading?.abort();
-      releasePhoto?.();
-      window.SwapLocation?.destroy(content);
-      content.replaceChildren();
+      requestAnimationFrame(async () => {
+        if (dialog.open || revision !== lifecycle) return;
+        const animations = [dialog, content].flatMap((element) => element.getAnimations());
+        await Promise.allSettled(animations.map((animation) => animation.finished));
+        if (!dialog.open && revision === lifecycle) cleanup();
+      });
     });
   }
 

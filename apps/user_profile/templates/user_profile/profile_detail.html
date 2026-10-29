@@ -57,13 +57,14 @@
     </div>
   </div>
 </section>
-<dialog id="profile-edit-dialog" class="modal" aria-labelledby="profile-edit-title">
-  <div class="modal-box flex w-[calc(100%_-_2rem)] max-w-[524px] flex-col rounded-[32px] bg-neutral-10 p-6 sm:p-9" data-profile-dialog-content></div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Close edit dialog">Close</button></form>
+<dialog id="profile-edit-dialog" class="market-dialog" aria-labelledby="profile-edit-title">
+  <button type="button" data-dialog-close class="absolute top-6 right-6 cursor-pointer text-neutral-80 sm:top-9 sm:right-9" aria-label="Close edit dialog">{% lucide "x" size=24 %}</button>
+  <div data-profile-dialog-content></div>
 </dialog>
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'user_profile/vendor/leaflet/leaflet.js' %}" defer></script>
 <script src="{% static 'user_profile/js/location.js' %}?v=profile-dialog-1" defer></script>
+<script src="{% static 'clothing_catalog/js/marketplace.js' %}" defer></script>
 <script src="{% static 'user_profile/js/profile.js' %}" defer></script>
 {% endblock %}

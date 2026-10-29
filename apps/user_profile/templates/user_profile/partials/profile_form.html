@@ -1,7 +1,7 @@
 {% load lucide %}
 <form action="{% url 'user_profile:edit' %}" method="post" enctype="multipart/form-data" class="flex flex-col gap-7" data-profile-form>
   {% csrf_token %}
-  <{% if dialog_mode %}h2{% else %}h1{% endif %} id="profile-edit-title" class="font-display text-h4 text-primary-base">Edit Profile</{% if dialog_mode %}h2{% else %}h1{% endif %}>
+  <{% if dialog_mode %}h2{% else %}h1{% endif %} id="profile-edit-title" class="{% if dialog_mode %}pr-9 {% endif %}font-display text-h4 text-primary-base">Edit Profile</{% if dialog_mode %}h2{% else %}h1{% endif %}>
   {% if form.non_field_errors %}<div class="swap-field-error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
   {% include "user_profile/auth/field.html" with field=form.display_name %}
   {% include "user_profile/auth/field.html" with field=form.bio %}

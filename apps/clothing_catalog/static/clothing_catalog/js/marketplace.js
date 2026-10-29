@@ -4,6 +4,7 @@
     dialog.showModal();
     document.documentElement.classList.add("market-dialog-open");
   };
+  window.SwapDialogs = { open: openDialog };
   document.querySelectorAll("[data-dialog-open]").forEach((button) => {
     button.hidden = false;
     button.addEventListener("click", () => openDialog(document.getElementById(button.dataset.dialogOpen)));
@@ -21,6 +22,7 @@
       }
     });
     dialog.addEventListener("close", () => {
+      if (dialog.open) return;
       document.documentElement.classList.remove("market-dialog-open");
       dialog.querySelector("form")?.reset();
     });
