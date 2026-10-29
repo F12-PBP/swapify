@@ -5,6 +5,32 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  :root {
+    --swapify-cursor: url("../../icons/cursor.svg") 2 2;
+    cursor: var(--swapify-cursor), default;
+  }
+
+  :where(a[href], button, summary, select, label[for], [role="button"], input[type="button"], input[type="submit"], input[type="reset"], input[type="checkbox"], input[type="radio"], input[type="file"]):not([class*="cursor-"]),
+  .cursor-pointer {
+    cursor: var(--swapify-cursor), pointer;
+  }
+
+  .cursor-default {
+    cursor: var(--swapify-cursor), default;
+  }
+
+  :where(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="file"], [type="range"], [type="color"]), textarea, [contenteditable="true"]):not([class*="cursor-"]) {
+    cursor: text;
+  }
+
+  :disabled,
+  [aria-disabled="true"],
+  .cursor-not-allowed {
+    cursor: not-allowed;
+  }
+}
+
 @font-face {
   font-family: "Fraunces";
   src: url("../../fonts/Fraunces-VariableFont_SOFT,WONK,opsz,wght.ttf");
