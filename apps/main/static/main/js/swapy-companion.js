@@ -31,8 +31,15 @@
   let pointerX = null;
   let pointerY = null;
   let direction = 1;
+  let pitch = 0;
+
+  const updateFacing = () => {
+    facing.style.transform = `rotate(${pitch * direction}deg) scaleX(${direction})`;
+  };
 
   const setFlying = (moving) => {
+    if (!moving) pitch = 0;
+    updateFacing();
     flying.style.opacity = moving ? "1" : "0";
     greeting.style.opacity = moving ? "0" : "1";
   };
@@ -41,6 +48,7 @@
     visible = false;
     pointerX = null;
     pointerY = null;
+    pitch = 0;
     cancelAnimationFrame(frame);
     frame = 0;
     clearTimeout(idleTimer);
@@ -104,9 +112,11 @@
     if (!enabled || document.hidden || event.pointerType !== "mouse") return;
     const now = performance.now();
     const deltaX = pointerX === null ? 0 : event.clientX - pointerX;
+    const deltaY = pointerY === null ? 0 : event.clientY - pointerY;
+    const elapsed = Math.max(8, now - lastMove);
+    pitch = Math.max(-30, Math.min(30, deltaY / elapsed * 36));
     if (Math.abs(deltaX) > 2) {
       direction = deltaX > 0 ? 1 : -1;
-      facing.style.transform = `scaleX(${direction})`;
     }
     pointerX = event.clientX;
     pointerY = event.clientY;
