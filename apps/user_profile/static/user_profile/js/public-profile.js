@@ -5,6 +5,7 @@
   const results = root.querySelector('[data-member-results]');
   const feedback = root.querySelector('[data-member-feedback]');
   const tabs = [...root.querySelectorAll('[data-member-tab]')];
+  const indicator = root.querySelector('[data-member-indicator]');
   const fields = ['type', 'search', 'size', 'condition', 'distance', 'sort'];
   const defaultTab = root.dataset.defaultTab;
   let appliedURL = new URL(location.href);
@@ -13,13 +14,12 @@
 
   root.querySelector('[data-member-apply]').hidden = true;
   const selectTab = (name) => {
+    indicator.classList.toggle('translate-x-[calc(100%_+_0.75rem)]', name === 'wardrobe');
     tabs.forEach((tab) => {
       const selected = tab.dataset.memberTab === name;
       document.getElementById(tab.getAttribute('aria-controls')).hidden = !selected;
-      tab.classList.toggle('bg-primary-base', selected);
       tab.classList.toggle('text-neutral-10', selected);
       tab.classList.toggle('text-neutral-80', !selected);
-      tab.classList.toggle('hover:bg-primary-10', !selected);
       if (selected) tab.setAttribute('aria-current', 'page');
       else tab.removeAttribute('aria-current');
     });
