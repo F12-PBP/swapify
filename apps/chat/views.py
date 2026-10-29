@@ -1,7 +1,5 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Max, OuterRef, Q, Subquery
-from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
@@ -9,7 +7,17 @@ from django.views.generic import DetailView, ListView
 
 from . import services
 from .forms import ChatMessageForm
-from .models import ChatMessage, ChatRoom, SwapRequest
+from .http import JsonChatMixin, error_response, json_response, wants_json
+from .models import ChatRoom, SwapRequest
+from .queries import (
+    InvalidMessageQuery,
+    conversation_rooms,
+    message_page,
+    page_parameters,
+    read_receipts,
+    receipt_ids,
+)
+from .serializers import serialize_message
 
 
 class ChatRoomListView(LoginRequiredMixin, ListView):
@@ -19,32 +27,24 @@ class ChatRoomListView(LoginRequiredMixin, ListView):
     context_object_name = "chat_rooms"
 
     def get_queryset(self):
-        user = self.request.user
-        last_message = ChatMessage.objects.filter(chat_room=OuterRef("pk")).order_by(
-            "-sent_at", "-id"
-        )
-        return (
-            ChatRoom.objects.for_user(user)
-            .with_related()
-            .annotate(
-                last_activity=Coalesce(Max("messages__sent_at"), "created_at"),
-                unread_count=Count(
-                    "messages",
-                    filter=Q(messages__is_read=False) & ~Q(messages__sender=user),
-                ),
-                last_message=Subquery(last_message.values("message")[:1]),
-                last_sender_id=Subquery(last_message.values("sender_id")[:1]),
-            )
-            .order_by("-last_activity", "-id")
-        )
+        return conversation_rooms(self.request.user)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        rooms = list(context["chat_rooms"])
-        for room in rooms:
-            room.partner = room.other_user(self.request.user)
-        context["chat_rooms"] = rooms
-        return context
+    def get(self, request, *args, **kwargs):
+        if wants_json(request):
+            return json_response(
+                {
+                    "ok": True,
+                    "rooms": [
+                        {
+                            "id": room.pk,
+                            "unread_count": room.unread_count,
+                        }
+                        for room in self.get_queryset()
+                    ],
+                }
+            )
+
+        return super().get(request, *args, **kwargs)
 
 
 class StartChatView(LoginRequiredMixin, View):
@@ -70,7 +70,7 @@ class StartChatView(LoginRequiredMixin, View):
 
 
 class ChatRoomDetailView(LoginRequiredMixin, DetailView):
-    """Isi chat + form kirim pesan (form hanya muncul kalau chat aktif)."""
+    """Detail chat dengan batch pesan terbaru."""
 
     template_name = "chat_room_detail.html"
     context_object_name = "chat_room"
@@ -83,41 +83,86 @@ class ChatRoomDetailView(LoginRequiredMixin, DetailView):
         room = self.object
         user = self.request.user
 
-        context["chat_messages"] = list(room.messages.select_related("sender"))
-        services.mark_read(room, user)
+        batch, has_older = message_page(
+            room,
+            direction="latest",
+        )
 
-        context["partner"] = room.other_user(user)
-        context["is_active"] = room.is_active
-        context["form"] = ChatMessageForm()
+        services.mark_read(
+            room,
+            user,
+            loaded_messages=batch,
+        )
+
+        context.update(
+            chat_rooms=conversation_rooms(user),
+            chat_messages=batch,
+            partner=room.other_user(user),
+            is_active=room.is_active,
+            form=ChatMessageForm(),
+            has_older_messages=has_older,
+            oldest_message_id=batch[0].pk if batch else 0,
+            latest_message_id=batch[-1].pk if batch else 0,
+        )
         return context
 
 
-class MessageCreateView(LoginRequiredMixin, View):
-    """Terima pesan baru (POST). Ditolak kalau chat tidak aktif."""
+class MessageCreateView(JsonChatMixin, LoginRequiredMixin, View):
+    """Kirim pesan melalui AJAX atau form biasa."""
 
     http_method_names = ["post"]
 
     def post(self, request, pk):
+        ajax = wants_json(request)
+
         room = get_object_or_404(
             ChatRoom.objects.for_user(request.user).with_related(), pk=pk
         )
 
         form = ChatMessageForm(request.POST)
+
         if not form.is_valid():
-            messages.error(
-                request, "Pesan tidak boleh kosong atau lebih dari 2000 karakter."
-            )
+            error_message = "Pesan tidak boleh kosong atau lebih dari 2000 karakter."
+
+            if ajax:
+                return error_response(
+                    "invalid_message",
+                    error_message,
+                    status=400,
+                    errors=form.errors.get_json_data(),
+                )
+
+            messages.error(request, error_message)
             return redirect("chat:detail", pk=room.pk)
 
         try:
-            services.send_message(room, request.user, form.cleaned_data["message"])
+            message = services.send_message(
+                room, request.user, form.cleaned_data["message"]
+            )
+
         except services.ChatNotAllowed as error:
+            if ajax:
+                return error_response(
+                    "chat_inactive",
+                    str(error),
+                    status=409,
+                )
             messages.error(request, str(error))
+            return redirect("chat:detail", pk=room.pk)
+
+        if ajax:
+            return json_response(
+                {
+                    "ok": True,
+                    "message": serialize_message(message, request.user),
+                },
+                status=201,
+            )
 
         return redirect("chat:detail", pk=room.pk)
 
 
-class MessageListJsonView(LoginRequiredMixin, View):
+class MessageListJsonView(JsonChatMixin, LoginRequiredMixin, View):
     """Endpoint JSON untuk polling pesan baru: ?after=<id_pesan_terakhir>."""
 
     http_method_names = ["get"]
@@ -126,33 +171,49 @@ class MessageListJsonView(LoginRequiredMixin, View):
         room = get_object_or_404(
             ChatRoom.objects.for_user(request.user).with_related(), pk=pk
         )
+
         try:
-            after = int(request.GET.get("after", 0))
-        except (TypeError, ValueError):
-            after = 0
+            direction, cursor, limit = page_parameters(request)
+            ids = receipt_ids(request)
+        except InvalidMessageQuery as error:
+            return error_response(
+                "invalid_query",
+                str(error),
+                status=400,
+            )
 
-        new_messages = list(room.messages.filter(id__gt=after).select_related("sender"))
+        batch, has_more = message_page(
+            room,
+            direction=direction,
+            cursor=cursor,
+            limit=limit,
+        )
 
-        unread_ids = [
-            m.id
-            for m in new_messages
-            if m.sender_id != request.user.id and not m.is_read
-        ]
-        if unread_ids:
-            ChatMessage.objects.filter(id__in=unread_ids).update(is_read=True)
+        services.mark_read(
+            room,
+            request.user,
+            loaded_messages=batch,
+        )
+
+        next_after = (
+            (batch[-1].pk if batch else cursor) if direction == "newer" else None
+        )
 
         return JsonResponse(
             {
+                "ok": True,
                 "is_active": room.is_active,
                 "messages": [
-                    {
-                        "id": m.id,
-                        "sender": m.sender.get_username(),
-                        "is_mine": m.sender_id == request.user.id,
-                        "message": m.message,
-                        "sent_at": m.sent_at.isoformat(),
-                    }
-                    for m in new_messages
+                    serialize_message(message, request.user) for message in batch
                 ],
+                "direction": direction,
+                "has_more": has_more,
+                "next_after": next_after,
+                "next_before": batch[0].pk if batch else None,
+                "read_receipts": read_receipts(
+                    room,
+                    request.user,
+                    ids,
+                ),
             }
         )

@@ -1,0 +1,85 @@
+{% load lucide tz %}
+{% with requested=swap_request.requested_clothing offered=swap_request.offered_clothing owner=swap_request.requested_clothing.owner requester=swap_request.requester blocking=swap_request.blocking_clothing %}
+{% with owner_name=owner.profile.display_name|default:owner.username requester_name=requester.profile.display_name|default:requester.username %}
+<div class="flex flex-col gap-7" data-swap-detail-url="{{ swap_request.get_absolute_url }}">
+  <div class="flex flex-col gap-2 pr-10">
+    <div class="flex flex-wrap items-center gap-3">
+      <h2 id="swap-title" tabindex="-1" class="font-display text-h4 text-primary-base outline-none">Swap Detail</h2>
+      {% include "swap_request/partials/status_badge.html" %}
+    </div>
+    <p class="text-b7 text-neutral-80">
+      Requested by {% if swap_request.requester_id == user.pk %}you{% else %}<a class="font-semibold text-neutral-90 underline-offset-4 hover:underline" href="{% url 'user_profile:public' requester.username %}">{{ requester_name }}</a>{% endif %}
+      to {% if owner.pk == user.pk %}you{% else %}<a class="font-semibold text-neutral-90 underline-offset-4 hover:underline" href="{% url 'user_profile:public' owner.username %}">{{ owner_name }}</a>{% endif %}
+      (<time datetime="{{ swap_request.created_at|date:'c' }}">{{ swap_request.created_at|timezone:"Asia/Jakarta"|date:"j M Y, H.i" }}</time>)
+    </p>
+  </div>
+
+  <div class="flex flex-col gap-5 sm:flex-row">
+    <div class="flex min-w-0 flex-1 items-center gap-3">
+      <span class="size-14 shrink-0 overflow-hidden rounded-xl bg-neutral-30">{% if requested.image_url %}<img src="{{ requested.image_url }}" alt="" loading="lazy" width="56" height="56" class="size-full object-cover">{% endif %}</span>
+      <div class="flex min-w-0 flex-col gap-1">
+        <p class="text-b7 text-neutral-80">Requested</p>
+        <a class="line-clamp-2 text-b6 font-semibold text-neutral-100 underline underline-offset-4 hover:text-primary-base" href="{{ requested.get_absolute_url }}">{{ requested.name }}</a>
+      </div>
+    </div>
+    <div class="flex min-w-0 flex-1 items-center gap-3">
+      <span class="size-14 shrink-0 overflow-hidden rounded-xl bg-neutral-30">{% if offered.image_url %}<img src="{{ offered.image_url }}" alt="" loading="lazy" width="56" height="56" class="size-full object-cover">{% endif %}</span>
+      <div class="flex min-w-0 flex-col gap-1">
+        <p class="text-b7 text-neutral-80">Offered</p>
+        <a class="line-clamp-2 text-b6 font-semibold text-neutral-100 underline underline-offset-4 hover:text-primary-base" href="{{ offered.get_absolute_url }}">{{ offered.name }}</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <p class="text-b7 font-semibold text-primary-60">Message</p>
+    {% if swap_request.message %}
+      <p class="min-h-[124px] whitespace-pre-line rounded-2xl bg-neutral-30 px-5 py-3 text-b7 text-neutral-100 shadow-[0_4px_32px_rgb(0_0_0/0.04)]">{{ swap_request.message }}</p>
+    {% else %}
+      <p class="rounded-2xl bg-neutral-30 px-5 py-3 text-b7 text-neutral-60">No message was added to this request.</p>
+    {% endif %}
+  </div>
+
+  {% if blocking %}
+  <div class="flex items-start gap-3 rounded-2xl bg-yellow-10 p-4 text-b8 text-yellow-80" role="note">
+    <span class="mt-0.5 shrink-0 text-yellow-60">{% lucide "circle-alert" size=20 %}</span>
+    <p><strong class="font-semibold">{{ blocking.name }}</strong> is already part of another swap, so this request can’t be accepted.
+      {% if owner.pk == user.pk %}You can reject it to let {{ requester_name }} know.{% else %}You can cancel it and offer another piece.{% endif %}</p>
+  </div>
+  {% endif %}
+
+  {% if swap_request.status == 'pending' %}
+    {% if owner.pk == user.pk %}
+      <div class="flex flex-col-reverse gap-3 sm:flex-row {% if blocking %}sm:justify-end{% endif %}">
+        <form method="post" action="{% url 'swap_request:reject' swap_request.pk %}" data-swap-action class="{% if not blocking %}flex-1{% endif %}">
+          {% csrf_token %}
+          <button class="market-danger w-full px-6 text-b7" type="submit">Reject</button>
+        </form>
+        {% if not blocking %}
+        <form method="post" action="{% url 'swap_request:accept' swap_request.pk %}" data-swap-action class="flex-1">
+          {% csrf_token %}
+          <button class="market-button w-full text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)]" type="submit">Accept</button>
+        </form>
+        {% endif %}
+      </div>
+    {% elif requester.pk == user.pk %}
+      <form method="post" action="{% url 'swap_request:cancel' swap_request.pk %}" data-swap-action class="flex justify-end">
+        {% csrf_token %}
+        <button class="market-danger w-full px-5 text-b7 sm:w-auto" type="submit">Cancel Request</button>
+      </form>
+    {% endif %}
+  {% elif swap_request.status == 'accepted' %}
+    <div class="flex flex-col gap-3 sm:flex-row">
+      {% if swap_request.chat_room %}<a class="market-outline flex-1 text-b7" href="{% url 'chat:detail' swap_request.chat_room.pk %}">Open Chat</a>{% endif %}
+      {% if swap_request.transaction %}<a class="market-button flex-1 text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)]" href="{% url 'transaction_detail' swap_request.transaction.pk %}">View transaction</a>{% endif %}
+    </div>
+  {% elif requester.pk == user.pk %}
+    {% if requested.status == 'available' %}
+      <a class="market-button w-full text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)]" href="{% url 'swap_request:create' requested.pk %}?from={{ swap_request.pk }}" data-swap-link>{% if swap_request.status == 'rejected' %}Send Request with Other Piece{% else %}Resend Swap Request{% endif %}</a>
+    {% else %}
+      <p class="rounded-2xl bg-neutral-30 p-4 text-b8 text-neutral-80">{{ requested.name }} is no longer available, so this request can’t be sent again.</p>
+    {% endif %}
+  {% endif %}
+</div>
+{% endwith %}
+{% endwith %}

@@ -68,7 +68,7 @@ class Command(BaseCommand):
             name=name,
             defaults={
                 "description": "Pakaian demo untuk mencoba fitur chat.",
-                "category": Clothing.Category.TOP,
+                "type": Clothing.Type.TOP,
                 "size": Clothing.Size.M,
                 "condition": Clothing.Condition.GOOD,
             },

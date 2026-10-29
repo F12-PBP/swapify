@@ -1,0 +1,17 @@
+{% load static %}
+<div data-swapy-companion aria-hidden="true" hidden
+     class="pointer-events-none fixed top-0 left-0 z-50 h-28 w-32 opacity-0 transition-opacity duration-200 motion-reduce:hidden"
+     data-flying-src="{% static 'main/images/swapy/swapy-flying.webp' %}"
+     data-greeting-src="{% static 'main/images/swapy/swapy-greeting.webp' %}">
+  <div data-swapy-facing class="relative h-full w-full transition-transform duration-200 ease-out">
+    <img data-swapy-flying width="360" height="320" alt="" draggable="false"
+         class="absolute inset-0 h-full w-full object-contain transition-opacity duration-300">
+    <img data-swapy-greeting width="360" height="320" alt="" draggable="false"
+         class="absolute inset-0 h-full w-full object-contain opacity-0 transition-opacity duration-300">
+  </div>
+</div>
+<button data-swapy-toggle type="button" hidden aria-pressed="true"
+        class="fixed {% if marketplace %}left-5 bottom-[calc(1.25rem_+_env(safe-area-inset-bottom))] md:left-auto md:right-4 md:bottom-4{% else %}right-4 bottom-4{% endif %} z-40 rounded-full border border-neutral-40 bg-neutral-10 px-4 py-2 text-b9 font-medium text-primary-base shadow-sm transition-colors hover:bg-primary-10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-base motion-reduce:hidden">
+  Hide Swapy
+</button>
+<script src="{% static 'main/js/swapy-companion.js' %}" defer></script>

@@ -1,0 +1,20 @@
+{% extends "user_profile/auth/base.html" %}
+{% load static %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'user_profile/css/auth.css' %}">
+{% endblock %}
+
+{% block decoration %}
+  <div class="auth-swapy" data-auth-swapy data-position="bottom-left" aria-hidden="true" hidden>
+    <div class="auth-swapy-stage" data-swapy-stage>
+      {% include "components/brand/swapy.html" %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" integrity="sha384-HOvlOYPIs/zjoIkWUGXkVmXsjr8GuZLV+Q+rcPwmJOVZVpvTSXQChiN4t9Euv9Vc" crossorigin="anonymous" defer></script>
+  <script src="{% static 'main/js/swapy.js' %}" defer></script>
+  <script src="{% static 'user_profile/js/auth.js' %}" defer></script>z
+{% endblock %}

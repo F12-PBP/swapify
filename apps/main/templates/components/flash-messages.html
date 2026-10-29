@@ -1,0 +1,8 @@
+{% if messages %}
+  <template data-toast-messages>
+    {% for message in messages %}<span data-toast-type="{{ message.level_tag }}">{{ message }}</span>{% endfor %}
+  </template>
+  <noscript>
+    {% for message in messages %}<p role="status" class="alert swap-alert swap-alert-{{ message.level_tag|default:'info' }} mb-3">{{ message }}</p>{% endfor %}
+  </noscript>
+{% endif %}

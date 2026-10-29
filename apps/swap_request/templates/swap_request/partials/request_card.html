@@ -1,0 +1,38 @@
+{% load tz %}
+{% with requested=swap_request.requested_clothing offered=swap_request.offered_clothing owner=swap_request.requested_clothing.owner requester=swap_request.requester exchange=swap_request.transaction %}
+{% with owner_name=owner.profile.display_name|default:owner.username requester_name=requester.profile.display_name|default:requester.username %}
+<article class="flex flex-col gap-5 rounded-3xl border-[0.8px] border-neutral-40 bg-neutral-10 p-4 transition-colors duration-200 hover:bg-neutral-20 sm:p-6 md:flex-row md:items-center md:gap-8">
+  <div class="flex min-w-0 flex-1 items-start gap-4 sm:items-center sm:gap-6">
+    <a href="{{ requested.get_absolute_url }}" class="block h-[76px] w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-30 sm:h-[104px] sm:w-28" aria-label="View {{ requested.name }}">
+      {% if requested.image_url %}<img src="{{ requested.image_url }}" alt="" loading="lazy" width="112" height="104" class="size-full object-cover">{% endif %}
+    </a>
+    <div class="flex min-w-0 flex-1 flex-col gap-2">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        {% include "swap_request/partials/status_badge.html" %}
+        <time class="text-b10 text-neutral-70" datetime="{{ swap_request.created_at|date:'c' }}">{{ swap_request.created_at|timezone:"Asia/Jakarta"|date:"d/m/Y (H.i" }} WIB)</time>
+      </div>
+      <h2 class="line-clamp-2 font-display text-h7 text-neutral-110">{{ requested.name }}</h2>
+      <div class="flex flex-col gap-2">
+        <p class="text-b9 text-neutral-90">
+          {% if swap_request.requester_id == user.pk %}You requested this piece from <strong class="font-semibold">{{ owner_name }}</strong> to swap with your <strong class="font-semibold">{{ offered.name }}</strong>.
+          {% else %}<strong class="font-semibold">{{ requester_name }}</strong> asked to swap your piece for their <strong class="font-semibold">{{ offered.name }}</strong>.{% endif %}
+        </p>
+        <p class="text-b10 {% if swap_request.blocking_clothing %}font-semibold text-yellow-70{% else %}text-neutral-70{% endif %}">
+          {% if swap_request.blocking_clothing %}{{ swap_request.blocking_clothing.name }} is already part of another swap, so this request can’t be accepted.
+          {% elif swap_request.status == 'pending' %}{% if swap_request.requester_id == user.pk %}We’ll let you know when {{ owner_name }} responds.{% else %}{{ requester_name }} is waiting for your answer.{% endif %}
+          {% elif swap_request.status == 'accepted' %}{% if exchange.status == 'Completed' %}Swap completed.{% if not swap_request.has_reviewed %} Share how it went.{% endif %}{% else %}Swap accepted. Plan the handover together in Messages.{% endif %}
+          {% elif swap_request.status == 'rejected' %}{% if swap_request.requester_id == user.pk %}{{ owner_name }} passed on this offer. You can try another piece.{% else %}You passed on this offer.{% endif %}
+          {% else %}{% if swap_request.requester_id == user.pk %}You cancelled this request.{% else %}{{ requester_name }} cancelled this request.{% endif %}{% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="flex shrink-0 gap-3">
+    {% if swap_request.status == 'accepted' and exchange.status == 'Completed' and not swap_request.has_reviewed %}
+      <a href="{% url 'review_rating:create' exchange.pk %}" class="market-button min-w-36 flex-1 bg-secondary-base px-4 text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)] hover:bg-secondary-60 md:flex-none">Rate &amp; Review</a>
+    {% endif %}
+    <a href="{{ swap_request.get_absolute_url }}" data-swap-detail class="market-button min-w-36 flex-1 px-4 text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)] md:flex-none" aria-label="See detail for {{ requested.name }}">See detail</a>
+  </div>
+</article>
+{% endwith %}
+{% endwith %}

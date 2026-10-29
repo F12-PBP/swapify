@@ -1,0 +1,7 @@
+{% load static %}
+{% if user.is_authenticated and not user.profile.onboarding_completed %}
+<aside class="flex flex-col gap-3 rounded-lg border border-neutral-40 bg-neutral-30 p-4 text-b9 sm:flex-row sm:items-center sm:justify-between" aria-label="Complete your profile">
+  <p class="flex items-center gap-3 text-secondary-70"><img src="{% static 'clothing_catalog/images/discovery/imgIcon9.svg' %}" alt="">A little more you. Finish setting up your community profile.</p>
+  <a href="{% url 'user_profile:onboarding' %}" class="inline-flex shrink-0 items-center gap-2 font-semibold text-primary-base">Finish my setup<img src="{% static 'clothing_catalog/images/discovery/imgIcon10.svg' %}" alt=""></a>
+</aside>
+{% endif %}

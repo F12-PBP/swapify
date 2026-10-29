@@ -1,0 +1,13 @@
+{% load static l10n %}
+<section id="location-map-panel" class="location-map-panel flex flex-col gap-3 rounded-2xl border border-neutral-40 bg-neutral-10 p-3" hidden aria-label="Your approximate location">
+  <div class="flex items-center justify-between gap-3">
+    <button type="button" id="recenter-location" class="cursor-pointer rounded-lg px-2 py-1 text-b9 font-semibold text-primary-base hover:bg-primary-10">Recenter</button>
+  </div>
+  <div id="location-map" class="location-map" role="region" aria-label="Map showing your approximate detected area" tabindex="0"
+       data-leaflet-css="{% static 'user_profile/vendor/leaflet/leaflet.css' %}"
+       data-leaflet-js="{% static 'user_profile/vendor/leaflet/leaflet.js' %}"
+       data-latitude="{% if not dialog_mode %}{{ profile.latitude|default_if_none:''|unlocalize }}{% endif %}"
+       data-longitude="{% if not dialog_mode %}{{ profile.longitude|default_if_none:''|unlocalize }}{% endif %}"></div>
+  <p id="location-map-status" role="status" class="text-b9 text-neutral-80"></p>
+
+</section>

@@ -1,16 +1,18 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from apps.clothing_catalog.models import Clothing
+from apps.swap_request.models import SwapRequest
 
 from . import services
-from .models import ChatMessage, ChatRoom, SwapRequest
+from .models import ChatMessage, ChatRoom
 
 User = get_user_model()
 PASSWORD = "pw12345!"
+AJAX = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
 
 
 def make_clothing(owner, name):
@@ -18,7 +20,7 @@ def make_clothing(owner, name):
         owner=owner,
         name=name,
         description="deskripsi",
-        category=Clothing.Category.TOP,
+        type=Clothing.Type.TOP,
         size=Clothing.Size.M,
         condition=Clothing.Condition.GOOD,
     )
@@ -243,3 +245,47 @@ class ChatViewTests(ChatTestCase):
         room = self.accept()
         with self.assertRaises(services.ChatNotAllowed):
             services.send_message(room, self.eve, "nyusup")
+
+
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
+class BackendRevisionTests(ChatTestCase):
+    def setUp(self):
+        super().setUp()
+        self.room = self.accept()
+        self.client.force_login(self.alice)
+        self.send_url = reverse("chat:send", args=[self.room.pk])
+        self.poll_url = reverse("chat:messages_json", args=[self.room.pk])
+
+    def test_ajax_send_returns_created_message(self):
+        response = self.client.post(self.send_url, {"message": "halo"}, **AJAX)
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertTrue(data["ok"])
+        self.assertEqual(data["message"]["id"], ChatMessage.objects.get().pk)
+        self.assertEqual(data["message"]["message"], "halo")
+        self.assertTrue(data["message"]["is_mine"])
+        self.assertFalse(data["message"]["is_read"])
+        self.assertNotIn("Location", response)
+        self.assertIn("no-store", response["Cache-Control"])
+
+    def test_invalid_ajax_send_has_errors_without_redirect(self):
+        for text in ["   ", "a" * 2001]:
+            with self.subTest(length=len(text)):
+                response = self.client.post(self.send_url, {"message": text}, **AJAX)
+                self.assertEqual(response.status_code, 400)
+                self.assertIn("message", response.json()["errors"])
+                self.assertNotIn("Location", response)
+        self.assertFalse(ChatMessage.objects.exists())
+
+    def test_normal_form_still_redirects(self):
+        response = self.client.post(self.send_url, {"message": "normal"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(ChatMessage.objects.count(), 1)
+
+    def test_inactive_chat_refuses_ajax_send(self):
+        self.swap.status = self.swap.Status.CANCELLED
+        self.swap.save()
+        response = self.client.post(self.send_url, {"message": "halo"}, **AJAX)
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["error"]["code"], "chat_inactive")
+        self.assertFalse(ChatMessage.objects.exists())

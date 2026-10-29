@@ -1,31 +1,90 @@
-{% extends "base.html" %}
+{% extends "marketplace/base.html" %}
+{% load static lucide %}
 
-{% block title %}{% if clothing %}Ubah pakaian{% else %}Tambah pakaian{% endif %}{% endblock %}
+{% block title %}{% if clothing %}Edit item{% else %}Add new Item{% endif %} | Swapify{% endblock %}
 
 {% block content %}
-<section class="mx-auto max-w-2xl px-4 py-10 md:px-6">
-    <div class="mb-8">
-        <h1 class="font-display text-h3">{% if clothing %}Ubah pakaian{% else %}Tambah pakaian{% endif %}</h1>
-        <p class="mt-2 text-base-content/70">Lengkapi informasi pakaian yang ingin kamu tukarkan.</p>
+<section class="flex min-w-0 flex-col gap-8 md:gap-10" aria-labelledby="item-form-heading">
+  <div class="relative flex items-start gap-4">
+    <a href="{% if clothing %}{{ clothing.get_absolute_url }}{% else %}{% url 'user_profile:public' user.username %}{% endif %}" class="mt-2 rounded-full p-1 lg:absolute lg:-left-12 text-neutral-80 hover:bg-neutral-30" aria-label="Back to {% if clothing %}item{% else %}my wardrobe{% endif %}">{% lucide "arrow-left" size=24 %}</a>
+    <div class="flex min-w-0 flex-col gap-3">
+      <h1 id="item-form-heading" class="font-display text-h3 text-primary-base md:text-h2">{% if clothing %}Edit item{% else %}Add new Item{% endif %}</h1>
+      <p class="text-b7 text-neutral-80 md:text-b6">Thoughtfully listed. Ready for their next chapter.</p>
     </div>
-
-    <form method="post" class="card border border-base-300 bg-base-100 shadow-sm">
-        {% csrf_token %}
-        <div class="card-body gap-5">
-            {% for field in form %}
-                <label class="w-full" for="{{ field.id_for_label }}">
-                    <span class="swap-field-label mb-2 block">{{ field.label }}</span>
-                    {{ field }}
-                    {% for error in field.errors %}
-                        <span class="swap-field-error mt-1 block">{{ error }}</span>
-                    {% endfor %}
-                </label>
-            {% endfor %}
-            <div class="card-actions justify-end pt-3">
-                <a class="btn btn-ghost" href="{% if clothing %}{{ clothing.get_absolute_url }}{% else %}{% url 'clothing_catalog:list' %}{% endif %}">Batal</a>
-                <button class="btn btn-primary" type="submit">Simpan</button>
-            </div>
+  </div>
+  <form method="post" enctype="multipart/form-data" class="flex min-w-0 flex-col gap-8 lg:flex-row lg:gap-20" data-submit-once data-clothing-form data-draft-key="clothing-{{ user.pk }}-{{ request.path }}">
+    {% csrf_token %}
+    <input type="hidden" name="wardrobe_form" value="1">
+    {% firstof request.POST.next request.GET.next "" as return_url %}
+    <input type="hidden" name="next" value="{{ return_url }}">
+    {% if form.non_field_errors %}<div role="alert" class="swap-field-error">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="flex min-w-0 flex-1 flex-col gap-8">
+      <div class="flex flex-col gap-2">
+        <label for="{{ form.new_image.id_for_label }}" class="swap-field-label">Add your piece’s best picture{% if form.new_image.field.required %}<span class="text-red-base" aria-hidden="true"> *</span>{% endif %}</label>
+        {{ form.new_image }}
+        <label for="{{ form.new_image.id_for_label }}" class="flex h-[170px] cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border border-dashed border-neutral-60 bg-neutral-30 p-3 text-b7 text-neutral-70 shadow-sm peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-primary-base" data-photo-drop>
+          <img {% if clothing.image_url %}src="{{ clothing.image_url }}"{% else %}hidden{% endif %} alt="Clothing photo preview" class="h-full max-w-full rounded-lg object-contain" data-photo-preview>
+          <span class="flex flex-col items-center gap-3" data-photo-prompt {% if clothing.image_url %}hidden{% endif %}>{% lucide "upload" size=20 %}<span>Choose a file or drop it here</span></span>
+        </label>
+        <p class="text-b9 text-neutral-70" id="photo-help" data-photo-status aria-live="polite">JPG, PNG, or WebP, up to 5 MB.{% if clothing.image_url %} Choose a file to replace the current photo.{% endif %}</p>
+        {% for error in form.new_image.errors %}<p class="swap-field-error" role="alert">{{ error }}</p>{% endfor %}
+      </div>
+      {% include "user_profile/auth/field.html" with field=form.name label="Name the piece" %}
+      <div class="flex min-w-0 flex-col gap-6 sm:flex-row sm:gap-8">
+        <div class="min-w-0 flex-1">
+          {% include "components/dropdown.html" with dropdown_id="clothing-type" name="type" label="Category" show_label=True choices=form.type.field.choices value=form.type.value size="md" required=True %}
+          {% for error in form.type.errors %}<p class="swap-field-error mt-1" role="alert">{{ error }}</p>{% endfor %}
         </div>
-    </form>
+        <div class="min-w-0 flex-1">
+          {% include "components/dropdown.html" with dropdown_id="clothing-size" name="size" label="Size" show_label=True choices=form.size.field.choices value=form.size.value size="md" required=True %}
+          {% for error in form.size.errors %}<p class="swap-field-error mt-1" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+      </div>
+      <div>
+        {% include "components/dropdown.html" with dropdown_id="clothing-condition" name="condition" label="Condition" show_label=True choices=form.condition.field.choices value=form.condition.value size="md" required=True %}
+        {% for error in form.condition.errors %}<p class="swap-field-error mt-1" role="alert">{{ error }}</p>{% endfor %}
+      </div>
+      <aside class="flex flex-col gap-4 rounded-2xl bg-secondary-10 px-6 py-5 text-secondary-80 sm:flex-row sm:items-center sm:gap-8" aria-label="Condition guide">
+        <h2 class="shrink-0 text-b8 font-semibold">A little guide to being honest</h2>
+        <ul class="flex flex-col gap-1 text-b9 text-secondary-70">
+          <li>New: unworn, with no signs of use.</li>
+          <li>Like new: barely worn, no visible flaws.</li>
+          <li>Good: gently worn, minor signs of use.</li>
+          <li>Fair: visible wear, still plenty of life left.</li>
+        </ul>
+      </aside>
+    </div>
+    <div class="flex min-w-0 flex-1 flex-col gap-8 lg:gap-[52px]">
+      <div class="flex flex-col gap-8">
+        {% include "user_profile/auth/field.html" with field=form.description label="Tell the piece’s story" %}
+        <fieldset class="flex min-w-0 flex-col gap-3">
+          <legend class="mb-3 text-b7 font-semibold text-secondary-80">Choose how you can swap</legend>
+          <p class="text-b9 text-neutral-70">Choose one or both. Agree on the details together after your proposal is accepted.</p>
+          <div class="flex flex-col gap-4 sm:flex-row">
+            {% for value, label in form.exchange_methods.field.choices %}
+              <label class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-[20px] border border-neutral-40 p-4 has-checked:border-secondary-base has-checked:bg-secondary-10">
+                <input type="checkbox" name="exchange_methods" value="{{ value }}" class="checkbox shrink-0" {% if value in form.exchange_methods.value %}checked{% endif %}>
+                <span class="flex flex-col gap-1 text-neutral-90"><span class="text-b8 font-semibold">{{ label }}</span><span class="text-b9">{% if value == 'meetup' %}Arrange a handover in a safe, public place.{% else %}Agree on delivery and shipping costs with your partner.{% endif %}</span></span>
+              </label>
+            {% endfor %}
+          </div>
+          {% for error in form.exchange_methods.errors %}<p class="swap-field-error" role="alert">{{ error }}</p>{% endfor %}
+        </fieldset>
+        <div class="flex flex-col gap-3 rounded-lg border border-neutral-40 bg-neutral-30 p-4 text-b9 sm:flex-row sm:items-center sm:justify-between">
+          <p class="flex min-w-0 items-center gap-2 text-secondary-70">{% lucide "map-pin" size=20 class="shrink-0" %}<span>{% if user.profile.city %}Listed in <strong>{{ user.profile.city }}</strong>.{% else %}Add your city so nearby swappers can find you.{% endif %} Your exact address stays private.</span></p>
+          <a href="{% url 'user_profile:location_edit' %}?next={{ request.get_full_path|urlencode }}" class="inline-flex shrink-0 items-center gap-2 font-semibold text-primary-base hover:underline" data-update-location>Update my location{% lucide "arrow-right" size=16 %}</a>
+        </div>
+        <p data-draft-notice hidden class="text-b9 text-neutral-80" role="status"></p>
+      </div>
+      <div class="flex flex-col items-center gap-3">
+        <button class="btn btn-primary w-full sm:w-[262px]" type="submit" data-submitting-label="{% if clothing %}Saving...{% else %}Adding...{% endif %}">{% if clothing %}Save{% else %}Add Item{% endif %}</button>
+        <a href="{% if clothing %}{{ clothing.get_absolute_url }}{% else %}{% url 'user_profile:public' user.username %}{% endif %}" class="rounded-full px-4 py-2 text-b8 text-neutral-80 hover:text-primary-base">Cancel</a>
+      </div>
+    </div>
+  </form>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'clothing_catalog/js/clothing-form.js' %}" defer></script>
 {% endblock %}

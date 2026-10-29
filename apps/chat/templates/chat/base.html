@@ -1,0 +1,15 @@
+{% extends "marketplace/base.html" %}
+{% load static %}
+
+{% block main_spacing %}py-4{% endblock %}
+
+{% block content %}
+<div class="min-w-0 [&_[hidden]]:hidden!">
+    {% block chat_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'chat/chat.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% load static lucide marketplace %}
+{% marketplace_section request as active_section %}
+{% if user.is_authenticated %}{% url 'user_profile:public' user.username as wardrobe_url %}{% else %}{% url 'user_profile:wardrobe' as wardrobe_url %}{% endif %}
+<header class="sticky top-[var(--market-header-top,0px)] z-40 bg-neutral-10 shadow-sm motion-safe:transition-[top] motion-safe:duration-300 motion-safe:ease-out" data-market-navbar>
+  {% url 'user_profile:location_edit' as location_url %}
+  {% include "components/marketplace/marquee.html" %}
+  <div data-market-entrance class="market-container flex flex-wrap items-center justify-between gap-x-5 gap-y-3 py-4 lg:flex-nowrap lg:gap-10 lg:py-6">
+    {% include "components/marketplace/logo.html" %}
+    <form method="get" action="{% if active_tab == 'wardrobe' %}{{ request.path }}{% else %}{% url 'clothing_catalog:list' %}#finds{% endif %}" data-discovery-action="{% url 'clothing_catalog:list' %}#finds" role="search" class="order-last flex h-12 w-full items-center gap-3 rounded-full border border-neutral-40 bg-neutral-20 px-5 lg:order-none lg:max-w-[620px] lg:flex-1">
+      <button type="submit" aria-label="{% if active_tab == 'wardrobe' %}Search this wardrobe{% else %}Search clothing{% endif %}" class="cursor-pointer p-1"><img src="{% static 'main/icons/marketplace/search.svg' %}" alt=""></button>
+      <label for="market-search" class="sr-only">{% if active_tab == 'wardrobe' %}Search this wardrobe{% else %}Search clothing{% endif %}</label>
+      <input id="market-search" name="search" type="search" value="{{ filters.search }}" placeholder="{% if active_tab == 'wardrobe' %}Search this wardrobe...{% else %}Find your next favourite...{% endif %}" maxlength="150" class="min-w-0 flex-1 bg-transparent text-b9 text-neutral-100 outline-none placeholder:text-neutral-70">
+      {% if active_tab %}<input type="hidden" name="tab" value="wardrobe" {% if active_tab != 'wardrobe' %}disabled{% endif %}>{% endif %}
+      {% if filters.type %}<input type="hidden" name="type" value="{{ filters.type }}">{% endif %}
+      {% if filters.size %}<input type="hidden" name="size" value="{{ filters.size }}">{% endif %}
+      {% if filters.condition %}<input type="hidden" name="condition" value="{{ filters.condition }}">{% endif %}
+      {% if filters.distance %}<input type="hidden" name="distance" value="{{ filters.distance }}">{% endif %}
+      {% if filters.sort %}<input type="hidden" name="sort" value="{{ filters.sort }}">{% endif %}
+    </form>
+    <div class="flex shrink-0 items-center gap-4 lg:gap-8">
+      <a href="{% if user.is_authenticated %}{{ location_url }}?next={% url 'clothing_catalog:list' %}{% else %}{% url 'user_profile:login' %}?next={{ location_url|add:'?next=/clothing-catalog/'|urlencode }}{% endif %}" class="flex items-center gap-2" aria-label="Choose your discovery location">
+        <img src="{% static 'main/icons/marketplace/location.svg' %}" alt="">
+        <span class="hidden flex-col gap-1 text-left sm:flex"><span class="max-w-36 truncate text-b9">{% if user.is_authenticated and user.profile.city %}{{ user.profile.city }}{% else %}Choose location{% endif %}</span><span class="text-b10 text-neutral-70">Discover near you</span></span>
+        <img class="hidden sm:block" src="{% static 'main/icons/marketplace/chevron-down.svg' %}" alt="">
+      </a>
+      {% if user.is_authenticated %}
+        <details class="relative">
+          <summary class="flex size-10 cursor-pointer list-none items-center justify-center overflow-hidden rounded-full bg-secondary-20 text-secondary-80" aria-label="Your account">
+            {% if user.profile.profile_picture %}<img src="{{ user.profile.profile_picture.url }}" alt="" class="size-full object-cover">{% else %}{{ user.profile.display_name|default:user.username|first|upper }}{% endif %}
+          </summary>
+          <div class="absolute right-0 z-30 mt-3 flex w-48 flex-col gap-1 rounded-2xl border border-neutral-40 bg-neutral-10 p-2 shadow-lg">
+            <a class="rounded-lg p-3 text-b8 hover:bg-primary-10" href="{% url 'user_profile:detail' %}">My profile</a>
+            <form method="post" action="{% url 'user_profile:logout' %}">{% csrf_token %}<button class="w-full cursor-pointer rounded-lg p-3 text-left text-b8 hover:bg-primary-10">Sign out</button></form>
+          </div>
+        </details>
+      {% else %}<a class="market-secondary text-b9" href="{% url 'user_profile:login' %}?next={% url 'clothing_catalog:list' %}">Sign in</a>{% endif %}
+    </div>
+  </div>
+  <div data-market-navigation data-market-entrance class="border-y border-neutral-30">
+    <nav class="market-container flex items-center justify-between gap-4 py-3" aria-label="Marketplace">
+      <div data-market-tabs class="relative flex min-w-0 items-center gap-x-5 overflow-x-auto whitespace-nowrap md:gap-x-6">
+        <a href="{% url 'clothing_catalog:list' %}" class="market-nav {% if active_section == 'discover' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'discover' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/discover.svg' %}" alt="">Discover</a>
+        <a href="{% url 'swap_request:list' %}" class="market-nav {% if active_section == 'swaps' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'swaps' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/swaps.svg' %}" alt="">My swaps</a>
+        <a href="{% url 'chat:list' %}" class="market-nav {% if active_section == 'messages' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'messages' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/messages.svg' %}" alt="">Messages</a>
+        <a href="{{ wardrobe_url }}" class="market-nav {% if active_section == 'wardrobe' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'wardrobe' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/wardrobe.svg' %}" alt="">My wardrobe</a>
+      </div>
+      <a class="market-button hidden shrink-0 md:inline-flex" href="{% url 'clothing_catalog:create' %}" {% if not user.is_authenticated %}data-add-item-signin{% endif %}>{% lucide "plus" size=20 %}Add Item</a>
+    </nav>
+  </div>
+</header>

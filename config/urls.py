@@ -16,6 +16,7 @@ Including another URLconf
 """
 
 from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
@@ -27,9 +28,12 @@ urlpatterns = [
     path("swap-request/", include("apps.swap_request.urls")),
     path("transaction/", include("apps.transaction.urls")),
     path("chat/", include("apps.chat.urls")),
+    path("profile/", include("apps.user_profile.urls")),
+    path("reviews/", include("apps.review_rating.urls")),
 ]
 
 if settings.DEBUG:
     urlpatterns += [
         path("__reload__/", include("django_browser_reload.urls")),
     ]
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

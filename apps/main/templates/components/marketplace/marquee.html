@@ -1,0 +1,17 @@
+{% load lucide %}
+<div class="market-marquee flex h-8 items-center overflow-hidden bg-primary-base text-b9 text-primary-20" data-market-marquee>
+  <div class="min-w-0 flex-1 overflow-hidden">
+    <div class="market-marquee-track flex w-max items-center">
+      <ul class="flex shrink-0 items-center gap-12 pr-12" aria-label="A little inspiration for your next swap">
+        {% include "components/marketplace/marquee_quotes.html" %}
+      </ul>
+      <ul class="flex shrink-0 items-center gap-12 pr-12" aria-hidden="true">
+        {% include "components/marketplace/marquee_quotes.html" %}
+      </ul>
+    </div>
+  </div>
+  <button type="button" class="market-marquee-toggle flex h-full w-8 shrink-0 cursor-pointer items-center justify-center border-l border-primary-20/20 hover:bg-primary-60 focus-visible:outline-offset-[-3px]" aria-label="Pause announcements" aria-pressed="false" data-marquee-toggle hidden>
+    <span data-marquee-pause>{% lucide "pause" size=12 %}</span>
+    <span data-marquee-play hidden>{% lucide "play" size=12 %}</span>
+  </button>
+</div>

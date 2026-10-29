@@ -1,53 +1,18 @@
-{% extends "base.html" %}
-
-{% block title %}Katalog Pakaian{% endblock %}
-
+{% extends "marketplace/base.html" %}
+{% load static %}
+{% block title %}Discover | Swapify{% endblock %}
 {% block content %}
-<section class="px-4 py-10 md:px-6">
-    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="font-display text-h3">Katalog Pakaian</h1>
-            <p class="mt-2 text-base-content/70">Temukan pakaian yang tersedia untuk ditukar.</p>
-        </div>
-        {% if user.is_authenticated %}
-            <a class="btn btn-primary" href="{% url 'clothing_catalog:create' %}">Tambah pakaian</a>
-        {% endif %}
-    </div>
-
-    {% if clothing_items %}
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {% for clothing in clothing_items %}
-                <article class="card border border-base-300 bg-base-100 shadow-sm">
-                    <div class="card-body gap-4">
-                        <div class="flex items-start justify-between gap-3">
-                            <h2 class="card-title">{{ clothing.name }}</h2>
-                            {% if clothing.availability == 'available' %}
-                                <span class="badge badge-success badge-outline">{{ clothing.get_availability_display }}</span>
-                            {% else %}
-                                <span class="badge badge-ghost">{{ clothing.get_availability_display }}</span>
-                            {% endif %}
-                        </div>
-                        <p class="line-clamp-3 text-base-content/70">{{ clothing.description }}</p>
-                        <div class="flex flex-wrap gap-2 text-sm">
-                            <span class="badge badge-outline">{{ clothing.get_category_display }}</span>
-                            <span class="badge badge-outline">{{ clothing.get_size_display }}</span>
-                            <span class="badge badge-outline">{{ clothing.get_condition_display }}</span>
-                        </div>
-                        <p class="text-sm text-base-content/60">Ditawarkan oleh {{ clothing.owner.username }}</p>
-                        <div class="card-actions justify-end">
-                            <a class="btn btn-outline btn-sm" href="{{ clothing.get_absolute_url }}">Lihat detail</a>
-                        </div>
-                    </div>
-                </article>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="rounded-box border border-dashed border-base-300 p-10 text-center">
-            <p class="text-base-content/70">Belum ada pakaian dalam katalog.</p>
-            {% if user.is_authenticated %}
-                <a class="btn btn-primary mt-4" href="{% url 'clothing_catalog:create' %}">Tambah pakaian pertama</a>
-            {% endif %}
-        </div>
-    {% endif %}
+<div class="flex flex-col gap-8">
+  {% include "clothing_catalog/discovery/onboarding_reminder.html" %}
+  {% include "clothing_catalog/discovery/hero.html" %}
+</div>
+<section id="finds" data-catalog class="mt-14 flex flex-col gap-4 lg:mt-20">
+  <div class="flex flex-col gap-2"><h2 class="font-display text-h3 text-primary-base">Good finds. Great new beginnings.</h2><p class="text-b8 text-neutral-80">Someone else’s once-loved. Your soon-to-be favourite.</p></div>
+  {% include "clothing_catalog/discovery/filters.html" %}
+  <div id="catalog-feedback" role="status" aria-live="polite" class="invisible min-h-6 text-b9 text-neutral-80"><span data-catalog-status></span><button type="button" data-catalog-retry class="ml-2 cursor-pointer font-semibold text-primary-base underline" hidden>Try again</button></div>
+  <div id="catalog-results" aria-busy="false">{% include "clothing_catalog/partials/discovery_results.html" %}</div>
 </section>
+{% include "clothing_catalog/partials/listing_cta.html" %}
 {% endblock %}
+{% block dialogs %}{% include "clothing_catalog/discovery/filter_dialog.html" %}{% include "swap_request/partials/propose_dialog.html" %}{% endblock %}
+{% block scripts %}<script src="{% static 'clothing_catalog/js/catalog.js' %}?v=20261027" defer></script><script src="{% static 'clothing_catalog/js/marketplace.js' %}" defer></script>{% endblock %}

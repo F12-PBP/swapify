@@ -2,98 +2,73 @@
 
 {% block content %}
 
-<div class="min-h-screen bg-neutral-20 py-10 px-4">
+<div class="min-h-screen bg-neutral-10 pb-10 px-4">
+    <div class="pl-10">
+        <a href="{% url 'swap_request:detail' transaction.swap_request.pk %}"
+            class="inline-block text-xl text-primary-base">
+            ←
+        </a>
+    </div>
+
     <div class="max-w-3xl mx-auto">
 
-        <div class="mb-6">
-            <p class="text-sm font-semibold text-primary-base uppercase tracking-wide">
-                Transaction
-            </p>
+        {% for message in messages %}
+            <div role="alert" class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %} mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
 
-            <h1 class="text-3xl font-bold text-neutral-120 mt-1">
-                Transaction #{{ transaction.id }}
+        <div class="mb-6">
+
+            <h1 class="text-3xl font-display text-primary-base mt-1 text-center">
+                Swap Information
             </h1>
 
-            <p class="text-sm text-neutral-80 mt-2">
-                View the information and current status of this exchange.
+            <p class="text-sm text-neutral-80 mt-2 text-center">
+                ID: {{ transaction.id }}
             </p>
         </div>
 
 
-        <div class="card bg-neutral-10 border border-neutral-40 rounded-2xl shadow-sm">
+        <div class="bg-neutral-10">
 
             <div class="card-body p-6 md:p-8">
 
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-neutral-40">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-3">
 
                     <div>
-                        <h2 class="text-xl font-bold text-neutral-120">
-                            Transaction Information
+                        <h2 class="text-base font-bold text-neutral-70">
+                            Accepted on
                         </h2>
 
-                        <p class="text-sm text-neutral-70 mt-1">
-                            Created {{ transaction.created_at|date:"d M Y, H:i" }}
+                        <p class="text-base text-neutral-120 mt-1">
+                            {{ transaction.created_at|date:"d M Y, H:i" }} WIB
                         </p>
                     </div>
 
-                    {% if transaction.status == "Waiting" %}
-                        <span class="badge bg-yellow-10 text-yellow-80 border border-yellow-30 px-4 py-3">
-                            Waiting
-                        </span>
-
-                    {% elif transaction.status == "InProgress" %}
-                        <span class="badge bg-primary-10 text-primary-70 border border-primary-30 px-4 py-3">
-                            In Progress
-                        </span>
-
-                    {% elif transaction.status == "Completed" %}
-                        <span class="badge bg-green-10 text-green-80 border border-green-30 px-4 py-3">
-                            Completed
-                        </span>
-
-                    {% elif transaction.status == "Disputed" %}
-                        <span class="badge bg-red-10 text-red-80 border border-red-30 px-4 py-3">
-                            Disputed
-                        </span>
-
-                    {% elif transaction.status == "Cancelled" %}
-                        <span class="badge bg-neutral-40 text-neutral-80 border border-neutral-60 px-4 py-3">
-                            Cancelled
-                        </span>
-
-                    {% else %}
-                        <span class="badge bg-neutral-30 text-neutral-80 border border-neutral-40 px-4 py-3">
-                            {{ transaction.get_status_display }}
-                        </span>
-                    {% endif %}
                 </div>
 
-
-                <div class="py-6 border-b border-neutral-40">
-
-                    <h3 class="text-base font-bold text-neutral-120 mb-4">
-                        Basic Information
-                    </h3>
+                <div class="py-6">
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
                         <div>
-                            <p class="text-xs font-semibold text-neutral-70 uppercase tracking-wide">
+                            <p class="text-base font-bold text-neutral-70 tracking-wide">
                                 Method
                             </p>
 
-                            <p class="text-sm font-medium text-neutral-120 mt-1">
+                            <p class="text-base font-medium text-neutral-120 mt-1">
                                 {{ transaction.get_method_display }}
                             </p>
                         </div>
 
                         <!-- Status -->
                         <div>
-                            <p class="text-xs font-semibold text-neutral-70 uppercase tracking-wide">
+                            <p class="text-base font-bold text-neutral-70 tracking-wide">
                                 Current Status
                             </p>
 
-                            <p class="text-sm font-medium text-neutral-120 mt-1">
+                            <p class="text-base font-medium text-neutral-120 mt-1">
                                 {{ transaction.get_status_display }}
                             </p>
                         </div>
@@ -103,16 +78,12 @@
 
 
                 {% if transaction.method == "Delivery" %}
-                    <div class="py-6 border-b border-neutral-40">
+                    <div class="py-3">
 
-                        <div class="mb-5">
-                            <h3 class="text-base font-bold text-neutral-120">
+                        <div class="mb-3">
+                            <h3 class="text-base font-bold text-neutral-70">
                                 Delivery Information
                             </h3>
-
-                            <p class="text-sm text-neutral-70 mt-1">
-                                Both parties' delivery information is shown below.
-                            </p>
                         </div>
 
 
@@ -121,8 +92,8 @@
                             <div class="rounded-2xl bg-neutral-30 border border-neutral-40 p-5">
 
                                 <div class="flex items-center justify-between mb-4">
-                                    <h4 class="font-bold text-neutral-120">
-                                        Requester
+                                    <h4 class="text-base font-bold text-neutral-120">
+                                        {{ transaction.requester.username }}
                                     </h4>
 
                                     {% if transaction.requester_resi_valid %}
@@ -138,13 +109,31 @@
 
                                 <div class="space-y-4">
 
+                                    <!-- Courier Name -->
                                     <div>
-                                        <p class="text-xs font-semibold text-neutral-70 uppercase tracking-wide">
+                                        <p class="text-sm font-bold text-neutral-70 tracking-wide">
+                                            Courier Name
+                                        </p>
+
+                                        {% if transaction.owner_courier %}
+                                            <p class="text-sm text-neutral-70 mt-1 break-all">
+                                                {{ transaction.owner_courier }}
+                                            </p>
+                                        {% else %}
+                                            <p class="text-sm text-neutral-70 mt-1">
+                                                Not provided yet
+                                            </p>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Tracking Number (Resi) -->
+                                    <div>
+                                        <p class="text-sm font-bold text-neutral-70 tracking-wide">
                                             Tracking Number
                                         </p>
 
                                         {% if transaction.requester_resi %}
-                                            <p class="text-sm font-medium text-neutral-120 mt-1 break-all">
+                                            <p class="text-sm text-neutral-70 mt-1 break-all">
                                                 {{ transaction.requester_resi }}
                                             </p>
                                         {% else %}
@@ -154,34 +143,19 @@
                                         {% endif %}
                                     </div>
 
+                                    <!-- ETA -->
                                     <div>
-                                        <p class="text-xs font-semibold text-neutral-70 uppercase tracking-wide">
-                                            Estimated Delivery
+                                        <p class="text-sm font-bold text-neutral-70 tracking-wide">
+                                            Estimated Arrival
                                         </p>
 
                                         {% if transaction.requester_delivery_estimate %}
-                                            <p class="text-sm font-medium text-neutral-120 mt-1">
+                                            <p class="text-sm text-neutral-70 mt-1">
                                                 {{ transaction.requester_delivery_estimate|date:"d M Y, H:i" }}
                                             </p>
                                         {% else %}
                                             <p class="text-sm text-neutral-70 mt-1">
                                                 Not provided yet
-                                            </p>
-                                        {% endif %}
-                                    </div>
-
-                                    <div>
-                                        <p class="text-xs font-semibold text-neutral-70 uppercase tracking-wide">
-                                            Package Received
-                                        </p>
-
-                                        {% if transaction.requester_received %}
-                                            <p class="text-sm font-semibold text-green-80 mt-1">
-                                                Yes
-                                            </p>
-                                        {% else %}
-                                            <p class="text-sm text-neutral-70 mt-1">
-                                                Not yet
                                             </p>
                                         {% endif %}
                                     </div>
@@ -194,8 +168,8 @@
                             <div class="rounded-2xl bg-neutral-30 border border-neutral-40 p-5">
 
                                 <div class="flex items-center justify-between mb-4">
-                                    <h4 class="font-bold text-neutral-120">
-                                        Owner
+                                    <h4 class="text-base font-bold text-neutral-120">
+                                        {{ transaction.owner.username }}
                                     </h4>
 
                                     {% if transaction.owner_resi_valid %}
@@ -211,14 +185,31 @@
 
                                 <div class="space-y-4">
 
+                                    <!-- Courier Name -->
+                                    <div>
+                                        <p class="text-sm font-bold text-neutral-70 tracking-wide">
+                                            Courier Name
+                                        </p>
+
+                                        {% if transaction.owner_courier %}
+                                            <p class="text-sm text-neutral-70 mt-1 break-all">
+                                                {{ transaction.owner_courier }}
+                                            </p>
+                                        {% else %}
+                                            <p class="text-sm text-neutral-70 mt-1">
+                                                Not provided yet
+                                            </p>
+                                        {% endif %}
+                                    </div>
+
                                     <!-- Resi -->
                                     <div>
-                                        <p class="text-xs font-semibold text-neutral-70 uppercase tracking-wide">
+                                        <p class="text-sm font-bold text-neutral-70 tracking-wide">
                                             Tracking Number
                                         </p>
 
                                         {% if transaction.owner_resi %}
-                                            <p class="text-sm font-medium text-neutral-120 mt-1 break-all">
+                                            <p class="text-sm text-neutral-70 mt-1 break-all">
                                                 {{ transaction.owner_resi }}
                                             </p>
                                         {% else %}
@@ -230,34 +221,17 @@
 
                                     <!-- Estimate -->
                                     <div>
-                                        <p class="text-xs font-semibold text-neutral-70 uppercase tracking-wide">
-                                            Estimated Delivery
+                                        <p class="text-sm font-semibold text-neutral-70 tracking-wide">
+                                            Estimated Arrival
                                         </p>
 
                                         {% if transaction.owner_delivery_estimate %}
-                                            <p class="text-sm font-medium text-neutral-120 mt-1">
+                                            <p class="text-sm text-neutral-70 mt-1">
                                                 {{ transaction.owner_delivery_estimate|date:"d M Y, H:i" }}
                                             </p>
                                         {% else %}
                                             <p class="text-sm text-neutral-70 mt-1">
                                                 Not provided yet
-                                            </p>
-                                        {% endif %}
-                                    </div>
-
-                                    <!-- Received -->
-                                    <div>
-                                        <p class="text-xs font-semibold text-neutral-70 uppercase tracking-wide">
-                                            Package Received
-                                        </p>
-
-                                        {% if transaction.owner_received %}
-                                            <p class="text-sm font-semibold text-green-80 mt-1">
-                                                Yes
-                                            </p>
-                                        {% else %}
-                                            <p class="text-sm text-neutral-70 mt-1">
-                                                Not yet
                                             </p>
                                         {% endif %}
                                     </div>
@@ -271,9 +245,9 @@
 
 
                 {% if transaction.method == "Meetup" %}
-                    <div class="py-6 border-b border-neutral-40">
+                    <div class="py-3">
 
-                        <h3 class="text-base font-bold text-neutral-120 mb-4">
+                        <h3 class="text-base font-bold text-neutral-70 mb-4">
                             Meetup Information
                         </h3>
 
@@ -282,12 +256,12 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
                                 <div>
-                                    <p class="text-xs font-semibold text-neutral-70 uppercase tracking-wide">
+                                    <p class="text-sm font-bold text-neutral-70 uppercase tracking-wide">
                                         Meetup Date
                                     </p>
 
                                     {% if transaction.meetup_date %}
-                                        <p class="text-sm font-medium text-neutral-120 mt-1">
+                                        <p class="text-sm text-neutral-70 mt-1">
                                             {{ transaction.meetup_date|date:"d M Y, H:i" }}
                                         </p>
                                     {% else %}
@@ -298,12 +272,12 @@
                                 </div>
 
                                 <div>
-                                    <p class="text-xs font-semibold text-neutral-70 uppercase tracking-wide">
+                                    <p class="text-sm font-bold text-neutral-70 tracking-wide">
                                         Location
                                     </p>
 
                                     {% if transaction.meetup_location %}
-                                        <p class="text-sm font-medium text-neutral-120 mt-1">
+                                        <p class="text-sm text-neutral-70 mt-1">
                                             {{ transaction.meetup_location }}
                                         </p>
                                     {% else %}
@@ -319,59 +293,192 @@
                     </div>
                 {% endif %}
 
+                <div class="pt-3">
 
-                {% if transaction.completed_at %}
-                    <div class="py-6 border-b border-neutral-40">
+                    {% if transaction.requester_started and transaction.owner_started %}
+                        {% if not transaction.status == "Completed" %}
+                            <h3 class="text-base font-bold text-neutral-70 mb-2">
+                                Swapping has started! Confirm if you already recieved your new piece!
+                            </h3>
+                        {% else %}
+                            <h3 class="text-base font-bold text-neutral-70 mb-2">
+                                Both participant have confirmed their new piece! Swapping is complete!
+                            </h3>
+                        {% endif %}
 
-                        <div class="rounded-2xl bg-green-10 border border-green-30 p-5">
-
-                            <p class="text-xs font-semibold text-green-70 uppercase tracking-wide">
-                                Transaction Completed
+                        <div class="mb-4">
+                            <p class="text-sm text-neutral-70">
+                                {{ transaction.requester.username }}:
+                                <span class="{% if transaction.requester_started %}font-bold text-green-80{% else %}font-bold text-red-500{% endif %}">
+                                    {% if transaction.requester_received %}
+                                            Received{% if transaction.requester_received_at %} at {{ transaction.requester_received_at|date:"d M Y, H:i" }}{% endif %}
+                                    {% else %}
+                                            Not yet
+                                    {% endif %}
+                                </span>
                             </p>
 
-                            <p class="text-sm font-medium text-green-80 mt-1">
-                                {{ transaction.completed_at|date:"d M Y, H:i" }}
+                            <p class="text-sm text-neutral-70">
+                                {{ transaction.owner.username }}:
+                                <span class="{% if transaction.owner_started %}font-bold text-green-80{% else %}font-bold text-red-500{% endif %}">
+                                    {% if transaction.owner_received %}
+                                        Received{% if transaction.owner_received_at %} at {{ transaction.owner_received_at|date:"d M Y, H:i" }}{% endif %}
+                                    {% else %}
+                                            Not confirmed
+                                    {% endif %}
+                                </span>
+                            </p>
+                        </div>
+                    {% else %}
+                        <h3 class="text-base font-bold text-neutral-70 mb-2">
+                            Swap will be started once both participant has readied themselves!
+                        </h3>
+
+                        <div class="mb-4">
+                            <p class="text-sm text-neutral-70">
+                                {{ transaction.requester.username }}:
+                                <span class="{% if transaction.requester_started %}font-bold text-green-80{% else %}font-bold text-red-500{% endif %}">
+                                    {% if transaction.requester_started %}
+                                        Ready to start!
+                                    {% else %}
+                                        No confirmation yet!
+                                    {% endif %}
+                                </span>
                             </p>
 
+                            <p class="text-sm text-neutral-70">
+                                {{ transaction.owner.username }}:
+                                <span class="{% if transaction.owner_started %}font-bold text-green-80{% else %}font-bold text-red-500{% endif %}">
+                                    {% if transaction.owner_started %}
+                                        Ready to start!
+                                    {% else %}
+                                        No confirmation yet!
+                                    {% endif %}
+                                </span>
+                            </p>
                         </div>
 
-                    </div>
-                {% endif %}
+                    {% endif %}
 
-
-                <div class="pt-6">
-
-                    <h3 class="text-base font-bold text-neutral-120 mb-4">
-                        Actions
-                    </h3>
-
+                    {% if transaction.status == "Waiting" and transaction.swap_request.status == "accepted" %}
                     <div class="flex flex-col sm:flex-row gap-3">
 
                         <a
                             href="{% url 'transaction_update' transaction.pk %}"
-                            class="btn flex-1 bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60"
+                            class="btn flex-1 bg-neutral-10 text-primary-base border-primary-base hover:bg-neutral-40 hover:border-primary-60"
                         >
                             Update Information
                         </a>
 
-                        <form method="post" action="{% url 'transaction_received' transaction.pk %}">
-                            {% csrf_token %}
-
-                            <input type="hidden" name="party" value="requester">
-
-                            <button
-                                type="submit"
-                                class="btn flex-1 bg-green-base text-neutral-10 border-green-base hover:bg-green-70 hover:border-green-70"
-                            >
-                                Confirm Clothes Received
-                            </button>
-                        </form>
-
+                        {% if transaction.method == "Delivery" %}
+                            {% if transaction.requester_resi_valid and transaction.owner_resi_valid %}
+                                {% if is_requester %}
+                                    {% if transaction.requester_started %}
+                                        <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                        </form>
+                                    {% endif %}
+                                {% else %}
+                                    {% if transaction.owner_started %}
+                                        <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                {% if is_requester %}
+                                    {% if transaction.owner_resi_valid %}
+                                        <form method="post" action="{% url 'unvalidate_resi' transaction.pk %}" class="flex flex-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unvalidate</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post" action="{% url 'validate_resi' transaction.pk %}" class="flex flex-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Validate</button>
+                                        </form>
+                                    {% endif %}
+                                {% else %}
+                                    {% if transaction.requester_resi_valid %}
+                                        <form method="post" action="{% url 'unvalidate_resi' transaction.pk %}" class="flex flex-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unvalidate</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post" action="{% url 'validate_resi' transaction.pk %}" class="flex flex-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Validate</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
+                            {% if is_requester %}
+                                {% if transaction.requester_started %}
+                                    <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                    </form>
+                                {% else %}
+                                    <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                {% if transaction.owner_started %}
+                                    <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                    </form>
+                                {% else %}
+                                    <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
                     </div>
 
-                    <p class="text-xs text-neutral-70 mt-3 text-center">
-                        These actions will be connected to their respective flows later.
-                    </p>
+                    {% elif transaction.status == "InProgress" and transaction.swap_request.status == "accepted" %}
+                        {% if my_received %}
+                            <p class="text-sm text-neutral-80">Your item has been confirmed. Waiting for your partner to confirm theirs.</p>
+                        {% else %}
+                            <form method="post" action="{% url 'transaction_received' transaction.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Confirm Clothes Received</button>
+                            </form>
+                            <p class="text-sm text-neutral-70 mt-3">Confirm only after you receive the other participant's clothing. The exchange completes when both participants confirm.</p>
+                        {% endif %}
+                    {% elif transaction.status == "Completed" %}
+                        {% if has_reviewed %}
+                            <p class="mt-3 text-sm text-base-content/60">
+                                Review submitted. Thank you for sharing your experience.
+                            </p>
+                        {% else %}
+                            <a
+                                href="{% url 'review_rating:create' transaction.pk %}"
+                                class="btn btn-primary mt-3"
+                            >
+                                Write a Review
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-sm text-neutral-80">Actions are unavailable for this exchange.</p>
+                    {% endif %}
 
                 </div>
 

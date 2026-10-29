@@ -1,0 +1,8 @@
+{% with size_id="size-"|add:suffix condition_id="condition-"|add:suffix distance_id="distance-"|add:suffix %}
+{% include "components/dropdown.html" with dropdown_id=size_id name="size" label="Size" choices=filter_form.fields.size.choices value=filters.size size=dropdown_size show_label=modal auto_apply=auto_apply %}
+{% include "components/dropdown.html" with dropdown_id=condition_id name="condition" label="Condition" choices=filter_form.fields.condition.choices value=filters.condition size=dropdown_size show_label=modal auto_apply=auto_apply %}
+<div class="min-w-0 {% if modal %}w-full{% endif %}">
+  {% include "components/dropdown.html" with dropdown_id=distance_id name="distance" label="Distance" choices=filter_form.fields.distance.choices value=filters.distance size=dropdown_size show_label=modal auto_apply=auto_apply disabled=filter_form.fields.distance.disabled %}
+  {% if not has_location %}<p class="{% if not modal %}sr-only{% else %}mt-2 text-b9 text-neutral-80{% endif %}">Save your location to find pieces nearby.</p>{% endif %}
+</div>
+{% endwith %}

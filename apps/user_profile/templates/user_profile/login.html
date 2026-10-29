@@ -1,51 +1,27 @@
-{% extends "base.html" %}
-
-{% block title %}Login | Swapify{% endblock %}
-
+{% extends "user_profile/auth/form_base.html" %}
+{% block title %}Sign in | Swapify{% endblock %}
 {% block content %}
-<section class="mx-auto flex min-h-[70vh] max-w-md items-center px-4">
-  <div class="card w-full bg-base-100 shadow-xl">
-    <div class="card-body">
-      <h1 class="card-title text-h3 font-display">Welcome back</h1>
-      <p class="text-sm opacity-70">Log in to continue to Swapify.</p>
-
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-success mt-2 text-sm">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-
-      {% if form.non_field_errors %}
-        <div class="alert alert-error mt-2 text-sm">{{ form.non_field_errors }}</div>
-      {% endif %}
-
-      <form method="post" class="mt-4 space-y-4">
-        {% csrf_token %}
-
-        <label class="form-control w-full">
-          <span class="label-text mb-1">Username</span>
-          {{ form.username }}
-          {% for error in form.username.errors %}
-            <span class="mt-1 text-sm text-error">{{ error }}</span>
-          {% endfor %}
-        </label>
-
-        <label class="form-control w-full">
-          <span class="label-text mb-1">Password</span>
-          {{ form.password }}
-          {% for error in form.password.errors %}
-            <span class="mt-1 text-sm text-error">{{ error }}</span>
-          {% endfor %}
-        </label>
-
-        <button type="submit" class="btn btn-primary w-full">Login</button>
-      </form>
-
-      <p class="mt-2 text-center text-sm">
-        Don't have an account?
-        <a class="link link-primary" href="{% url 'user_profile:register' %}">Register</a>
-      </p>
-    </div>
+<section class="auth-panel flex w-full flex-col gap-[38px]" aria-labelledby="auth-title">
+  <div class="flex flex-col gap-2">
+    <h1 id="auth-title" class="font-display text-h3 font-bold text-primary-base">Hello again.</h1>
+    <p class="text-b7">Your wardrobe’s next favourite is waiting for you.</p>
   </div>
+  {% if form.non_field_errors %}<div role="alert" class="alert swap-alert swap-alert-error text-b8">{{ form.non_field_errors }}</div>{% endif %}
+  <form method="post" class="flex flex-col gap-[38px]">
+    {% csrf_token %}
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-8">
+        {% include "user_profile/auth/field.html" with field=form.username %}
+        {% include "user_profile/auth/field.html" with field=form.password %}
+      </div>
+      <details class="self-end text-right text-b8 text-primary-base">
+        <summary class="cursor-pointer font-semibold">Forgot your password?</summary>
+        <p class="mt-2 max-w-xs text-b9 text-neutral-80">Password recovery isn’t available yet. If you’re still signed in on another device, you can keep using that session.</p>
+      </details>
+    </div>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn btn-primary auth-submit w-full">Sign in</button>
+  </form>
+  <p class="text-center text-b8 text-primary-base">New to Swapify? <a class="ml-2 font-semibold hover:underline" href="{% url 'user_profile:register' %}">Create an account</a></p>
 </section>
 {% endblock %}

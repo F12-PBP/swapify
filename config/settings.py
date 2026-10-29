@@ -13,9 +13,18 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+import cloudinary
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# cloudinary
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True,
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,6 +63,9 @@ INSTALLED_APPS = [
     "apps.swap_request",
     "apps.transaction",
     "apps.chat",
+    "apps.user_profile.apps.UserProfileConfig",
+    "apps.review_rating.apps.ReviewRatingConfig",
+    "lucide",
 ]
 
 if DEBUG:
@@ -73,7 +85,9 @@ MIDDLEWARE = [
 ]
 
 if DEBUG:
-    MIDDLEWARE += ["django_browser_reload.middleware.BrowserReloadMiddleware"]
+    MIDDLEWARE += [
+        "django_browser_reload.middleware.BrowserReloadMiddleware",
+    ]
 
 ROOT_URLCONF = "config.urls"
 
@@ -162,8 +176,30 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 WHITENOISE_USE_FINDERS = True
 
+# Local frontend edits must refresh file metadata even when DEBUG is false.
+if not PRODUCTION:
+    WHITENOISE_AUTOREFRESH = True
+    WHITENOISE_MAX_AGE = 0
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Media files
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+LOGIN_URL = "user_profile:login"
+LOGIN_REDIRECT_URL = "user_profile:detail"
+LOGOUT_REDIRECT_URL = "main:home"
+
+NOMINATIM_BASE_URL = os.getenv(
+    "NOMINATIM_BASE_URL", "https://nominatim.openstreetmap.org"
+)
+NOMINATIM_USER_AGENT = os.getenv(
+    "NOMINATIM_USER_AGENT", "Swapify/1.0 (+https://github.com/F12-PBP/swapify)"
+)
+
+CSRF_FAILURE_VIEW = "apps.chat.http.csrf_failure"

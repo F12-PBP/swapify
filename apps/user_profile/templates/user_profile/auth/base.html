@@ -1,0 +1,33 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en" data-theme="swapify">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Welcome | Swapify{% endblock %}</title>
+  {% tailwind_css v="auth-location-map-1" %}
+  {% block head %}{% endblock %}
+  <link rel="icon" href="{% static 'images/landing_page/swapify-logo.svg' %}" type="image/svg+xml">
+</head>
+<body class="auth-page flex min-h-svh flex-col bg-neutral-10 font-sans text-neutral-100">
+  <header class="flex min-h-20 items-center justify-between gap-4 border-b border-neutral-40 px-5 py-6 sm:px-10 lg:px-20">
+    <a href="{% url 'main:home' %}" aria-label="Swapify home" class="flex shrink-0 items-center gap-3 text-primary-base">
+      {% include "components/brand/logo.html" %}
+    </a>
+    {% block header_action %}
+    <a href="{% url 'clothing_catalog:list' %}" class="flex items-center gap-3 text-right text-b9 font-semibold text-neutral-80 sm:text-b8">
+      Explore without an Account
+      <img src="{% static 'user_profile/images/auth/explore.svg' %}" width="20" height="20" alt="">
+    </a>
+    {% endblock %}
+  </header>
+  <main class="flex w-full flex-1 flex-col motion-safe:animate-profile-reveal {% block main_class %}items-center justify-center px-5 py-12 sm:px-8{% endblock %}">
+    {% include "components/flash-messages.html" %}
+    {% block content %}{% endblock %}
+  </main>
+  {% block decoration %}{% endblock %}
+  {% include "components/toasts.html" %}
+  {% block scripts %}{% endblock %}
+  {% include "components/swapy-companion.html" %}
+</body>
+</html>

@@ -2,29 +2,50 @@
 
 {% block content %}
 
+{% load static %}
+
 <div class="min-h-screen bg-neutral-20 py-10 px-4">
     <div class="max-w-2xl mx-auto">
 
-        <div class="mb-6">
-            <p class="text-sm font-semibold text-primary-base uppercase tracking-wide">
-                Transaction
-            </p>
-
-            <h1 class="text-3xl font-bold text-neutral-120 mt-1">
-                Update Transaction
-            </h1>
-
-            <p class="text-sm text-neutral-80 mt-2">
-                Update the information for Transaction #{{ transaction.id }}.
-            </p>
-        </div>
-
         <div class="card bg-neutral-10 border border-neutral-40 rounded-2xl shadow-sm">
             <div class="card-body p-6 md:p-8">
+                <div class="mb-6">
+                    <h1 class="text-3xl font-bold text-neutral-120 mt-1">
+                        Update Swapping Information
+                    </h1>
 
-                <form method="post" class="space-y-6">
+                    <p class="text-sm text-neutral-80 mt-2">
+                        Update the information for swap request #{{ transaction.id }}.
+                    </p>
+                </div>
+
+                <form method="post" class="space-y-6" id="transaction-update-form">
 
                     {% csrf_token %}
+
+                    {% if form.requester_resi.errors or form.owner_resi.errors %}
+                        <div class="alert swap-alert swap-alert-error relative flex items-center justify-between mb-6">
+
+                            <!-- Left side: Icon + Text Content -->
+                            <div class="flex items-center space-x-4">
+                                <img src="{% static 'icons/alert-error.svg' %}" alt="Error" class="flex-shrink-0 w-8 h-8" />
+
+                                <div class="ml-4">
+                                    <p class="text-sm font-bold text-red-900">
+                                        Tracking number and courier are required for delivery.
+                                    </p>
+                                    <p class="text-xs text-neutral-600 mt-0.5 pl-3">
+                                        Update your delivery information to continue swapping!
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Dismiss close button -->
+                            <button type="button" class="swap-alert-close hover:opacity-70 transition-opacity" onclick="this.closest('div.alert').remove()">
+                                <img src="{% static 'icons/alert-close-error.svg' %}" alt="Close" class="w-6 h-6" />
+                            </button>
+                        </div>
+                    {% endif %}
 
                     {% if form.non_field_errors %}
                         <div class="rounded-xl bg-red-10 border border-red-30 px-4 py-3">
@@ -35,27 +56,48 @@
                     {% endif %}
 
 
-                    {% if transaction.method == "Delivery" %}
+                    <div>
+                        <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                            {{ form.method.label }}
+                        </label>
 
-                        <div>
-                            <h2 class="text-lg font-bold text-neutral-120">
-                                Delivery Information
-                            </h2>
-
-                            <p class="text-sm text-neutral-70 mt-1 mb-5">
-                                Update the tracking and estimated delivery information.
-                            </p>
+                        <div class="hidden">
+                            {{ form.method }}
                         </div>
 
+                        <div class="grid grid-cols-2 gap-3 p-1 bg-neutral-20 rounded-full border border-neutral-30" id="method-toggle-group">
+                            <button type="button" data-value="Meetup" class="py-3 px-4 rounded-full font-medium text-sm transition-all text-center">
+                                Meet Up
+                            </button>
+                            <button type="button" data-value="Delivery" class="py-3 px-4 rounded-full font-medium text-sm transition-all text-center">
+                                Delivery
+                            </button>
+                        </div>
 
-                        <div class="rounded-2xl bg-neutral-30 border border-neutral-40 p-5 space-y-5">
+                        {% for error in form.method.errors %}
+                            <p class="text-sm text-red-base mt-2">{{ error }}</p>
+                        {% endfor %}
+                    </div>
 
-                            <h3 class="font-bold text-neutral-120">
-                                Requester
-                            </h3>
+                    <div data-method-fields="Delivery">
+                        {% if form.requester_resi %}
+                        <div>
+                            <div>
+                                <label class="block text-sm font-bold text-primary-base mt-4 mb-2">
+                                    {{ form.requester_courier.label }}
+                                </label>
+
+                                {{ form.requester_courier }}
+
+                                {% for error in form.requester_courier.errors %}
+                                    <p class="text-sm text-red-base mt-2">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                <label class="block text-sm font-bold text-primary-base mt-6 mb-2">
                                     {{ form.requester_resi.label }}
                                 </label>
 
@@ -69,7 +111,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                <label class="block text-sm font-bold text-primary-base mt-6 mb-2">
                                     {{ form.requester_delivery_estimate.label }}
                                 </label>
 
@@ -84,14 +126,26 @@
 
                         </div>
 
-                        <div class="rounded-2xl bg-neutral-30 border border-neutral-40 p-5 space-y-5">
+                        {% endif %}
 
-                            <h3 class="font-bold text-neutral-120">
-                                Owner
-                            </h3>
+                        {% if form.owner_resi %}
+                        <div>
+                            <div>
+                                <label class="block text-sm font-bold text-primary-base mt-4 mb-2">
+                                    {{ form.owner_courier.label }}
+                                </label>
+
+                                {{ form.owner_courier }}
+
+                                {% for error in form.owner_courier.errors %}
+                                    <p class="text-sm text-red-base mt-2">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                <label class="block text-sm font-bold text-primary-base mt-6 mb-2">
                                     {{ form.owner_resi.label }}
                                 </label>
 
@@ -105,7 +159,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                <label class="block text-sm font-bold text-primary-base mt-6 mb-2">
                                     {{ form.owner_delivery_estimate.label }}
                                 </label>
 
@@ -120,24 +174,13 @@
 
                         </div>
 
-                    {% endif %}
+                        {% endif %}
+                    </div>
 
-                    {% if transaction.method == "Meetup" %}
-
+                    <div data-method-fields="Meetup">
                         <div>
-                            <h2 class="text-lg font-bold text-neutral-120">
-                                Meetup Information
-                            </h2>
-
-                            <p class="text-sm text-neutral-70 mt-1 mb-5">
-                                Update the agreed meetup details.
-                            </p>
-                        </div>
-
-                        <div class="rounded-2xl bg-secondary-10 border border-secondary-30 p-5 space-y-5">
-
                             <div>
-                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                <label class="block text-sm font-bold text-primary-base mt-4 mb-2">
                                     {{ form.meetup_date.label }}
                                 </label>
 
@@ -151,7 +194,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-neutral-110 mb-2">
+                                <label class="block text-sm font-bold text-primary-base mt-6 mb-2">
                                     {{ form.meetup_location.label }}
                                 </label>
 
@@ -166,7 +209,7 @@
 
                         </div>
 
-                    {% endif %}
+                    </div>
 
                     <div class="flex flex-col sm:flex-row gap-3 pt-2">
 
@@ -193,5 +236,45 @@
 
     </div>
 </div>
+
+<script>
+(function () {
+    "use strict";
+    var form = document.getElementById("transaction-update-form");
+    var methodInput = form.querySelector('[name="method"]');
+    var toggleButtons = form.querySelectorAll("#method-toggle-group button");
+
+    function updateView() {
+        var val = methodInput.value;
+
+        // Show/hide fields based on selected method
+        form.querySelectorAll("[data-method-fields]").forEach(function (section) {
+            section.hidden = section.dataset.methodFields !== val;
+        });
+
+        // Update toggle button active states matching the screenshot style
+        toggleButtons.forEach(function (btn) {
+            if (btn.dataset.value === val) {
+                btn.className = "py-3 px-4 rounded-full font-medium text-sm transition-all text-center bg-primary-base text-neutral-10 shadow-sm";
+            } else {
+                btn.className = "py-3 px-4 rounded-full font-medium text-sm transition-all text-center text-neutral-80 hover:text-neutral-110";
+            }
+        });
+    }
+
+    // Bind click events to custom pill buttons
+    toggleButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            methodInput.value = btn.dataset.value;
+            updateView();
+        });
+    });
+
+    if (methodInput) {
+        methodInput.addEventListener("change", updateView);
+        updateView();
+    }
+})();
+</script>
 
 {% endblock %}

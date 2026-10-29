@@ -1,78 +1,179 @@
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
 from django.views.generic import (
-    CreateView,
     DetailView,
     UpdateView,
 )
 
-from .forms import CreateTransactionForm, UpdateTransactionForm
+from apps.swap_request.models import SwapRequest
+
+from .forms import UpdateTransactionForm
 from .models import Transaction
+from .services import (
+    cancel_ready_transaction,
+    confirm_receipt,
+    start_transaction,
+    unvalidate_resi,
+    validate_resi,
+)
 
 
-class CreateTransactionView(CreateView):
-    model = Transaction
-    form_class = CreateTransactionForm
-    template_name = "transaction/create_transaction.html"
-
-    def form_valid(self, form):
-        transaction = form.save(commit=False)
-
-        transaction.status = Transaction.Status.WAITING
-
-        transaction.requester_resi_valid = False
-        transaction.owner_resi_valid = False
-
-        transaction.requester_received = False
-        transaction.owner_received = False
-
-        form.instance = transaction
-
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse("transaction_detail", kwargs={"pk": self.object.pk})
+class TransactionParticipantMixin(LoginRequiredMixin):
+    def get_queryset(self):
+        return Transaction.objects.select_related(
+            "swap_request__requester",
+            "swap_request__requested_clothing__owner",
+        ).filter(
+            Q(swap_request__requester=self.request.user)
+            | Q(swap_request__requested_clothing__owner=self.request.user)
+        )
 
 
-def delete_transaction_view(request, pk):
-    if request.method == "POST":
-        transaction = get_object_or_404(Transaction, pk=pk)
-        transaction.delete()
-    return redirect("transaction_base")
-
-
-class TransactionDetailView(DetailView):
+class TransactionDetailView(TransactionParticipantMixin, DetailView):
     model = Transaction
     template_name = "transaction/transaction_detail.html"
     context_object_name = "transaction"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        exchange = self.object
+        is_requester = self.request.user.pk == exchange.swap_request.requester_id
+        context["is_requester"] = is_requester
+        context["my_received"] = (
+            exchange.requester_received if is_requester else exchange.owner_received
+        )
+        context["has_reviewed"] = exchange.reviews.filter(
+            author=self.request.user,
+        ).exists()
 
-class TransactionUpdateView(UpdateView):
+        return context
+
+
+class TransactionUpdateView(TransactionParticipantMixin, UpdateView):
     model = Transaction
     form_class = UpdateTransactionForm
     template_name = "transaction/transaction_update.html"
     context_object_name = "transaction"
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.method == "POST":
+            queryset = queryset.select_for_update(of=("self",))
+        return queryset
+
+    def get_object(self, queryset=None):
+        exchange = super().get_object(queryset)
+        if (
+            exchange.status != Transaction.Status.WAITING
+            or exchange.swap_request.status != SwapRequest.Status.ACCEPTED
+        ):
+            raise PermissionDenied("Exchange details are locked after it starts.")
+        return exchange
+
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def get_success_url(self):
         return reverse("transaction_detail", kwargs={"pk": self.object.pk})
 
 
-class TransactionReceivedView(View):
+class TransactionStartView(TransactionParticipantMixin, View):
     def post(self, request, pk):
-        transaction = get_object_or_404(Transaction, pk=pk)
-
-        party = request.POST.get("party")
-
-        if party == "requester":
-            transaction.requester_received = True
-
-        elif party == "owner":
-            transaction.owner_received = True
-
+        exchange = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            start_transaction(exchange.pk, request.user)
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
         else:
-            return redirect("transaction_detail", pk=transaction.pk)
+            if exchange.status == Transaction.Status.IN_PROGRESS:
+                messages.success(request, "Exchange started. Details are now locked.")
+            else:
+                messages.success(
+                    request, "You are ready. Waiting for the other party to be ready."
+                )
+        return redirect("transaction_detail", pk=exchange.pk)
 
-        transaction.save()
 
-        return redirect("transaction_detail", pk=transaction.pk)
+class TransactionCancelView(TransactionParticipantMixin, View):
+    def post(self, request, pk):
+        exchange = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            cancel_ready_transaction(exchange.pk, request.user)
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+        else:
+            messages.success(
+                request, "You have unreadied yourself. You can now change the details."
+            )
+        return redirect("transaction_detail", pk=exchange.pk)
+
+
+class ResiValidatetView(TransactionParticipantMixin, View):
+    def post(self, request, pk):
+        exchange = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            validate_resi(exchange.pk, request.user)
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+        else:
+            messages.success(
+                request,
+                (
+                    "You have validated the other's resi. Waiting for the other to "
+                    "validate yours before exchange can be started!"
+                ),
+            )
+        return redirect("transaction_detail", pk=exchange.pk)
+
+
+class ResiUnvalidatetView(TransactionParticipantMixin, View):
+    def post(self, request, pk):
+        exchange = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            unvalidate_resi(exchange.pk, request.user)
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+        else:
+            messages.success(
+                request,
+                (
+                    "You have unvalidated the other's resi. Please check thoroughly "
+                    "before validating!"
+                ),
+            )
+        return redirect("transaction_detail", pk=exchange.pk)
+
+
+class TransactionReceivedView(TransactionParticipantMixin, View):
+    def post(self, request, pk):
+        exchange = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            exchange = confirm_receipt(exchange.pk, request.user)
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+        else:
+            if exchange.status == Transaction.Status.COMPLETED:
+                messages.success(request, "Exchange completed. Both items are swapped.")
+            else:
+                messages.success(
+                    request, "Receipt confirmed. Waiting for your partner."
+                )
+
+        return redirect("transaction_detail", pk=exchange.pk)

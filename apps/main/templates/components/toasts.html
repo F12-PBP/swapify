@@ -1,0 +1,19 @@
+{% load static lucide %}
+<div data-toast-region popover="manual" hidden aria-label="Notifications" class="fixed inset-auto top-[calc(1rem_+_env(safe-area-inset-top))] right-4 z-[100] m-0 flex w-[calc(100%_-_2rem)] max-w-sm flex-col gap-3 overflow-visible border-0 bg-transparent p-0 sm:top-6 sm:right-6">
+  <template data-toast-template>
+    <div data-toast class="flex items-start gap-3 rounded-2xl border border-neutral-40 bg-neutral-10 p-4 text-neutral-100 shadow-lg">
+      <span data-toast-icon aria-hidden="true" class="flex size-10 shrink-0 items-center justify-center rounded-full">
+        <span data-toast-symbol="success" hidden>{% lucide "circle-check" size=20 %}</span>
+        <span data-toast-symbol="error" hidden>{% lucide "circle-alert" size=20 %}</span>
+        <span data-toast-symbol="warning" hidden>{% lucide "triangle-alert" size=20 %}</span>
+        <span data-toast-symbol="info" hidden>{% lucide "bell" size=20 %}</span>
+      </span>
+      <div data-toast-announcement class="min-w-0 flex-1">
+        <p data-toast-title class="text-b8 font-semibold text-neutral-110"></p>
+        <p data-toast-text class="mt-1 break-words text-b9 text-neutral-80"></p>
+      </div>
+      <button type="button" data-toast-close aria-label="Dismiss notification" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-70 transition-colors hover:bg-neutral-30 hover:text-primary-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-base">{% lucide "x" size=16 %}</button>
+    </div>
+  </template>
+</div>
+<script src="{% static 'main/js/toasts.js' %}" defer></script>

@@ -1,0 +1,106 @@
+{% load static %}
+
+<aside
+    class="chat-sidebar min-h-0 w-full shrink-0 flex-col gap-6 border-neutral-40 p-5
+            md:w-[21rem] md:border-r md:p-7
+            {% if hide_on_mobile %}hidden md:flex{% else %}flex{% endif %}"
+    aria-label="Daftar percakapan"
+    >
+    <h1 class="shrink-0 font-display text-h5 font-normal text-primary-base">
+        Your conversations
+    </h1>
+
+    <div class="relative shrink-0">
+        <img
+        class="pointer-events-none absolute top-3 left-5 z-10"
+        src="{% static 'chat/icons/search.svg' %}"
+        alt=""
+        >
+
+        <input
+        class="input swap-input h-12 w-full min-w-0
+                border-neutral-40! bg-neutral-20!
+                pr-4! pl-12! text-b8!
+                focus-visible:outline-2!
+                focus-visible:outline-offset-2
+                focus-visible:outline-primary-base!"
+        type="search"
+        data-chat-search
+        placeholder="Find a conversation"
+        aria-label="Cari percakapan"
+        >
+    </div>
+
+    <p
+        class="text-b9 text-neutral-80"
+        data-unread-status
+        role="status"
+        hidden
+        >
+        <span data-unread-text></span>
+
+        <a
+            class="ml-1 underline text-primary-base"
+            href="{% url 'user_profile:login' %}?next={{ request.path|urlencode }}"
+            data-unread-login
+            hidden
+        >
+            Masuk kembali
+        </a>
+    </p>
+
+    <p data-chat-navigation-status role="status" class="text-b9 text-red-base" hidden>We couldn’t open that conversation. Please select it again to retry.</p>
+
+    <nav data-chat-rooms class="relative min-h-0 overflow-y-auto" aria-label="Percakapan">
+        {% for room in chat_rooms %}
+        <a
+            class="chat-room relative z-10 flex min-h-18 focus-visible:-outline-offset-2 items-center gap-3
+                border-l-4 border-transparent px-3 py-4
+                hover:bg-neutral-20
+                aria-[current=page]:border-l-primary-base
+                aria-[current=page]:bg-primary-10
+                aria-[current=page]:hover:bg-primary-10"
+            href="{% url 'chat:detail' room.pk %}"
+            data-room-id="{{ room.pk }}"
+            {% if room.pk == chat_room.pk %}aria-current="page"{% endif %}
+        >
+            <span
+            class="flex size-10 shrink-0 items-center justify-center
+                    rounded-full bg-primary-20 text-primary-base"
+            aria-hidden="true"
+            >
+            {{ room.partner.get_username|first|upper }}
+            </span>
+
+            <span class="chat-room-copy flex min-w-0 flex-1 flex-col gap-1">
+            <strong class="truncate text-s8 font-semibold text-neutral-110">
+                {{ room.partner.get_username }}
+            </strong>
+
+            <span class="truncate text-b9 text-neutral-70">
+                {{ room.swap_request.requested_clothing.name }}
+                ↔ {{ room.swap_request.offered_clothing.name }}
+            </span>
+
+            {% if not room.is_active %}
+                <span class="truncate text-b9 text-neutral-70">
+                Chat tidak aktif
+                </span>
+            {% endif %}
+            </span>
+
+            <span
+            class="grid min-h-6 min-w-6 shrink-0 place-items-center
+                    rounded-full bg-primary-base p-1 text-s10 text-neutral-10"
+            data-unread-count
+            aria-label="{{ room.unread_count }} pesan belum dibaca"
+            {% if not room.unread_count %}hidden{% endif %}
+            >{{ room.unread_count }}</span>
+        </a>
+        {% endfor %}
+
+        <p class="mt-2 text-b9 text-neutral-80" data-no-results hidden>
+        Tidak ada percakapan yang cocok.
+        </p>
+    </nav>
+</aside>

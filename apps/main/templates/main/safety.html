@@ -1,0 +1,15 @@
+{% extends "marketplace/base.html" %}
+{% block title %}Swap safely | Swapify{% endblock %}
+{% block content %}
+<article class="mx-auto flex max-w-2xl flex-col gap-6 py-8">
+  <h1 class="font-display text-h2 text-primary-base">A thoughtful swap is a safer swap.</h1>
+  <p>Check the item’s photos, description, condition, and your swap partner’s profile before agreeing to an exchange.</p>
+  <h2 class="font-display text-h5 text-primary-base">Meet somewhere public</h2>
+  <p>Arrange handovers in a busy public place during the day. Tell someone you trust where you are going. Keep your home address and exact location private.</p>
+  <h2 class="font-display text-h5 text-primary-base">Agree on delivery together</h2>
+  <p>If you choose delivery, discuss packaging, shipping costs, and tracking with your partner before sending anything. Inspect the item before confirming completion.</p>
+  <h2 class="font-display text-h5 text-primary-base">Keep the conversation on Swapify</h2>
+  <p>Use Messages to confirm the item and exchange details. If anything feels wrong, pause the exchange.</p>
+  <a class="market-button self-start" href="{% url 'clothing_catalog:list' %}">Back to Discover</a>
+</article>
+{% endblock %}

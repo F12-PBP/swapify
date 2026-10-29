@@ -1,7 +1,34 @@
 @import "tailwindcss";
+@import "./marketplace.css";
 
 html {
   scroll-behavior: smooth;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :root {
+    --swapify-cursor: url("../../icons/cursor.svg") 2 2;
+    cursor: var(--swapify-cursor), default;
+  }
+
+  :where(a[href], button, summary, select, label[for], [role="button"], input[type="button"], input[type="submit"], input[type="reset"], input[type="checkbox"], input[type="radio"], input[type="file"]):not([class*="cursor-"]),
+  .cursor-pointer {
+    cursor: var(--swapify-cursor), pointer;
+  }
+
+  .cursor-default {
+    cursor: var(--swapify-cursor), default;
+  }
+
+  :where(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="file"], [type="range"], [type="color"]), textarea, [contenteditable="true"]):not([class*="cursor-"]) {
+    cursor: text;
+  }
+
+  :disabled,
+  [aria-disabled="true"],
+  .cursor-not-allowed {
+    cursor: not-allowed;
+  }
 }
 
 @font-face {
@@ -37,6 +64,229 @@ html {
 }
 
 @theme {
+  --animate-profile-reveal: profile-reveal 560ms cubic-bezier(.22, 1, .36, 1) backwards;
+
+  @keyframes profile-reveal {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  --animate-landing-arrive: landing-arrive 700ms both;
+  --animate-landing-scene: landing-arrive 900ms 100ms both;
+
+  @keyframes landing-arrive {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+
+  --animate-landing-float: landing-float 4.8s ease-in-out infinite;
+  --animate-swapy-hop: swapy-hop 1.6s infinite;
+  --animate-swapy-shadow: swapy-shadow 1.6s infinite;
+  --animate-swapy-wink: swapy-wink 1.6s infinite;
+
+  @keyframes landing-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes swapy-hop {
+    0% { transform: translateY(0) scale(1); animation-timing-function: cubic-bezier(.2, .65, .35, 1); }
+    38% { transform: translateY(-18%) scale(.99, 1.015); animation-timing-function: cubic-bezier(.65, 0, .8, .35); }
+    70% { transform: translateY(0) scale(1); }
+    77% { transform: translateY(0) scale(1.035, .965); }
+    88%, 100% { transform: translateY(0) scale(1); }
+  }
+  @keyframes swapy-shadow {
+    0%, 70%, 100% { opacity: 1; transform: scale(1); }
+    38% { opacity: .45; transform: scale(.68, .78); }
+  }
+  @keyframes swapy-wink {
+    0%, 69%, 88%, 100% { opacity: 0; }
+    70%, 85% { opacity: 1; }
+  }
+
+  --animate-journey-photo: journey-photo 6.4s ease-in-out infinite;
+  --animate-journey-camera: journey-camera 6.4s ease-in-out infinite;
+  --animate-journey-focus: journey-focus 6.4s ease-in-out infinite;
+  --animate-journey-exposure: journey-exposure 6.4s ease-in-out infinite;
+  --animate-journey-shutter: journey-shutter 6.4s ease-in-out infinite;
+  --animate-journey-flash: journey-flash 6.4s ease-in-out infinite;
+  --animate-journey-listed: journey-listed 6.4s ease-in-out infinite;
+  --animate-journey-tick: journey-tick 6.4s ease-in-out infinite;
+  --animate-journey-spark: journey-spark 6.4s ease-in-out infinite;
+  --animate-journey-cursor: journey-cursor 8.4s ease-in-out infinite;
+  --animate-journey-press: journey-press 8.4s ease-in-out infinite;
+  --animate-journey-lens: journey-lens 8.4s ease-in-out infinite;
+  --animate-journey-lens-content: journey-lens-content 8.4s ease-in-out infinite;
+  --animate-journey-query: journey-query 8.4s steps(5, end) infinite;
+  --animate-journey-caret: journey-caret 8.4s steps(5, end) infinite;
+  --animate-journey-click: journey-click 8.4s ease-out infinite;
+  --animate-journey-hover-first: journey-hover-first 8.4s ease-in-out infinite;
+  --animate-journey-hover-third: journey-hover-third 8.4s ease-in-out infinite;
+  --animate-journey-hover-selected: journey-hover-selected 8.4s ease-in-out infinite;
+  --animate-journey-hover-wash-first: journey-hover-wash-first 8.4s ease-in-out infinite;
+  --animate-journey-hover-wash-third: journey-hover-wash-third 8.4s ease-in-out infinite;
+  --animate-journey-selected: journey-selected 8.4s ease-in-out infinite;
+  --animate-journey-conversation: journey-conversation 6.8s ease-in-out infinite;
+  --animate-journey-conversation-reply: journey-conversation-reply 6.8s ease-in-out infinite;
+  --animate-journey-message: journey-message 6.8s ease-in-out infinite;
+  --animate-journey-reply: journey-reply 6.8s ease-in-out infinite;
+  --animate-journey-typing: journey-typing 6.8s ease-in-out infinite;
+  --animate-journey-reply-typing: journey-reply-typing 6.8s ease-in-out infinite;
+  --animate-journey-dot: journey-dot 800ms ease-in-out infinite;
+  --animate-journey-confirm: journey-confirm 6.8s ease-in-out infinite;
+  --animate-journey-confirm-tick: journey-confirm-tick 6.8s ease-in-out infinite;
+  --animate-journey-confirm-ring: journey-confirm-ring 6.8s ease-out infinite;
+
+  @keyframes journey-photo {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    12%, 28% { transform: translateY(-3px) rotate(-1deg); }
+    46%, 76% { transform: translateY(-1px) rotate(.5deg); }
+  }
+  @keyframes journey-camera {
+    0%, 8%, 48%, 100% { transform: translate(0, 0) rotate(0); }
+    18%, 25%, 33% { transform: translate(-5px, -5px) rotate(-4deg); }
+    28% { transform: translate(-5px, -4px) rotate(-4deg) scale(.97); }
+  }
+  @keyframes journey-focus {
+    0%, 9%, 34%, 100% { opacity: 0; }
+    16%, 26% { opacity: .9; }
+  }
+  @keyframes journey-exposure {
+    0%, 26%, 50%, 100% { opacity: 0; }
+    30% { opacity: .45; }
+  }
+  @keyframes journey-shutter {
+    0%, 22%, 36%, 100% { transform: scale(1); }
+    27% { transform: scale(.65); }
+    31% { transform: scale(1.08); }
+  }
+  @keyframes journey-flash {
+    0%, 24%, 32%, 100% { opacity: 0; }
+    27% { opacity: .9; }
+  }
+  @keyframes journey-listed {
+    0%, 41%, 100% { opacity: 0; transform: scale(.8); }
+    51% { opacity: 1; transform: scale(1.08); }
+    57%, 87% { opacity: 1; transform: scale(1); }
+    96% { opacity: 0; transform: scale(.9); }
+  }
+  @keyframes journey-tick {
+    0%, 48%, 100% { stroke-dashoffset: 1; }
+    60%, 92% { stroke-dashoffset: 0; }
+  }
+  @keyframes journey-spark {
+    0%, 100% { opacity: .55; transform: scale(1); }
+    30%, 65% { opacity: 1; transform: scale(1.025); }
+  }
+  @keyframes journey-cursor {
+    0%, 4%, 96%, 100% { transform: translate(176px, 142px); }
+    11%, 24% { transform: translate(245px, 52px); }
+    33%, 41% { transform: translate(94px, 129px); }
+    52%, 60% { transform: translate(270px, 126px); }
+    71%, 86% { transform: translate(185px, 131px); }
+  }
+  @keyframes journey-press {
+    0%, 10%, 18%, 71%, 79%, 100% { transform: scale(1); }
+    13%, 74% { transform: scale(.84); }
+  }
+  @keyframes journey-lens {
+    0%, 20%, 97%, 100% { transform: translate(274px, 183px); }
+    33%, 41% { transform: translate(99px, 127px); }
+    52%, 60% { transform: translate(278px, 126px); }
+    71%, 86% { transform: translate(188px, 126px); }
+  }
+  @keyframes journey-lens-content {
+    0%, 20%, 97%, 100% { transform: scale(1.55) translate(-274px, -183px); }
+    33%, 41% { transform: scale(1.55) translate(-99px, -127px); }
+    52%, 60% { transform: scale(1.55) translate(-278px, -126px); }
+    71%, 86% { transform: scale(1.55) translate(-188px, -126px); }
+  }
+  @keyframes journey-query {
+    0%, 14%, 97%, 100% { width: 0; }
+    26%, 90% { width: 30px; }
+  }
+  @keyframes journey-caret {
+    0%, 13%, 91%, 100% { opacity: 0; transform: translateX(0); }
+    14% { opacity: 1; transform: translateX(0); }
+    26%, 90% { opacity: 1; transform: translateX(29px); }
+  }
+  @keyframes journey-click {
+    0%, 72%, 85%, 100% { opacity: 0; transform: scale(.6); }
+    74% { opacity: .6; transform: scale(.8); }
+    82% { opacity: 0; transform: scale(1.8); }
+  }
+  @keyframes journey-hover-first {
+    0%, 27%, 47%, 100% { transform: translateY(0); }
+    33%, 41% { transform: translateY(-3px); }
+  }
+  @keyframes journey-hover-third {
+    0%, 46%, 66%, 100% { transform: translateY(0); }
+    52%, 60% { transform: translateY(-3px); }
+  }
+  @keyframes journey-hover-selected {
+    0%, 65%, 96%, 100% { transform: translateY(0); }
+    71%, 86% { transform: translateY(-3px); }
+  }
+  @keyframes journey-hover-wash-first {
+    0%, 27%, 47%, 100% { opacity: 0; }
+    33%, 41% { opacity: .15; }
+  }
+  @keyframes journey-hover-wash-third {
+    0%, 46%, 66%, 100% { opacity: 0; }
+    52%, 60% { opacity: .15; }
+  }
+  @keyframes journey-selected {
+    0%, 70%, 97%, 100% { opacity: 0; }
+    75%, 90% { opacity: 1; }
+  }
+  @keyframes journey-conversation {
+    0%, 100% { transform: translateY(0); }
+    22%, 46% { transform: translateY(-3px); }
+  }
+  @keyframes journey-conversation-reply {
+    0%, 32%, 100% { transform: translateY(0); }
+    52%, 77% { transform: translateY(-4px); }
+  }
+  @keyframes journey-message {
+    0%, 24%, 100% { opacity: 0; }
+    34%, 88% { opacity: 1; }
+    96% { opacity: 0; }
+  }
+  @keyframes journey-reply {
+    0%, 49%, 100% { opacity: 0; }
+    60%, 88% { opacity: 1; }
+    96% { opacity: 0; }
+  }
+  @keyframes journey-typing {
+    0%, 7%, 29%, 100% { opacity: 0; }
+    12%, 23% { opacity: 1; }
+  }
+  @keyframes journey-reply-typing {
+    0%, 32%, 55%, 100% { opacity: 0; }
+    37%, 48% { opacity: 1; }
+  }
+  @keyframes journey-dot {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-2px); }
+  }
+  @keyframes journey-confirm {
+    0%, 60%, 100% { opacity: 0; transform: scale(.8); }
+    70% { opacity: 1; transform: scale(1.08); }
+    76%, 88% { opacity: 1; transform: scale(1); }
+    96% { opacity: 0; transform: scale(.9); }
+  }
+  @keyframes journey-confirm-tick {
+    0%, 67%, 100% { stroke-dashoffset: 1; }
+    78%, 92% { stroke-dashoffset: 0; }
+  }
+  @keyframes journey-confirm-ring {
+    0%, 67%, 85%, 100% { opacity: 0; transform: scale(.8); }
+    70% { opacity: .45; transform: scale(1); }
+    82% { opacity: 0; transform: scale(1.35); }
+  }
+
+  --font-brand: "Times New Roman", Times, serif;
   --font-display: "Fraunces", Georgia, serif;
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
@@ -560,6 +810,32 @@ button.btn:disabled {
   color: var(--color-neutral-50);
   cursor: not-allowed;
 }
+.swap-dropdown[hidden], [data-dropdown-fallback][hidden] {
+  display: none;
+}
+.swap-dropdown[data-size="sm"] {
+  width: auto;
+  min-width: 7rem;
+  max-width: 100%;
+  font-size: var(--text-b9);
+  line-height: var(--text-b9--line-height);
+}
+.swap-dropdown[data-size="sm"] .swap-dropdown-trigger {
+  min-height: 2.5rem;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+.swap-dropdown[data-size="sm"] .swap-dropdown-option {
+  padding: 0.625rem 0.75rem;
+}
+.swap-dropdown[data-size="md"] {
+  font-size: var(--text-b7);
+  line-height: var(--text-b7--line-height);
+}
+.swap-dropdown[data-size="md"] .swap-dropdown-trigger {
+  min-height: 3rem;
+  padding: 0.6875rem 1.25rem;
+}
 @media (min-width: 640px) {
   .swap-dropdown {
     font-size: var(--text-b7);
@@ -793,3 +1069,140 @@ button.btn:disabled {
 .ds-code {
   @apply overflow-x-auto rounded-box bg-neutral p-4 text-xs leading-6 text-neutral-content;
 }
+
+/* Authentication composes the shared design-system controls. */
+.auth-page .input {
+  padding: 0.75rem 1.25rem;
+  height: 3rem;
+}
+.auth-page .textarea {
+  min-height: 7.9375rem;
+  border: 1px solid transparent;
+  border-radius: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-neutral-30);
+  color: var(--color-primary-base);
+  font: inherit;
+  resize: vertical;
+}
+.auth-page .textarea::placeholder { color: var(--color-neutral-60); }
+.auth-page .textarea:focus-visible {
+  outline: 2px solid var(--color-primary-base);
+  outline-offset: 2px;
+}
+.auth-page .auth-submit {
+  min-height: 2.75rem;
+  height: 2.75rem;
+  font-size: var(--text-b8);
+  line-height: var(--text-b8--line-height);
+}
+.auth-page [hidden] { display: none !important; }
+#onboarding {
+  --onboarding-duration: 600ms;
+  --onboarding-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+#onboarding.is-ready {
+  transition: margin-top var(--onboarding-duration) var(--onboarding-easing),
+    row-gap var(--onboarding-duration) var(--onboarding-easing);
+}
+#onboarding.is-ready .onboarding-viewport {
+  transition: height var(--onboarding-duration) var(--onboarding-easing);
+}
+.onboarding-viewport { overflow: hidden; }
+#onboarding-track { display: block; transform: none; }
+.onboarding-slide[hidden] { display: none !important; }
+.auth-page .onboarding-photo,
+.auth-page .onboarding-photo label,
+.auth-page .onboarding-photo input { outline: none !important; box-shadow: none; }
+#onboarding-progress { height: 78px; flex-shrink: 0; }
+#onboarding.is-ready #onboarding-progress {
+  transition: height var(--onboarding-duration) var(--onboarding-easing),
+    min-height var(--onboarding-duration) var(--onboarding-easing), opacity 280ms ease;
+}
+#onboarding.is-complete { row-gap: 0; }
+#onboarding.is-complete #onboarding-progress {
+  height: 0;
+  min-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+#finish-later-form button { transition: opacity 240ms ease; }
+#finish-later-form button.is-hidden { opacity: 0; pointer-events: none; }
+.step-number, .step-label {
+  transition: color 280ms ease, background-color 280ms ease, border-color 280ms ease;
+}
+.onboarding-step { color: var(--color-neutral-70); }
+.step-number {
+  border-color: var(--color-neutral-60);
+  color: var(--color-neutral-60);
+}
+.onboarding-step[aria-current="step"] { color: var(--color-primary-base); }
+.onboarding-step[aria-current="step"] .step-number {
+  border-color: var(--color-primary-base);
+  background: var(--color-primary-base);
+  color: var(--color-neutral-10);
+}
+.onboarding-step.is-complete { color: var(--color-neutral-50); }
+.onboarding-step.is-complete .step-number {
+  border-color: var(--color-neutral-50);
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-10);
+}
+.style-option { transition: background-color 150ms, border-color 150ms; }
+.style-option:hover { background: var(--color-primary-10); }
+.style-option:has(input:checked) {
+  border-color: var(--color-primary-base);
+  background: var(--color-primary-10);
+  color: var(--color-primary-base);
+}
+.style-option:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary-base);
+  outline-offset: 3px;
+}
+.auth-page a:focus-visible, .auth-page button:focus-visible {
+  outline: 2px solid var(--color-primary-base);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  #onboarding.is-ready,
+  #onboarding.is-ready #onboarding-track,
+  #onboarding.is-ready .onboarding-viewport,
+  #onboarding.is-ready .onboarding-slide,
+  #onboarding.is-ready #onboarding-progress,
+  #finish-later-form button,
+  .step-number, .step-label { transition: none; }
+}
+#onboarding:not(.is-enhanced) [data-panel][aria-hidden="true"] { display: none; }
+
+.auth-page [data-errors]:empty, .auth-page [data-field-errors]:empty { display: none; }
+.auth-page .onboarding-photo:has(input:focus-visible) label > span {
+  outline: 2px solid var(--color-primary-base);
+  outline-offset: 4px;
+}
+
+@media (min-width: 1024px) {
+  #onboarding[data-step="3"] { margin-top: -33px; }
+}
+
+.style-option img { flex: none; }
+.auth-page summary { list-style: none; }
+.auth-page summary::-webkit-details-marker { display: none; }
+
+/* Keep map layers inside the location card, below app navigation and dialogs. */
+.location-map-panel[hidden] { display: none !important; }
+.location-map {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  width: 100%;
+  height: 16rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: var(--color-neutral-30);
+  font-family: var(--font-sans);
+}
+.location-map .leaflet-control-attribution { font-size: 10px; }
+.location-map .leaflet-control-attribution a { color: var(--color-primary-base); }
+.location-map .leaflet-bar { border-color: var(--color-neutral-40); box-shadow: none; }
+.location-map .leaflet-bar a { color: var(--color-primary-base); }
+.location-map:focus-visible { outline: 2px solid var(--color-primary-base); outline-offset: 3px; }
