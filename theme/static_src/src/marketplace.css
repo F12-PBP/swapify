@@ -1,6 +1,6 @@
 @layer components {
   .marketplace { overflow-wrap: anywhere; overflow-anchor: none; }
-  .marketplace #finds, .marketplace #main-content { scroll-margin-top: calc(var(--market-navbar-height, 0px) + 2rem); }
+  .marketplace #finds, .marketplace #main-content { scroll-margin-top: calc(var(--market-navbar-visible-height, var(--market-navbar-height, 0px)) + 2rem); }
   .market-marquee-track { animation: market-marquee 120s linear infinite; }
   .market-marquee:hover .market-marquee-track,
   .market-marquee[data-paused="true"] .market-marquee-track { animation-play-state: paused; }

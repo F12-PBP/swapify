@@ -1,7 +1,7 @@
 {% load static lucide marketplace %}
 {% marketplace_section request as active_section %}
 {% if user.is_authenticated %}{% url 'user_profile:public' user.username as wardrobe_url %}{% else %}{% url 'user_profile:wardrobe' as wardrobe_url %}{% endif %}
-<header class="sticky top-0 z-40 bg-neutral-10 shadow-sm" data-market-navbar>
+<header class="sticky top-[var(--market-header-top,0px)] z-40 bg-neutral-10 shadow-sm motion-safe:transition-[top] motion-safe:duration-300 motion-safe:ease-out" data-market-navbar>
   {% url 'user_profile:location_edit' as location_url %}
   {% include "components/marketplace/marquee.html" %}
   <div data-market-entrance class="market-container flex flex-wrap items-center justify-between gap-x-5 gap-y-3 py-4 lg:flex-nowrap lg:gap-10 lg:py-6">
@@ -36,7 +36,7 @@
       {% else %}<a class="market-secondary text-b9" href="{% url 'user_profile:login' %}?next={% url 'clothing_catalog:list' %}">Sign in</a>{% endif %}
     </div>
   </div>
-  <div data-market-entrance class="border-y border-neutral-30">
+  <div data-market-navigation data-market-entrance class="border-y border-neutral-30">
     <nav class="market-container flex items-center justify-between gap-4 py-3" aria-label="Marketplace">
       <div data-market-tabs class="relative flex min-w-0 items-center gap-x-5 overflow-x-auto whitespace-nowrap md:gap-x-6">
         <a href="{% url 'clothing_catalog:list' %}" class="market-nav {% if active_section == 'discover' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'discover' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/discover.svg' %}" alt="">Discover</a>

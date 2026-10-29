@@ -2,11 +2,54 @@
   const navbar = document.querySelector("[data-market-navbar]");
   if (!navbar) return;
 
-  // Keep anchor navigation and catalog pagination below the sticky navbar,
-  // including when the search and navigation rows wrap on smaller screens.
+  const navigationRow = navbar.querySelector('[data-market-navigation]') || navbar.querySelector('nav').parentElement;
+  let collapsed = false;
+  let hiddenHeight = 0;
+  let lastScroll = Math.max(0, window.scrollY);
+  let travel = 0;
+  let scrollFrame;
+  const upperIsActive = () => navbar.contains(document.activeElement) && !navigationRow.contains(document.activeElement) && document.activeElement.matches(':focus-visible, input');
   const updateOffset = () => {
-    document.documentElement.style.setProperty("--market-navbar-height", `${navbar.getBoundingClientRect().height}px`);
+    const height = navbar.offsetHeight;
+    hiddenHeight = height - navigationRow.offsetHeight;
+    const root = document.documentElement.style;
+    root.setProperty('--market-navbar-height', `${height}px`);
+    root.setProperty('--market-navbar-visible-height', `${collapsed ? navigationRow.offsetHeight : height}px`);
+    navbar.style.setProperty('--market-header-top', collapsed ? `-${hiddenHeight}px` : '0px');
   };
+  const expand = () => {
+    collapsed = false;
+    travel = 0;
+    lastScroll = Math.max(0, window.scrollY);
+    updateOffset();
+  };
+  const onScroll = () => {
+    scrollFrame = undefined;
+    const y = Math.max(0, Math.min(window.scrollY, document.documentElement.scrollHeight - innerHeight));
+    const delta = y - lastScroll;
+    lastScroll = y;
+    if (Math.sign(delta) !== Math.sign(travel)) travel = 0;
+    travel += delta;
+    if (y <= 16 || upperIsActive() || navbar.querySelector('details[open]')) {
+      if (collapsed) expand();
+      return;
+    }
+    if (Math.abs(travel) < 12) return;
+    const next = travel > 0 && y > hiddenHeight;
+    if (travel < 0 || next) {
+      if (collapsed !== next) {
+        collapsed = next;
+        updateOffset();
+      }
+      travel = 0;
+    }
+  };
+  window.addEventListener('scroll', () => {
+    if (!scrollFrame) scrollFrame = requestAnimationFrame(onScroll);
+  }, { passive: true });
+  navbar.addEventListener('focusin', () => { if (upperIsActive()) expand(); });
+  document.addEventListener('marketplace:pending', expand);
+  document.addEventListener('marketplace:ready', expand);
   updateOffset();
   new ResizeObserver(updateOffset).observe(navbar);
 
