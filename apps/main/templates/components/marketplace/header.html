@@ -38,7 +38,7 @@
   </div>
   <div class="border-y border-neutral-30">
     <nav class="market-container flex items-center justify-between gap-4 py-3" aria-label="Marketplace">
-      <div class="flex min-w-0 items-center gap-x-5 overflow-x-auto whitespace-nowrap md:gap-x-6">
+      <div data-market-tabs class="relative flex min-w-0 items-center gap-x-5 overflow-x-auto whitespace-nowrap md:gap-x-6">
         <a href="{% url 'clothing_catalog:list' %}" class="market-nav {% if active_section == 'discover' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'discover' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/discover.svg' %}" alt="">Discover</a>
         <a href="{% url 'swap_request:list' %}" class="market-nav {% if active_section == 'swaps' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'swaps' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/swaps.svg' %}" alt="">My swaps</a>
         <a href="{% url 'chat:list' %}" class="market-nav {% if active_section == 'messages' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'messages' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/messages.svg' %}" alt="">Messages</a>

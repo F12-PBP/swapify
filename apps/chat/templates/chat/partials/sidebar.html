@@ -1,8 +1,8 @@
 {% load static %}
 
 <aside
-    class="chat-sidebar min-h-0 flex-col gap-6 border-neutral-40 p-5
-            md:border-r md:p-7
+    class="chat-sidebar min-h-0 w-full shrink-0 flex-col gap-6 border-neutral-40 p-5
+            md:w-[21rem] md:border-r md:p-7
             {% if hide_on_mobile %}hidden md:flex{% else %}flex{% endif %}"
     aria-label="Daftar percakapan"
     >
@@ -49,10 +49,12 @@
         </a>
     </p>
 
-    <nav class="min-h-0 overflow-y-auto" aria-label="Percakapan">
+    <p data-chat-navigation-status role="status" class="text-b9 text-red-base" hidden>We couldn’t open that conversation. Please select it again to retry.</p>
+
+    <nav data-chat-rooms class="relative min-h-0 overflow-y-auto" aria-label="Percakapan">
         {% for room in chat_rooms %}
         <a
-            class="chat-room flex min-h-18 items-center gap-3
+            class="chat-room relative z-10 flex min-h-18 items-center gap-3
                 border-l-4 border-transparent px-3 py-4
                 hover:bg-neutral-20
                 aria-[current=page]:border-l-primary-base

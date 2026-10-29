@@ -1,8 +1,10 @@
 {% extends "marketplace/base.html" %}
 {% load static %}
 
+{% block main_spacing %}py-4{% endblock %}
+
 {% block content %}
-<div class="-my-4 md:my-0 lg:-my-2 [&_[hidden]]:hidden!">
+<div class="min-w-0 [&_[hidden]]:hidden!">
     {% block chat_content %}{% endblock %}
 </div>
 {% endblock %}

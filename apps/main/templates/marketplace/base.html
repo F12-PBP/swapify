@@ -12,7 +12,7 @@
 <body class="marketplace bg-neutral-10 font-sans text-neutral-100">
   <a class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-neutral-10 focus:p-4" href="#main-content">Skip to content</a>
   {% include "components/marketplace/header.html" %}
-  <main id="main-content" class="market-container min-h-[60vh] py-8 md:py-10 lg:py-12">
+  <main id="main-content" class="market-container min-h-[60vh] {% block main_spacing %}py-8 md:py-10 lg:py-12{% endblock %}">
     {% if messages %}
       <div class="mb-6 flex flex-col gap-2" role="status">
         {% for message in messages %}
@@ -39,7 +39,8 @@
   {% endif %}
   {% block dialogs %}{% endblock %}
   <script src="{% static 'js/design-system-dropdown.js' %}" defer></script>
-  <script src="{% static 'main/js/marketplace-navbar.js' %}?v=shared-layout-1" defer></script>
+  <script src="{% static 'main/js/marketplace-motion.js' %}" defer></script>
+  <script src="{% static 'main/js/marketplace-navbar.js' %}?v=shared-layout-2" defer></script>
   {% block scripts %}{% endblock %}
   {% include "components/swapy-companion.html" %}
 </body>

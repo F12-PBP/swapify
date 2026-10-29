@@ -90,6 +90,7 @@
       if (preserveLayout) results.style.minHeight = `${results.getBoundingClientRect().height}px`;
       else results.style.removeProperty("min-height");
       results.innerHTML = data.html;
+      window.SwapifyMotion?.reveal(results);
       synchronize(data.filters);
       filterErrors.hidden = !data.has_errors;
       const target = canonicalURL(data.filters, data.page);

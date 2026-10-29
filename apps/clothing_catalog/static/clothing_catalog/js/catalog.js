@@ -99,6 +99,7 @@
       if (preserveLayout) results.style.minHeight = `${results.getBoundingClientRect().height}px`;
       else results.style.removeProperty("min-height");
       results.innerHTML = data.html;
+      window.SwapifyMotion?.reveal(results);
       synchronize(data.filters, target);
       document.getElementById("catalog-filter-errors").hidden = Object.keys(data.errors).length === 0;
       if (history === "push" && target.href !== window.location.href) window.history.pushState(null, "", target);

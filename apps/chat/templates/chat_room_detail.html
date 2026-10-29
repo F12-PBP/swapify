@@ -3,14 +3,13 @@
 
 {% block title %}Chat dengan {{ partner.get_username }} · Swapify{% endblock %}
 
-{% block content %}
+{% block chat_content %}
 <section
-    class="chat-page grid min-h-96 grid-cols-[minmax(0,1fr)]
+    class="chat-page flex min-h-96
             overflow-hidden rounded-2xl border border-neutral-40
             bg-neutral-10
             h-[calc(100dvh_-_var(--market-navbar-height,15rem)_-_2rem)]
-            md:h-[min(41.25rem,calc(100dvh_-_var(--market-navbar-height,12.625rem)_-_5rem))]
-            md:grid-cols-[21rem_minmax(0,1fr)]
+            md:h-[calc(100dvh_-_var(--market-navbar-height,12.625rem)_-_2rem)]
             md:rounded-[1.75rem]
             max-md:has-[.chat-composer:focus-within]:fixed
             max-md:has-[.chat-composer:focus-within]:inset-x-0
@@ -32,7 +31,7 @@
     >
     {% include "chat/partials/sidebar.html" with hide_on_mobile=True %}
 
-    <div class="chat-pane flex min-h-0 min-w-0 flex-col">
+    <div class="chat-pane flex min-h-0 min-w-0 flex-1 flex-col">
         <header
         class="flex shrink-0 items-center gap-2 border-b
                 border-neutral-40 p-3 md:gap-4 md:p-7"

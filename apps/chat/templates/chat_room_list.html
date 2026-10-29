@@ -6,12 +6,11 @@
 {% block chat_content %}
 {% if chat_rooms %}
     <section
-        class="chat-page grid min-h-96 grid-cols-[minmax(0,1fr)]
+        class="chat-page flex min-h-96
             overflow-hidden rounded-2xl border border-neutral-40
             bg-neutral-10
             h-[calc(100dvh_-_var(--market-navbar-height,15rem)_-_2rem)]
-            md:h-[min(41.25rem,calc(100dvh_-_var(--market-navbar-height,12.625rem)_-_5rem))]
-            md:grid-cols-[21rem_minmax(0,1fr)]
+            md:h-[calc(100dvh_-_var(--market-navbar-height,12.625rem)_-_2rem)]
             md:rounded-[1.75rem]"
         data-chat-root
         data-unread-url="{% url 'chat:list' %}"
@@ -19,8 +18,8 @@
         {% include "chat/partials/sidebar.html" %}
 
         <div
-        class="chat-placeholder hidden place-items-center
-                bg-secondary-10 p-6 text-center text-secondary-50 md:grid"
+        class="chat-placeholder hidden flex-1 items-center justify-center
+                bg-secondary-10 p-6 text-center text-secondary-50 md:flex"
         >
         Choose a chatroom to send messages
         </div>

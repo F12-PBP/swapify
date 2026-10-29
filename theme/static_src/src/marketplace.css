@@ -16,6 +16,9 @@
   .market-outline { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border-[1.6px] border-primary-base px-5 py-3 font-semibold text-primary-base transition-colors hover:bg-primary-10; }
   .market-danger { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-red-base px-5 py-3 font-semibold text-neutral-20 shadow-[0_4px_32px_rgb(0_0_0/0.04)] transition-colors hover:bg-red-70 disabled:cursor-wait disabled:opacity-60; }
   .market-nav { @apply inline-flex items-center gap-3 border-b-2 pb-2 text-b8 text-neutral-80 transition-colors hover:text-primary-base; }
+  .market-button, .market-secondary, .market-outline { @apply motion-safe:transition-[background-color,color,transform] motion-safe:duration-200 motion-safe:active:scale-[.98]; }
+  [data-market-tabs][data-indicator-ready] .market-nav { border-bottom-color: transparent; }
+  [data-chat-rooms][data-indicator-ready] .chat-room[aria-current="page"] { border-left-color: transparent; background: transparent; }
   .marketplace a:focus-visible, .marketplace button:focus-visible, .marketplace summary:focus-visible { @apply outline-2 outline-offset-4 outline-primary-base; }
   .marketplace form:has(#market-search:focus-visible) { @apply ring-2 ring-primary-base; }
   .market-chip { @apply rounded-full border border-neutral-60 px-5 py-2 text-b7 text-neutral-80 transition-colors hover:border-primary-base hover:text-primary-base; }
