@@ -9,7 +9,9 @@ from django.views.generic import DetailView, ListView
 
 from . import services
 from .forms import ChatMessageForm
+from .http import error_response, json_response, wants_json
 from .models import ChatMessage, ChatRoom, SwapRequest
+from .serializers import serialize_message
 
 
 class ChatRoomListView(LoginRequiredMixin, ListView):
@@ -93,26 +95,56 @@ class ChatRoomDetailView(LoginRequiredMixin, DetailView):
 
 
 class MessageCreateView(LoginRequiredMixin, View):
-    """Terima pesan baru (POST). Ditolak kalau chat tidak aktif."""
+    """Kirim pesan melalui AJAX atau form biasa."""
 
     http_method_names = ["post"]
 
     def post(self, request, pk):
+        ajax = wants_json(request)
+
         room = get_object_or_404(
             ChatRoom.objects.for_user(request.user).with_related(), pk=pk
         )
 
         form = ChatMessageForm(request.POST)
+
         if not form.is_valid():
-            messages.error(
-                request, "Pesan tidak boleh kosong atau lebih dari 2000 karakter."
-            )
+            error_message = "Pesan tidak boleh kosong atau lebih dari 2000 karakter."
+
+            if ajax:
+                return error_response(
+                    "invalid_message",
+                    error_message,
+                    status=400,
+                    errors=form.errors.get_json_data(),
+                )
+
+            messages.error(request, error_message)
             return redirect("chat:detail", pk=room.pk)
 
         try:
-            services.send_message(room, request.user, form.cleaned_data["message"])
+            message = services.send_message(
+                room, request.user, form.cleaned_data["message"]
+            )
+
         except services.ChatNotAllowed as error:
+            if ajax:
+                return error_response(
+                    "chat_inactive",
+                    str(error),
+                    status=409,
+                )
             messages.error(request, str(error))
+            return redirect("chat:detail", pk=room.pk)
+
+        if ajax:
+            return json_response(
+                {
+                    "ok": True,
+                    "message": serialize_message(message, request.user),
+                },
+                status=201,
+            )
 
         return redirect("chat:detail", pk=room.pk)
 
