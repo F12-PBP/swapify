@@ -6,10 +6,11 @@
   {% include "components/marketplace/marquee.html" %}
   <div class="market-container flex flex-wrap items-center justify-between gap-x-5 gap-y-3 py-4 lg:flex-nowrap lg:gap-10 lg:py-6">
     {% include "components/marketplace/logo.html" %}
-    <form method="get" action="{% url 'clothing_catalog:list' %}#finds" role="search" class="order-last flex h-12 w-full items-center gap-3 rounded-full border border-neutral-40 bg-neutral-20 px-5 lg:order-none lg:max-w-[620px] lg:flex-1">
-      <button type="submit" aria-label="Search clothing" class="cursor-pointer p-1"><img src="{% static 'main/icons/marketplace/search.svg' %}" alt=""></button>
-      <label for="market-search" class="sr-only">Search clothing</label>
-      <input id="market-search" name="search" type="search" value="{{ filters.search }}" placeholder="Find your next favourite..." maxlength="150" class="min-w-0 flex-1 bg-transparent text-b9 text-neutral-100 outline-none placeholder:text-neutral-70">
+    <form method="get" action="{% if active_tab == 'wardrobe' %}{{ request.path }}{% else %}{% url 'clothing_catalog:list' %}#finds{% endif %}" data-discovery-action="{% url 'clothing_catalog:list' %}#finds" role="search" class="order-last flex h-12 w-full items-center gap-3 rounded-full border border-neutral-40 bg-neutral-20 px-5 lg:order-none lg:max-w-[620px] lg:flex-1">
+      <button type="submit" aria-label="{% if active_tab == 'wardrobe' %}Search this wardrobe{% else %}Search clothing{% endif %}" class="cursor-pointer p-1"><img src="{% static 'main/icons/marketplace/search.svg' %}" alt=""></button>
+      <label for="market-search" class="sr-only">{% if active_tab == 'wardrobe' %}Search this wardrobe{% else %}Search clothing{% endif %}</label>
+      <input id="market-search" name="search" type="search" value="{{ filters.search }}" placeholder="{% if active_tab == 'wardrobe' %}Search this wardrobe...{% else %}Find your next favourite...{% endif %}" maxlength="150" class="min-w-0 flex-1 bg-transparent text-b9 text-neutral-100 outline-none placeholder:text-neutral-70">
+      {% if active_tab %}<input type="hidden" name="tab" value="wardrobe" {% if active_tab != 'wardrobe' %}disabled{% endif %}>{% endif %}
       {% if filters.type %}<input type="hidden" name="type" value="{{ filters.type }}">{% endif %}
       {% if filters.size %}<input type="hidden" name="size" value="{{ filters.size }}">{% endif %}
       {% if filters.condition %}<input type="hidden" name="condition" value="{{ filters.condition }}">{% endif %}

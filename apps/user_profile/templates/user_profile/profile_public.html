@@ -68,7 +68,7 @@
       </form>
       {% if is_owner %}<a href="{% url 'clothing_catalog:my_list' %}" class="self-start text-b8 font-semibold text-primary-base underline">Manage clothing</a>{% endif %}
       <p data-member-feedback role="status" aria-live="polite" class="sr-only text-b9 text-neutral-80"></p>
-      <div data-member-results aria-busy="false">{% include "user_profile/partials/public_wardrobe_results.html" %}</div>
+      <div id="member-wardrobe-results" data-member-results aria-busy="false">{% include "user_profile/partials/public_wardrobe_results.html" %}</div>
     </div>
   </section>
 </div>

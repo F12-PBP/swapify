@@ -678,6 +678,24 @@ class PublicProfileTests(TestCase):
         )
         self.assertEqual(response.context["active_tab"], "wardrobe")
 
+    def test_shared_search_targets_open_wardrobe_with_native_fallback(self):
+        response = self.client.get(
+            self.public_url(), {"tab": "wardrobe", "search": "denim", "size": "M"}
+        )
+        self.assertContains(
+            response, f'action="{self.public_url()}" data-discovery-action='
+        )
+        self.assertContains(response, 'aria-label="Search this wardrobe"')
+        self.assertContains(response, 'name="tab" value="wardrobe" >')
+        self.assertContains(response, 'id="member-wardrobe-results"')
+        response = self.client.get(self.public_url(), {"tab": "profile"})
+        catalog = reverse("clothing_catalog:list")
+        self.assertContains(
+            response, f'action="{catalog}#finds" data-discovery-action='
+        )
+        self.assertContains(response, 'aria-label="Search clothing"')
+        self.assertContains(response, 'name="tab" value="wardrobe" disabled')
+
     def test_wardrobe_filters_remain_scoped_and_return_partial_results(self):
         other = get_user_model().objects.create_user(username="filter_other")
         details = {"type": "top", "size": "M", "condition": "good"}
