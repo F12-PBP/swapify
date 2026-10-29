@@ -152,6 +152,7 @@ window.MarketplacePages.register((scope) => {
       status.textContent = "We couldn’t update this swap. Refresh My swaps and try again.";
       return;
     }
+    window.SwapToast?.show(result.message, { type: response.ok ? "success" : "error" });
     announceChange();
     await load(detailURL, VIEWS.detail, { message: result.message });
   };
@@ -163,6 +164,7 @@ window.MarketplacePages.register((scope) => {
       const result = await response.json();
       render(result.html);
       status.textContent = "";
+      window.SwapToast?.show("Your swap request has been sent.", { type: "success" });
       announceChange();
     } else if (response.status === 400 || response.status === 409) {
       render(await response.text());
@@ -185,6 +187,7 @@ window.MarketplacePages.register((scope) => {
       else await submitProposal(form);
     } catch {
       status.textContent = "We couldn’t confirm this change. Check My swaps before trying again.";
+      window.SwapToast?.show(status.textContent, { type: "error" });
     } finally {
       setSubmitting(form, false);
     }

@@ -133,6 +133,7 @@ window.MarketplacePages.register((scope) => {
       } catch {
         if (revision !== lifecycle || !dialog.open) return;
         status.textContent = 'Your changes could not be saved. Please try again.';
+        window.SwapToast?.show(status.textContent, { type: 'error' });
         button.disabled = false;
         form.removeAttribute('aria-busy');
       } finally {

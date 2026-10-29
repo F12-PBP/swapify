@@ -112,6 +112,7 @@ window.MarketplacePages.register((scope) => {
     } catch {
       if (sequence !== requestSequence) return;
       status.textContent = "We couldn’t update your finds. Your previous results are still shown.";
+      window.SwapToast?.show(status.textContent, { type: "error" });
       retry.hidden = false;
     } finally {
       scope.clearTimeout(timeout);

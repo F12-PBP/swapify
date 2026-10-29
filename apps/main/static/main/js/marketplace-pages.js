@@ -200,6 +200,7 @@
       window.SwapDropdown?.init(dialogs);
       window.SwapLocation?.init();
       for (const source of scripts) definitions.get(new URL(source, url).pathname)?.(page);
+      window.SwapToast?.consume(main);
       window.SwapifyMotion?.page(main);
       const anchor = url.hash && document.getElementById(url.hash.slice(1));
       if (anchor && main.contains(anchor)) anchor.scrollIntoView({ block: "start", behavior: "instant" });
@@ -216,6 +217,7 @@
       if (committed || page.signal.aborted) { location.assign(url); return; }
       notice.textContent = "We couldn’t open that page. Your current page is still available; select the tab again to retry.";
       notice.hidden = false;
+      window.SwapToast?.show(notice.textContent, { type: "error" });
       status.textContent = "Page could not be loaded.";
       if (!push) history.replaceState(null, "", currentURL);
       else currentURL = previousURL;

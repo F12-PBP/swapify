@@ -197,6 +197,7 @@ window.MarketplacePages.register((scope) => {
             action.textContent = label;
         }
         function handleError(error, owner) {
+            if (owner === "send") window.SwapToast?.show(error.message, { type: "error" });
             if ([401, 403, 404].includes(error.status)) {
             halted = true;
             scope.clearTimeout(timer);

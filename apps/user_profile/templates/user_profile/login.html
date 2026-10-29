@@ -6,7 +6,6 @@
     <h1 id="auth-title" class="font-display text-h3 font-bold text-primary-base">Hello again.</h1>
     <p class="text-b7">Your wardrobe’s next favourite is waiting for you.</p>
   </div>
-  {% for message in messages %}<p role="status" class="alert swap-alert swap-alert-success text-b8">{{ message }}</p>{% endfor %}
   {% if form.non_field_errors %}<div role="alert" class="alert swap-alert swap-alert-error text-b8">{{ form.non_field_errors }}</div>{% endif %}
   <form method="post" class="flex flex-col gap-[38px]">
     {% csrf_token %}
