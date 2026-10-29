@@ -1,7 +1,5 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Max, OuterRef, Q, Subquery
-from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
@@ -10,9 +8,10 @@ from django.views.generic import DetailView, ListView
 from . import services
 from .forms import ChatMessageForm
 from .http import JsonChatMixin, error_response, json_response, wants_json
-from .models import ChatMessage, ChatRoom, SwapRequest
+from .models import ChatRoom, SwapRequest
 from .queries import (
     InvalidMessageQuery,
+    conversation_rooms,
     message_page,
     page_parameters,
     read_receipts,
@@ -28,32 +27,7 @@ class ChatRoomListView(LoginRequiredMixin, ListView):
     context_object_name = "chat_rooms"
 
     def get_queryset(self):
-        user = self.request.user
-        last_message = ChatMessage.objects.filter(chat_room=OuterRef("pk")).order_by(
-            "-sent_at", "-id"
-        )
-        return (
-            ChatRoom.objects.for_user(user)
-            .with_related()
-            .annotate(
-                last_activity=Coalesce(Max("messages__sent_at"), "created_at"),
-                unread_count=Count(
-                    "messages",
-                    filter=Q(messages__is_read=False) & ~Q(messages__sender=user),
-                ),
-                last_message=Subquery(last_message.values("message")[:1]),
-                last_sender_id=Subquery(last_message.values("sender_id")[:1]),
-            )
-            .order_by("-last_activity", "-id")
-        )
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        rooms = list(context["chat_rooms"])
-        for room in rooms:
-            room.partner = room.other_user(self.request.user)
-        context["chat_rooms"] = rooms
-        return context
+        return conversation_rooms(self.request.user)
 
 
 class StartChatView(LoginRequiredMixin, View):
@@ -104,6 +78,7 @@ class ChatRoomDetailView(LoginRequiredMixin, DetailView):
         )
 
         context.update(
+            chat_rooms=conversation_rooms(user),
             chat_messages=batch,
             partner=room.other_user(user),
             is_active=room.is_active,

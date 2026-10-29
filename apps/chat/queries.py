@@ -1,3 +1,8 @@
+from django.db.models import Count, Max, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce
+
+from .models import ChatMessage, ChatRoom
+
 MAX_ID = (1 << 63) - 1
 DEFAULT_PAGE_SIZE = 30
 MAX_PAGE_SIZE = 100
@@ -97,3 +102,29 @@ def read_receipts(room, user, ids):
         queryset = queryset.filter(id__in=ids)
 
     return list(queryset.values("id", "is_read")[:MAX_RECEIPTS])
+
+
+def conversation_rooms(user):
+    last_message = ChatMessage.objects.filter(chat_room=OuterRef("pk")).order_by(
+        "-sent_at", "-id"
+    )
+
+    rooms = list(
+        ChatRoom.objects.for_user(user)
+        .with_related()
+        .annotate(
+            last_activity=Coalesce(Max("messages__sent_at"), "created_at"),
+            unread_count=Count(
+                "messages",
+                filter=Q(messages__is_read=False) & ~Q(messages__sender=user),
+            ),
+            last_message=Subquery(last_message.values("message")[:1]),
+            last_sender_id=Subquery(last_message.values("sender_id")[:1]),
+        )
+        .order_by("-last_activity", "-id")
+    )
+
+    for room in rooms:
+        room.partner = room.other_user(user)
+
+    return rooms
