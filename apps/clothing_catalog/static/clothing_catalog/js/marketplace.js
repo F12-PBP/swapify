@@ -26,10 +26,13 @@
     });
   });
 
+  // The swap dialog shows proposals, swap details, and their follow-up steps.
+  // Every link and form inside it still works as a normal page without script.
   const swapDialog = document.getElementById("propose-swap");
   if (!swapDialog) return;
   const content = swapDialog.querySelector("[data-swap-content]");
   const status = swapDialog.querySelector("[data-swap-status]");
+  const closeButton = swapDialog.querySelector("[data-dialog-close]");
   let loadSequence = 0;
   const request = async (url, options = {}) => {
     const controller = new AbortController();
@@ -50,6 +53,13 @@
     window.location.assign(response.url);
     return true;
   };
+  const announceChange = () => document.dispatchEvent(new CustomEvent("swap:changed"));
+  const render = (html, { focusField = false } = {}) => {
+    content.innerHTML = html;
+    window.SwapDropdown?.init(content);
+    const field = focusField && content.querySelector("[data-swap-form] summary, [data-swap-form] select");
+    (field || content.querySelector("#swap-title"))?.focus();
+  };
   const showFormErrors = () => {
     const error = content.querySelector('[role="alert"]');
     if (error) {
@@ -57,76 +67,123 @@
       error.focus();
     }
   };
-  swapDialog.addEventListener("close", () => { loadSequence += 1; });
-  document.addEventListener("click", async (event) => {
-    const link = event.target.closest("a[data-swap-link]");
-    if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
+  const VIEWS = {
+    propose: {
+      title: "Propose a swap",
+      loading: "Finding your available pieces…",
+      missing: "This piece is no longer available for a new swap. Please choose another.",
+    },
+    detail: {
+      title: "Swap Detail",
+      loading: "Opening this swap…",
+      missing: "This swap is no longer available. Refresh My swaps to see the latest updates.",
+    },
+  };
+
+  const load = async (url, view, { message = "" } = {}) => {
     const sequence = ++loadSequence;
-    content.replaceChildren();
-    const heading = document.createElement("h2");
-    heading.id = "swap-title";
-    heading.className = "font-display text-h4 text-primary-base";
-    heading.textContent = "Propose a swap";
-    content.append(heading);
-    status.textContent = "Finding your available pieces…";
+    // Moving between steps keeps the current step visible until the next one
+    // arrives, so the dialog never collapses to an empty frame.
+    if (swapDialog.open) {
+      content.inert = true;
+    } else {
+      content.replaceChildren();
+      const heading = document.createElement("h2");
+      heading.id = "swap-title";
+      heading.className = "font-display text-h4 text-primary-base";
+      heading.textContent = view.title;
+      content.append(heading);
+    }
+    status.textContent = message || view.loading;
     openDialog(swapDialog);
     try {
-      const response = await request(link.href);
+      const response = await request(url);
       if (sequence !== loadSequence || !swapDialog.open || followSignIn(response)) return;
-      if (!response.ok) {
-        status.textContent = response.status === 404
-          ? "This piece is no longer available for a new swap. Please choose another."
-          : "We couldn’t load this swap. Close this window and try again.";
+      if (!response.ok && response.status !== 409) {
+        status.textContent = response.status === 404 ? view.missing : "We couldn’t load this swap. Close this window and try again.";
         return;
       }
       const html = await response.text();
       if (sequence !== loadSequence || !swapDialog.open) return;
-      content.innerHTML = html;
-      window.SwapDropdown?.init(content);
-      status.textContent = "";
-      content.querySelector("summary, select, a")?.focus();
+      render(html, { focusField: view === VIEWS.propose && response.ok });
+      status.textContent = message;
     } catch {
       if (sequence === loadSequence && swapDialog.open) status.textContent = "We couldn’t connect. Close this window and try again.";
+    } finally {
+      if (sequence === loadSequence) content.inert = false;
+    }
+  };
+
+  swapDialog.addEventListener("close", () => {
+    loadSequence += 1;
+    content.inert = false;
+  });
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest("a[data-swap-link], a[data-swap-detail]");
+    if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    load(link.href, link.hasAttribute("data-swap-detail") ? VIEWS.detail : VIEWS.propose);
+  });
+  swapDialog.addEventListener("click", (event) => {
+    // On the discovery page, keep the visitor's place instead of reloading it.
+    if (event.target.closest("[data-swap-keep-discovering]") && document.querySelector("[data-catalog]")) {
+      event.preventDefault();
+      swapDialog.close();
     }
   });
+
+  const setSubmitting = (form, submitting) => {
+    swapDialog.dataset.submitting = String(submitting);
+    if (submitting) form.setAttribute("aria-busy", "true");
+    else form.removeAttribute("aria-busy");
+    form.querySelectorAll('button[type="submit"]').forEach((button) => { button.disabled = submitting; });
+    closeButton.disabled = submitting;
+  };
+  const submitAction = async (form) => {
+    const detailURL = form.closest("[data-swap-detail-url]")?.dataset.swapDetailUrl;
+    status.textContent = "Updating this swap…";
+    const response = await request(form.action, { method: "POST", body: new FormData(form) });
+    if (followSignIn(response)) return;
+    const result = await response.json().catch(() => null);
+    if (!result || !detailURL) {
+      status.textContent = "We couldn’t update this swap. Refresh My swaps and try again.";
+      return;
+    }
+    announceChange();
+    await load(detailURL, VIEWS.detail, { message: result.message });
+  };
+  const submitProposal = async (form) => {
+    status.textContent = "Sending your swap request…";
+    const response = await request(form.action, { method: "POST", body: new FormData(form) });
+    if (followSignIn(response)) return;
+    if (response.status === 201) {
+      const result = await response.json();
+      render(result.html);
+      status.textContent = "";
+      announceChange();
+    } else if (response.status === 400 || response.status === 409) {
+      render(await response.text());
+      status.textContent = response.status === 400 ? "Please review the highlighted details." : "";
+      showFormErrors();
+    } else {
+      status.textContent = response.status === 404
+        ? VIEWS.propose.missing
+        : "We couldn’t confirm your request. Check My swaps before trying again.";
+    }
+  };
   swapDialog.addEventListener("submit", async (event) => {
-    const form = event.target.closest("[data-swap-form]");
+    const form = event.target.closest("[data-swap-form], [data-swap-action]");
     if (!form) return;
     event.preventDefault();
     if (swapDialog.dataset.submitting === "true") return;
-    swapDialog.dataset.submitting = "true";
-    form.setAttribute("aria-busy", "true");
-    const button = form.querySelector('button[type="submit"]');
-    const closeButton = swapDialog.querySelector("[data-dialog-close]");
-    button.disabled = true;
-    closeButton.disabled = true;
-    status.textContent = "Sending your swap request…";
+    setSubmitting(form, true);
     try {
-      const response = await request(form.action, { method: "POST", body: new FormData(form) });
-      if (followSignIn(response)) return;
-      if (response.status === 201) {
-        const result = await response.json();
-        window.location.assign(result.redirect);
-        return;
-      }
-      if (response.status === 400) {
-        content.innerHTML = await response.text();
-        window.SwapDropdown?.init(content);
-        status.textContent = "Please review the highlighted details.";
-        showFormErrors();
-      } else {
-        status.textContent = response.status === 404
-          ? "This piece is no longer available. Close this window and choose another."
-          : "We couldn’t confirm your request. Check My swaps before trying again.";
-      }
+      if (form.hasAttribute("data-swap-action")) await submitAction(form);
+      else await submitProposal(form);
     } catch {
-      status.textContent = "We couldn’t confirm your request. Check My swaps before trying again.";
+      status.textContent = "We couldn’t confirm this change. Check My swaps before trying again.";
     } finally {
-      swapDialog.dataset.submitting = "false";
-      form.removeAttribute("aria-busy");
-      button.disabled = false;
-      closeButton.disabled = false;
+      setSubmitting(form, false);
     }
   });
 })();

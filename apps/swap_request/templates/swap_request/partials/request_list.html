@@ -1,25 +1,31 @@
+{% load lucide %}
 {% if swap_requests %}
-    <div class="grid gap-3">
-        {% for swap_request in swap_requests %}
-            <div class="card border border-base-300 bg-base-100 shadow-sm">
-                <div class="card-body flex-row flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <p class="font-medium">{{ swap_request.offered_clothing.name }} ⇄ {{ swap_request.requested_clothing.name }}</p>
-                        <p class="mt-1 text-sm text-base-content/60">
-                            {% if swap_request.requester == user %}Ke {{ swap_request.owner.username }}{% else %}Dari {{ swap_request.requester.username }}{% endif %}
-                            · {{ swap_request.created_at|date:"j M Y" }}
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        {% include "swap_request/partials/status_badge.html" %}
-                        <a class="btn btn-outline btn-sm" href="{{ swap_request.get_absolute_url }}">Lihat detail</a>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
+  <p class="text-b9 text-neutral-80">{{ paginator.count }} swap{{ paginator.count|pluralize }}{% if has_filters %} found{% endif %}</p>
+  <div class="mt-4 flex flex-col gap-4">
+    {% for swap_request in swap_requests %}{% include "swap_request/partials/request_card.html" %}{% endfor %}
+  </div>
+  {% if is_paginated %}
+  <nav aria-label="Swap request pages" class="mt-10 flex flex-wrap items-center justify-center gap-4 text-b8">
+    {% if page_obj.has_previous %}<a class="market-secondary" data-swap-filter-link data-swap-page href="{% querystring page=page_obj.previous_page_number %}">← Previous</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="market-secondary" data-swap-filter-link data-swap-page href="{% querystring page=page_obj.next_page_number %}">Next →</a>{% endif %}
+  </nav>
+  {% endif %}
+{% elif has_filters %}
+  <div class="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-neutral-50 bg-neutral-20 px-6 py-16 text-center">
+    <h2 class="font-display text-h5 text-primary-base">No swaps match these filters.</h2>
+    <p class="text-b8 text-neutral-80">Try another name or status to find the swap you’re looking for.</p>
+    <a class="market-secondary text-b8" href="{% url 'swap_request:list' %}" data-swap-filter-link>Show all swaps</a>
+  </div>
 {% else %}
-    <div class="rounded-box border border-dashed border-base-300 p-8 text-center">
-        <p class="text-base-content/70">{{ empty_text }}</p>
+  <div class="flex flex-col items-center gap-5 rounded-3xl bg-secondary-10 px-6 py-20 text-center shadow-[4px_4px_32px_rgb(0_0_0/0.04)] md:py-24">
+    <span class="text-secondary-70">{% lucide "arrow-right-left" size=48 stroke_width=1.5 %}</span>
+    <div class="flex flex-col items-center gap-6">
+      <div class="flex flex-col gap-2">
+        <h2 class="font-display text-h5 text-secondary-80">A great swap starts with a hello.</h2>
+        <p class="text-b7 text-secondary-60">Find a piece you love and offer something from your wardrobe.</p>
+      </div>
+      <a class="market-button px-5 text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)]" href="{% url 'clothing_catalog:list' %}">Discover my first swap{% lucide "arrow-right" size=24 %}</a>
     </div>
+  </div>
 {% endif %}

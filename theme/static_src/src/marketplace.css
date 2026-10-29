@@ -13,6 +13,8 @@
   .market-container { @apply mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-20; }
   .market-button { @apply inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-primary-base px-5 py-3 text-b8 font-semibold text-neutral-20 transition-colors hover:bg-primary-60 disabled:cursor-wait disabled:opacity-60; }
   .market-secondary { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-neutral-20 px-5 py-3 font-semibold text-primary-base transition-colors hover:bg-primary-20; }
+  .market-outline { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border-[1.6px] border-primary-base px-5 py-3 font-semibold text-primary-base transition-colors hover:bg-primary-10; }
+  .market-danger { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-red-base px-5 py-3 font-semibold text-neutral-20 shadow-[0_4px_32px_rgb(0_0_0/0.04)] transition-colors hover:bg-red-70 disabled:cursor-wait disabled:opacity-60; }
   .market-nav { @apply inline-flex items-center gap-3 border-b-2 pb-2 text-b8 text-neutral-80 transition-colors hover:text-primary-base; }
   .marketplace a:focus-visible, .marketplace button:focus-visible, .marketplace summary:focus-visible { @apply outline-2 outline-offset-4 outline-primary-base; }
   .marketplace form:has(#market-search:focus-visible) { @apply ring-2 ring-primary-base; }
@@ -22,6 +24,7 @@
   .market-filter:disabled { @apply cursor-not-allowed text-neutral-60; }
   .market-input { @apply min-h-12 w-full min-w-0 rounded-3xl border border-transparent bg-neutral-30 px-5 py-3 text-b7 text-neutral-100 placeholder:text-neutral-60 focus:border-primary-base focus:outline-none; }
   .market-dialog { @apply fixed m-auto w-[calc(100%_-_2rem)] max-w-[524px] max-h-[calc(100dvh_-_2rem)] overflow-y-auto rounded-[32px] border-0 bg-neutral-10 p-6 text-neutral-100 shadow-xl sm:p-9; }
+  .market-dialog:has([data-dialog-compact]) { max-width: 429px; }
   .market-dialog::backdrop { background: rgb(25 23 23 / 35%); backdrop-filter: blur(3px); }
   .market-dialog-open { overflow: hidden; }
   [data-swap-status]:empty { display: none; }
