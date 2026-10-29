@@ -189,6 +189,7 @@
         const data = await response.json();
         if (request !== controller) return;
         results.innerHTML = data.html;
+        results.firstElementChild?.classList.add('motion-safe:animate-profile-reveal', 'motion-safe:[animation-duration:420ms]');
         const rating = new URL(url).searchParams.get('rating') || '';
         reviews.querySelectorAll('[data-review-filter]').forEach((link) => {
           const selected = link.dataset.reviewFilter === rating;

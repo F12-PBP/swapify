@@ -64,6 +64,9 @@
       const data = await response.json();
       if (current !== sequence) return;
       results.innerHTML = data.html;
+      if (!results.closest('[hidden]')) {
+        results.firstElementChild?.classList.add('motion-safe:animate-profile-reveal', 'motion-safe:[animation-duration:420ms]');
+      }
       synchronize(data.filters, url);
       appliedURL = new URL(url);
       if (push && url.href !== location.href) history.pushState(null, '', url);

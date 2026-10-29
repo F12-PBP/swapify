@@ -43,7 +43,6 @@
             <div class="flex flex-col gap-1"><dt class="text-b7 font-semibold">Location</dt><dd class="text-b6">{% if profile.city and profile.province %}{{ profile.city }}, {{ profile.province }}{% else %}Location not shared{% endif %}</dd></div>
           </dl>
           <div class="flex flex-col gap-2"><h2 class="text-b7 font-semibold text-neutral-80">Preferences</h2>{% include "user_profile/partials/style_choices.html" with two_columns=True %}</div>
-          {% if is_owner %}<a href="{% url 'user_profile:edit' %}" class="btn btn-primary-ghost inline-flex items-center justify-center gap-2">{% lucide "pencil" size=16 %}Edit Profile</a>{% endif %}
         </div>
       </div>
       <div id="reviews" class="flex min-w-0 flex-1 scroll-mt-72 flex-col gap-5 motion-safe:animate-profile-reveal motion-safe:[animation-delay:120ms]">
