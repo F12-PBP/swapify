@@ -7,6 +7,7 @@
   const status = feedback.querySelector("[data-swap-status]");
   const retry = feedback.querySelector("[data-swap-retry]");
   const announcer = root.querySelector("[data-swap-announce]");
+  const count = root.querySelector("[data-swap-count]");
   const filterErrors = document.getElementById("swap-filter-errors");
   const fields = ["search", "role", "status"];
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -97,7 +98,10 @@
       appliedURL = target;
       status.textContent = "";
       feedback.classList.add("invisible");
-      announcer.textContent = `${data.count} swap${data.count === 1 ? "" : "s"} shown`;
+      const summary = `${data.count} swap${data.count === 1 ? "" : "s"}`;
+      count.textContent = fields.some((name) => data.filters[name]) ? `${summary} found` : summary;
+      count.hidden = data.count === 0;
+      announcer.textContent = `${summary} shown`;
       if (scroll) root.scrollIntoView({ block: "start", behavior: reduceMotion.matches ? "auto" : "smooth" });
     } catch {
       if (sequence !== requestSequence) return;

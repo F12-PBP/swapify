@@ -19,14 +19,14 @@
       <span class="size-14 shrink-0 overflow-hidden rounded-xl bg-neutral-30">{% if requested.image_url %}<img src="{{ requested.image_url }}" alt="" loading="lazy" width="56" height="56" class="size-full object-cover">{% endif %}</span>
       <div class="flex min-w-0 flex-col gap-1">
         <p class="text-b7 text-neutral-80">Requested</p>
-        <a class="truncate text-b6 font-semibold text-neutral-100 underline underline-offset-4 hover:text-primary-base" href="{{ requested.get_absolute_url }}">{{ requested.name }}</a>
+        <a class="line-clamp-2 text-b6 font-semibold text-neutral-100 underline underline-offset-4 hover:text-primary-base" href="{{ requested.get_absolute_url }}">{{ requested.name }}</a>
       </div>
     </div>
     <div class="flex min-w-0 flex-1 items-center gap-3">
       <span class="size-14 shrink-0 overflow-hidden rounded-xl bg-neutral-30">{% if offered.image_url %}<img src="{{ offered.image_url }}" alt="" loading="lazy" width="56" height="56" class="size-full object-cover">{% endif %}</span>
       <div class="flex min-w-0 flex-col gap-1">
         <p class="text-b7 text-neutral-80">Offered</p>
-        <a class="truncate text-b6 font-semibold text-neutral-100 underline underline-offset-4 hover:text-primary-base" href="{{ offered.get_absolute_url }}">{{ offered.name }}</a>
+        <a class="line-clamp-2 text-b6 font-semibold text-neutral-100 underline underline-offset-4 hover:text-primary-base" href="{{ offered.get_absolute_url }}">{{ offered.name }}</a>
       </div>
     </div>
   </div>

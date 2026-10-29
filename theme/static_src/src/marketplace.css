@@ -25,6 +25,7 @@
   .market-input { @apply min-h-12 w-full min-w-0 rounded-3xl border border-transparent bg-neutral-30 px-5 py-3 text-b7 text-neutral-100 placeholder:text-neutral-60 focus:border-primary-base focus:outline-none; }
   .market-dialog { @apply fixed m-auto w-[calc(100%_-_2rem)] max-w-[524px] max-h-[calc(100dvh_-_2rem)] overflow-y-auto rounded-[32px] border-0 bg-neutral-10 p-6 text-neutral-100 shadow-xl sm:p-9; }
   .market-dialog:has([data-dialog-compact]) { max-width: 429px; }
+  .market-dialog:has([data-dialog-compact]) > [data-dialog-close] { display: none; }
   .market-dialog::backdrop { background: rgb(25 23 23 / 35%); backdrop-filter: blur(3px); }
   .market-dialog-open { overflow: hidden; }
   [data-swap-status]:empty { display: none; }
