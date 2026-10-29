@@ -20,8 +20,9 @@ from django.views.generic import (
     UpdateView,
 )
 
-from apps.clothing_catalog.categories import STYLE_CHOICES
-from apps.clothing_catalog.models import Clothing
+from apps.clothing_catalog.categories import DISCOVERY_TYPES, STYLE_CHOICES
+from apps.clothing_catalog.forms import DiscoveryFilterForm
+from apps.clothing_catalog.selectors import member_listings, viewer_coordinates
 from apps.review_rating.models import Review
 from apps.swap_request.models import SwapRequest
 from common.redirects import safe_return_url
@@ -315,6 +316,24 @@ class PublicProfileDetailView(DetailView):
     template_name = "user_profile/profile_public.html"
     context_object_name = "profile"
 
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get("X-Member-Wardrobe") == "1":
+            response = JsonResponse(
+                {
+                    "html": render_to_string(
+                        "user_profile/partials/public_wardrobe_results.html",
+                        context,
+                        request=self.request,
+                    ),
+                    "filters": context["filters"],
+                    "count": context["clothing_page"].paginator.count,
+                }
+            )
+        else:
+            response = super().render_to_response(context, **response_kwargs)
+        patch_vary_headers(response, ["X-Member-Wardrobe", "Cookie"])
+        return response
+
     def get_queryset(self):
         return Profile.objects.select_related("user").filter(user__is_active=True)
 
@@ -333,13 +352,11 @@ class PublicProfileDetailView(DetailView):
             self.request.user.is_authenticated
             and self.request.user.pk == self.object.user_id
         )
-        clothing_items = (
-            Clothing.objects.filter(
-                owner_id=self.object.user_id,
-                status=Clothing.Status.AVAILABLE,
-            )
-            .select_related("owner__profile")
-            .order_by("-created_at", "-pk")
+        has_location = viewer_coordinates(self.request.user) is not None
+        filter_form = DiscoveryFilterForm(self.request.GET, has_location=has_location)
+        filter_form.is_valid()
+        clothing_items = member_listings(
+            self.request.user, self.object.user_id, filter_form.cleaned_data
         )
         if is_owner:
             pending_requests = SwapRequest.objects.filter(
@@ -351,10 +368,29 @@ class PublicProfileDetailView(DetailView):
             )
         context["is_owner"] = is_owner
         context["clothing_items"] = clothing_items
+        context["clothing_page"] = Paginator(clothing_items, 12).get_page(
+            self.request.GET.get("wardrobe_page")
+        )
+        context["wardrobe_filtered"] = any(
+            filter_form.cleaned_data.get(key)
+            for key in ("search", "type", "size", "condition", "distance")
+        )
+        context["filter_form"] = filter_form
+        context["filters"] = filter_form.cleaned_data
+        context["has_location"] = has_location
+        context["categories"] = DISCOVERY_TYPES
+        context["style_choices"] = profile_style_choices()
+        default_tab = "wardrobe" if is_owner else "profile"
+        if self.request.GET.get("reviews_page"):
+            default_tab = "profile"
+        requested_tab = self.request.GET.get("tab", default_tab)
+        context["active_tab"] = (
+            requested_tab if requested_tab in {"profile", "wardrobe"} else default_tab
+        )
 
         received_reviews = Review.objects.filter(
             recipient_id=self.object.user_id,
-        ).select_related("author")
+        ).select_related("author__profile")
 
         context["rating_summary"] = received_reviews.aggregate(
             average=Avg("rating"),

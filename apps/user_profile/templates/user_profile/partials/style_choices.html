@@ -8,7 +8,7 @@
           <span class="flex min-h-[74px] items-center gap-2 rounded-xl border border-neutral-40 px-3 py-5 text-b8 text-neutral-80 peer-checked:border-primary-base peer-checked:bg-primary-10 peer-checked:text-primary-base peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-base sm:px-6"><img src="{% static icon %}" alt="" class="shrink-0">{{ label }}</span>
         </label>
       {% else %}
-        <li class="flex min-h-[74px] min-w-0 basis-[calc((100%_-_1rem)/2)] items-center gap-2 rounded-xl border px-4 py-5 text-b8 sm:basis-[calc((100%_-_2.5rem)/3)] sm:px-6 {% if value in profile.preferences %}border-primary-20 bg-primary-10 text-primary-base{% else %}border-neutral-40 text-neutral-80{% endif %}"><img src="{% static icon %}" alt="" class="shrink-0">{{ label }}{% if value in profile.preferences %}<span class="sr-only">Selected</span>{% endif %}</li>
+        <li class="flex min-h-[74px] min-w-0 basis-[calc((100%_-_1rem)/2)] items-center gap-2 rounded-xl border px-4 py-5 text-b8 {% if two_columns %}sm:basis-[calc((100%_-_1.25rem)/2)]{% else %}sm:basis-[calc((100%_-_2.5rem)/3)]{% endif %} sm:px-6 {% if value in profile.preferences %}border-primary-20 bg-primary-10 text-primary-base{% else %}border-neutral-40 text-neutral-80{% endif %}"><img src="{% static icon %}" alt="" class="shrink-0">{{ label }}{% if value in profile.preferences %}<span class="sr-only">Selected</span>{% endif %}</li>
       {% endif %}
     {% endwith %}
   {% endfor %}

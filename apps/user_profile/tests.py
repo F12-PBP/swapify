@@ -625,7 +625,7 @@ class PublicProfileTests(TestCase):
     def test_empty_wardrobe_offers_owner_listing_and_visitor_discovery(self):
         self.client.force_login(self.member)
         response = self.client.get(self.public_url())
-        self.assertContains(response, "My Wardrobe")
+        self.assertContains(response, "Nama Publik’s Wardrobe")
         self.assertContains(response, "List your first piece")
         self.assertContains(response, reverse("clothing_catalog:create"))
         self.client.logout()
@@ -656,6 +656,124 @@ class PublicProfileTests(TestCase):
         response = self.client.get(self.public_url())
         self.assertNotContains(response, "-6.123456789")
         self.assertNotContains(response, "106.987654321")
+
+    def test_member_views_have_distinct_active_panels(self):
+        response = self.client.get(self.public_url())
+        self.assertEqual(response.context["active_tab"], "profile")
+        self.assertContains(
+            response,
+            'id="member-wardrobe" aria-labelledby="member-wardrobe-tab" hidden',
+        )
+        self.client.force_login(self.member)
+        response = self.client.get(self.public_url())
+        self.assertEqual(response.context["active_tab"], "wardrobe")
+        response = self.client.get(self.public_url(), {"tab": "profile"})
+        self.assertEqual(response.context["active_tab"], "profile")
+        response = self.client.get(self.public_url(), {"tab": "invalid"})
+        self.assertEqual(response.context["active_tab"], "wardrobe")
+
+    def test_explicit_wardrobe_tab_can_coexist_with_review_pagination(self):
+        response = self.client.get(
+            self.public_url(), {"tab": "wardrobe", "reviews_page": "2"}
+        )
+        self.assertEqual(response.context["active_tab"], "wardrobe")
+
+    def test_wardrobe_filters_remain_scoped_and_return_partial_results(self):
+        other = get_user_model().objects.create_user(username="filter_other")
+        details = {"type": "top", "size": "M", "condition": "good"}
+        matched = Clothing.objects.create(
+            owner=self.member, name="Vintage cotton", **details
+        )
+        Clothing.objects.create(owner=self.member, name="Another piece", **details)
+        Clothing.objects.create(owner=other, name="Vintage other owner", **details)
+        Clothing.objects.create(
+            owner=self.member, name="Vintage reserved", status="reserved", **details
+        )
+        response = self.client.get(
+            self.public_url(),
+            {
+                "tab": "wardrobe",
+                "search": "Vintage",
+                "type": "top",
+                "size": "M",
+                "condition": "good",
+            },
+            HTTP_X_MEMBER_WARDROBE="1",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["count"], 1)
+        self.assertIn(matched.name, data["html"])
+        self.assertNotIn("Vintage other owner", data["html"])
+        self.assertNotIn("Vintage reserved", data["html"])
+        self.assertNotIn("<header", data["html"])
+        self.assertEqual(data["filters"]["type"], "top")
+        self.assertIn("X-Member-Wardrobe", response["Vary"])
+
+    def test_member_distance_filters_use_viewer_location_without_exposing_coordinates(
+        self,
+    ):
+        viewer = get_user_model().objects.create_user(username="nearby_viewer")
+        for user, latitude in ((viewer, -6.2), (self.member, -6.21)):
+            profile = user.profile
+            profile.latitude = latitude
+            profile.longitude = 106.8
+            profile.save()
+        Clothing.objects.create(
+            owner=self.member,
+            name="Nearby piece",
+            type="top",
+            size="M",
+            condition="good",
+        )
+        self.client.force_login(viewer)
+        response = self.client.get(
+            self.public_url(), {"tab": "wardrobe", "distance": "5", "sort": "nearest"}
+        )
+        self.assertEqual(response.context["clothing_page"].paginator.count, 1)
+        self.assertGreater(response.context["clothing_items"][0].distance_km, 1)
+        self.assertNotContains(response, "106.8")
+        profile = viewer.profile
+        profile.latitude = 0
+        profile.save()
+        response = self.client.get(self.public_url(), {"distance": "5"})
+        self.assertEqual(response.context["clothing_page"].paginator.count, 0)
+
+    def test_wardrobe_pagination_and_invalid_filters(self):
+        for index in range(13):
+            Clothing.objects.create(
+                owner=self.member,
+                name=f"Piece {index}",
+                type="top",
+                size="M",
+                condition="good",
+            )
+        response = self.client.get(
+            self.public_url(), {"tab": "wardrobe", "wardrobe_page": "2"}
+        )
+        self.assertEqual(len(response.context["clothing_page"]), 1)
+        self.assertEqual(response.context["clothing_page"].paginator.count, 13)
+        response = self.client.get(
+            self.public_url(), {"size": "bogus", "distance": "5"}
+        )
+        self.assertTrue(response.context["filter_form"].errors)
+        self.assertEqual(response.context["clothing_page"].paginator.count, 13)
+        self.assertTrue(response.context["filter_form"].fields["distance"].disabled)
+
+    def test_visitor_cards_offer_swap_but_owner_cards_do_not(self):
+        Clothing.objects.create(
+            owner=self.member,
+            name="Swap candidate",
+            type="top",
+            size="M",
+            condition="good",
+        )
+        response = self.client.get(self.public_url(), {"tab": "wardrobe"})
+        self.assertContains(response, "Let’s Swap")
+        self.client.force_login(self.member)
+        response = self.client.get(self.public_url(), {"tab": "wardrobe"})
+        self.assertNotContains(response, "Let’s Swap")
+        self.assertContains(response, "View Detail")
 
 
 class ProfileLocationTests(TestCase):
@@ -1326,7 +1444,7 @@ class ProfileReviewTests(TestCase):
             [review.pk for review in first.context["reviews_page"]],
             [review.pk for review in reversed(reviews[1:])],
         )
-        self.assertContains(first, "?reviews_page=2#reviews")
+        self.assertContains(first, "?tab=profile&amp;reviews_page=2#reviews")
         second = self.client.get(self.url, {"reviews_page": 2})
         self.assertEqual(
             [review.pk for review in second.context["reviews_page"]], [reviews[0].pk]
@@ -1336,7 +1454,7 @@ class ProfileReviewTests(TestCase):
         self.assertEqual(
             first.context["rating_summary"], second.context["rating_summary"]
         )
-        self.assertContains(second, "?reviews_page=1#reviews")
+        self.assertContains(second, "?tab=profile&amp;reviews_page=1#reviews")
 
         for value, expected_page in (("invalid", 1), ("999", 2), ("-1", 2)):
             with self.subTest(page=value):
