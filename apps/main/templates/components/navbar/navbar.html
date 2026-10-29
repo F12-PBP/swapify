@@ -4,10 +4,10 @@
         <a href="{% url 'main:home' %}#hero" class="flex shrink-0 items-center gap-3 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-base" aria-label="Swapify home">
             {% include "components/brand/logo.html" %}
         </a>
-        <ul class="hidden items-center gap-10 font-sans text-s7 font-semibold text-neutral-70 xl:flex">
+        <ul class="hidden items-center gap-4 font-sans text-s8 font-semibold text-neutral-70 xl:flex">
             {% include "components/navbar/navbar-links.html" %}
         </ul>
-        <div class="hidden shrink-0 items-center gap-5 xl:flex">
+        <div class="hidden shrink-0 items-center gap-2 xl:flex [&_.btn]:w-auto [&_.btn]:px-4">
             {% include "components/navbar/navbar-actions.html" %}
         </div>
         <button type="button" class="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-primary-base hover:bg-primary-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-base xl:hidden" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navbar-mobile-menu" data-navbar-toggle>
