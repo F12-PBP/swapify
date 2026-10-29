@@ -11,6 +11,7 @@ from . import services
 from .forms import ChatMessageForm
 from .http import error_response, json_response, wants_json
 from .models import ChatMessage, ChatRoom, SwapRequest
+from .queries import after_cursor
 from .serializers import serialize_message
 
 
@@ -158,33 +159,25 @@ class MessageListJsonView(LoginRequiredMixin, View):
         room = get_object_or_404(
             ChatRoom.objects.for_user(request.user).with_related(), pk=pk
         )
-        try:
-            after = int(request.GET.get("after", 0))
-        except (TypeError, ValueError):
-            after = 0
+        after = after_cursor(request)
 
-        new_messages = list(room.messages.filter(id__gt=after).select_related("sender"))
+        batch = list(
+            room.messages.filter(id__gt=after).select_related("sender").order_by("id")
+        )
 
-        unread_ids = [
-            m.id
-            for m in new_messages
-            if m.sender_id != request.user.id and not m.is_read
-        ]
-        if unread_ids:
-            ChatMessage.objects.filter(id__in=unread_ids).update(is_read=True)
+        services.mark_read(
+            room,
+            request.user,
+            loaded_messages=batch,
+        )
 
         return JsonResponse(
             {
+                "ok": True,
                 "is_active": room.is_active,
                 "messages": [
-                    {
-                        "id": m.id,
-                        "sender": m.sender.get_username(),
-                        "is_mine": m.sender_id == request.user.id,
-                        "message": m.message,
-                        "sent_at": m.sent_at.isoformat(),
-                    }
-                    for m in new_messages
+                    serialize_message(message, request.user) for message in batch
                 ],
+                "next_after": batch[-1].pk if batch else after,
             }
         )
