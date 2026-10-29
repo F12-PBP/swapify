@@ -2,6 +2,7 @@ import uuid
 from importlib import import_module
 
 import django.db.models.deletion
+from django.core.management.color import no_style
 from django.db import migrations, models
 from django.db.migrations.operations.base import Operation
 from django.db.models import F, Q
@@ -47,6 +48,14 @@ def move_swap_references_to_integer_ids(apps, schema_editor):
                 swap_request.offered_clothing_id
             ],
         )
+
+
+def reset_clothing_sequence(apps, schema_editor):
+    Clothing = apps.get_model("clothing_catalog", "Clothing")
+    for statement in schema_editor.connection.ops.sequence_reset_sql(
+        no_style(), [Clothing]
+    ):
+        schema_editor.execute(statement)
 
 
 class SwitchPrimaryKey(Operation):
@@ -99,11 +108,13 @@ class Migration(migrations.Migration):
             name="integer_id",
             field=models.BigIntegerField(unique=True),
         ),
+        # Final foreign keys are added after the referenced primary key is switched.
         SwapAddField(
             model_name="swaprequest",
             name="requested_clothing_integer",
             field=models.ForeignKey(
                 db_column="requested_clothing_integer_id",
+                db_constraint=False,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="+",
@@ -116,6 +127,7 @@ class Migration(migrations.Migration):
             name="offered_clothing_integer",
             field=models.ForeignKey(
                 db_column="offered_clothing_integer_id",
+                db_constraint=False,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="+",
@@ -132,6 +144,7 @@ class Migration(migrations.Migration):
             name="requested_clothing_integer",
             field=models.ForeignKey(
                 db_column="requested_clothing_integer_id",
+                db_constraint=False,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="+",
                 to="clothing_catalog.clothing",
@@ -143,6 +156,7 @@ class Migration(migrations.Migration):
             name="offered_clothing_integer",
             field=models.ForeignKey(
                 db_column="offered_clothing_integer_id",
+                db_constraint=False,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="+",
                 to="clothing_catalog.clothing",
@@ -223,4 +237,5 @@ class Migration(migrations.Migration):
                 unique=True,
             ),
         ),
+        migrations.RunPython(reset_clothing_sequence, migrations.RunPython.noop),
     ]
