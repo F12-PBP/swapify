@@ -11,7 +11,7 @@ from . import services
 from .forms import ChatMessageForm
 from .http import JsonChatMixin, error_response, json_response, wants_json
 from .models import ChatMessage, ChatRoom, SwapRequest
-from .queries import after_cursor
+from .queries import InvalidMessageQuery, message_page, page_parameters
 from .serializers import serialize_message
 
 
@@ -73,7 +73,7 @@ class StartChatView(LoginRequiredMixin, View):
 
 
 class ChatRoomDetailView(LoginRequiredMixin, DetailView):
-    """Isi chat + form kirim pesan (form hanya muncul kalau chat aktif)."""
+    """Detail chat dengan batch pesan terbaru."""
 
     template_name = "chat_room_detail.html"
     context_object_name = "chat_room"
@@ -86,12 +86,26 @@ class ChatRoomDetailView(LoginRequiredMixin, DetailView):
         room = self.object
         user = self.request.user
 
-        context["chat_messages"] = list(room.messages.select_related("sender"))
-        services.mark_read(room, user)
+        batch, has_older = message_page(
+            room,
+            direction="latest",
+        )
 
-        context["partner"] = room.other_user(user)
-        context["is_active"] = room.is_active
-        context["form"] = ChatMessageForm()
+        services.mark_read(
+            room,
+            user,
+            loaded_messages=batch,
+        )
+
+        context.update(
+            chat_messages=batch,
+            partner=room.other_user(user),
+            is_active=room.is_active,
+            form=ChatMessageForm(),
+            has_older_messages=has_older,
+            oldest_message_id=batch[0].pk if batch else 0,
+            latest_message_id=batch[-1].pk if batch else 0,
+        )
         return context
 
 
@@ -159,16 +173,31 @@ class MessageListJsonView(JsonChatMixin, LoginRequiredMixin, View):
         room = get_object_or_404(
             ChatRoom.objects.for_user(request.user).with_related(), pk=pk
         )
-        after = after_cursor(request)
 
-        batch = list(
-            room.messages.filter(id__gt=after).select_related("sender").order_by("id")
+        try:
+            direction, cursor, limit = page_parameters(request)
+        except InvalidMessageQuery as error:
+            return error_response(
+                "invalid_query",
+                str(error),
+                status=400,
+            )
+
+        batch, has_more = message_page(
+            room,
+            direction=direction,
+            cursor=cursor,
+            limit=limit,
         )
 
         services.mark_read(
             room,
             request.user,
             loaded_messages=batch,
+        )
+
+        next_after = (
+            (batch[-1].pk if batch else cursor) if direction == "newer" else None
         )
 
         return JsonResponse(
@@ -178,6 +207,9 @@ class MessageListJsonView(JsonChatMixin, LoginRequiredMixin, View):
                 "messages": [
                     serialize_message(message, request.user) for message in batch
                 ],
-                "next_after": batch[-1].pk if batch else after,
+                "direction": direction,
+                "has_more": has_more,
+                "next_after": next_after,
+                "next_before": batch[0].pk if batch else None,
             }
         )
