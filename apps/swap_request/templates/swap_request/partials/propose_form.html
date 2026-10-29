@@ -1,8 +1,23 @@
 {% load static %}
-<h2 id="swap-title" class="pr-8 font-display text-h4 text-primary-base">Swap with others!</h2>
-<p class="mt-3 text-b7 text-neutral-80">Offer one of your available pieces for <strong>{{ requested_clothing.owner.profile.display_name|default:requested_clothing.owner.username }}’s {{ requested_clothing.name }}.</strong></p>
+{% with owner_name=requested_clothing.owner.profile.display_name|default:requested_clothing.owner.username %}
+{% if unavailable_reason %}
+<h2 id="swap-title" tabindex="-1" class="pr-8 font-display text-h4 text-primary-base outline-none">This piece can’t be swapped</h2>
+<p class="mt-3 text-b7 text-neutral-80" role="alert">
+  {% if unavailable_reason == "own" %}<strong>{{ requested_clothing.name }}</strong> is one of your own pieces. Choose a piece from another swapper to start a swap.
+  {% else %}<strong>{{ requested_clothing.name }}</strong> is already part of another swap, so it can’t receive new requests right now.{% endif %}
+</p>
+<a class="market-secondary mt-8 w-full text-b7" href="{% url 'clothing_catalog:list' %}">Find another piece</a>
+{% else %}
+<h2 id="swap-title" tabindex="-1" class="pr-8 font-display text-h4 text-primary-base outline-none">{% if previous_request %}Swap detail{% else %}Swap with others!{% endif %}</h2>
+<p class="mt-3 text-b7 text-neutral-80">Offer one of your available pieces for <strong>{{ owner_name }}’s {{ requested_clothing.name }}.</strong></p>
+{% if previous_request %}
+<div class="mt-7 flex flex-col gap-5 sm:flex-row">
+  <div class="flex min-w-0 flex-1 flex-col gap-1"><p class="text-b7 text-neutral-80">Requested</p><p class="line-clamp-2 text-b6 font-semibold text-neutral-100">{{ requested_clothing.name }}</p></div>
+  <div class="flex min-w-0 flex-1 flex-col gap-1"><p class="text-b7 text-neutral-80">Previously offered</p><p class="line-clamp-2 text-b6 font-semibold text-neutral-100">{{ previous_request.offered_clothing.name }}</p></div>
+</div>
+{% endif %}
 {% if has_offerable_clothing %}
-<form method="post" action="{% url 'swap_request:create' requested_clothing.pk %}" class="mt-8 flex flex-col gap-5" data-swap-form>
+<form method="post" action="{% url 'swap_request:create' requested_clothing.pk %}{% if previous_request %}?from={{ previous_request.pk }}{% endif %}" class="{% if previous_request %}mt-7{% else %}mt-8{% endif %} flex flex-col gap-5" data-swap-form>
   {% csrf_token %}
   {% if form.non_field_errors %}<div class="rounded-xl bg-red-10 p-4 text-b8 text-red-80" role="alert">{{ form.non_field_errors }}</div>{% endif %}
   <div class="flex flex-col gap-2">
@@ -10,16 +25,26 @@
     {% for error in form.offered_clothing.errors %}<p class="text-b9 text-red-70" role="alert">{{ error }}</p>{% endfor %}
   </div>
   <div class="flex flex-col gap-2">
-    <label for="{{ form.message.id_for_label }}" class="text-b7 font-semibold text-primary-base">Your message for {{ requested_clothing.owner.profile.display_name|default:requested_clothing.owner.username }} <span class="font-normal text-neutral-70">(optional)</span></label>
+    <label for="{{ form.message.id_for_label }}" class="text-b7 font-semibold text-primary-base">{% if previous_request %}Message{% else %}Your message for {{ owner_name }}{% endif %} <span class="font-normal text-neutral-70">(optional)</span></label>
     {{ form.message }}
     {% for error in form.message.errors %}<p class="text-b9 text-red-70" role="alert">{{ error }}</p>{% endfor %}
   </div>
+  {% if previous_request %}
+  <div class="mt-2 flex flex-col-reverse gap-3 sm:flex-row">
+    <a class="market-outline flex-1 text-b7" href="{{ previous_request.get_absolute_url }}" data-swap-detail>Undo</a>
+    <button class="market-button flex-1 text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)]" type="submit">Send Swap Request</button>
+  </div>
+  {% else %}
   <p class="flex items-center gap-3 rounded-lg border border-neutral-40 bg-neutral-30 p-4 text-b9 text-neutral-70"><img src="{% static 'swap_request/images/shield.svg' %}" alt="">Your item stays available until the swap is accepted.</p>
   <button class="market-button mt-3 w-full text-b7" type="submit">Send Swap Request</button>
+  {% endif %}
 </form>
 {% else %}
 <div class="mt-8 flex flex-col gap-4 rounded-2xl bg-secondary-10 p-5 text-b8">
   <p>You don’t have an available piece to offer yet. Add one to start this swap.</p>
   <a class="market-button" href="{% url 'clothing_catalog:create' %}?next={{ request.path|urlencode }}">Add your first available piece</a>
+  {% if previous_request %}<a class="market-outline text-b8" href="{{ previous_request.get_absolute_url }}" data-swap-detail>Back to swap detail</a>{% endif %}
 </div>
 {% endif %}
+{% endif %}
+{% endwith %}

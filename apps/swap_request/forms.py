@@ -49,3 +49,22 @@ class SwapRequestForm(forms.ModelForm):
                 "Check My swaps for updates."
             )
         return cleaned_data
+
+
+class SwapRequestFilterForm(forms.Form):
+    """GET filters for My swaps. Invalid values are dropped, not rejected."""
+
+    search = forms.CharField(required=False, max_length=100)
+    role = forms.ChoiceField(
+        required=False,
+        choices=(("", "All swaps"), ("received", "Received"), ("sent", "Sent")),
+    )
+    status = forms.ChoiceField(
+        required=False,
+        choices=(("", "Any status"), *SwapRequest.Status.choices),
+    )
+
+    @property
+    def values(self):
+        self.is_valid()
+        return {name: self.cleaned_data.get(name) or "" for name in self.fields}

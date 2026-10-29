@@ -1,16 +1,54 @@
 {% extends "marketplace/base.html" %}
+{% load static %}
 
-{% block title %}Swap Request{% endblock %}
+{% block title %}My swaps | Swapify{% endblock %}
 
 {% block content %}
-<section class="w-full">
-    <h1 class="font-display text-h3">Swap Request</h1>
-    <p class="mt-2 text-base-content/70">Tawaran tukar yang kamu terima dan yang kamu ajukan.</p>
+<section class="flex flex-col" data-my-swaps>
+  <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+    <div class="flex flex-col gap-3">
+      <h1 class="font-display text-h3 text-primary-base md:text-h2">My Swap Request</h1>
+      <p class="text-b7 text-neutral-80 md:text-b6">From the first hello to a happy handover, follow every swap here.</p>
+    </div>
+    {% if has_any_swaps %}
+    <form method="get" action="{% url 'swap_request:list' %}" role="search" data-swap-search-form class="flex h-12 w-full shrink-0 items-center gap-3 rounded-full border border-neutral-40 bg-neutral-20 px-5 has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-primary-base lg:max-w-[452px]">
+      <button type="submit" aria-label="Search swap requests" class="cursor-pointer p-1"><img src="{% static 'main/icons/marketplace/search.svg' %}" alt=""></button>
+      <label for="swap-search" class="sr-only">Search swap requests</label>
+      <input id="swap-search" name="search" type="search" value="{{ swap_filters.search }}" placeholder="Search Swap Request" maxlength="100" autocomplete="off" aria-controls="swap-results" class="min-w-0 flex-1 bg-transparent text-b8 text-neutral-100 outline-none placeholder:text-neutral-70">
+      {% if swap_filters.role %}<input type="hidden" name="role" value="{{ swap_filters.role }}">{% endif %}
+      {% if swap_filters.status %}<input type="hidden" name="status" value="{{ swap_filters.status }}">{% endif %}
+    </form>
+    {% endif %}
+  </div>
 
-    <h2 class="mt-8 mb-4 font-display text-h5">Diterima ({{ incoming_requests|length }})</h2>
-    {% include "swap_request/partials/request_list.html" with swap_requests=incoming_requests empty_text="Belum ada swap request yang masuk." %}
+  {% if has_any_swaps %}
+  <div class="mt-8 flex flex-col gap-3 md:mt-10">
+    <div class="flex flex-wrap items-center gap-3 border-b border-neutral-40 pb-5">
+      <nav class="flex flex-wrap gap-3" aria-label="Swap direction">
+        {% for value, label in filter_form.fields.role.choices %}
+          <a href="{% querystring role=value|default:None page=None %}" data-swap-filter-link data-swap-role="{{ value }}" class="market-chip {% if swap_filters.role == value %}market-chip-active{% endif %}" {% if swap_filters.role == value %}aria-current="true"{% endif %}>{{ label }}</a>
+        {% endfor %}
+      </nav>
+      <form method="get" action="{% url 'swap_request:list' %}" data-swap-filter-form class="ml-auto flex items-center gap-2 text-b9 text-neutral-80" aria-label="Filter swaps by status">
+        <input type="hidden" name="search" value="{{ swap_filters.search }}">
+        <input type="hidden" name="role" value="{{ swap_filters.role }}">
+        <span aria-hidden="true">Status:</span>
+        {% include "components/dropdown.html" with dropdown_id="swap-status" name="status" label="Status" choices=filter_form.fields.status.choices value=swap_filters.status size="sm" auto_apply=True %}
+        <button class="market-secondary px-3 py-2 text-b9" type="submit" data-swap-filter-apply>Apply</button>
+      </form>
+    </div>
+    <p id="swap-filter-errors" class="text-b9 text-red-70" role="status" {% if not filter_form.errors %}hidden{% endif %}>Some filters weren’t recognised and have been ignored.</p>
+    <div class="flex min-h-6 flex-wrap items-center justify-between gap-x-4 gap-y-1 text-b9 text-neutral-80">
+      <p data-swap-count {% if not paginator.count %}hidden{% endif %}>{{ paginator.count }} swap{{ paginator.count|pluralize }}{% if has_filters %} found{% endif %}</p>
+      <div id="swap-feedback" role="status" aria-live="polite" class="invisible ml-auto"><span data-swap-status></span><button type="button" data-swap-retry class="ml-2 cursor-pointer font-semibold text-primary-base underline" hidden>Try again</button></div>
+    </div>
+    <p class="sr-only" aria-live="polite" data-swap-announce></p>
+  </div>
+  {% endif %}
 
-    <h2 class="mt-10 mb-4 font-display text-h5">Diajukan ({{ outgoing_requests|length }})</h2>
-    {% include "swap_request/partials/request_list.html" with swap_requests=outgoing_requests empty_text="Kamu belum mengajukan swap request." %}
+  <div id="swap-results" aria-busy="false" class="{% if has_any_swaps %}mt-4{% else %}mt-8 md:mt-10{% endif %}">{% include "swap_request/partials/request_list.html" %}</div>
 </section>
 {% endblock %}
+
+{% block dialogs %}{% include "swap_request/partials/propose_dialog.html" %}{% endblock %}
+{% block scripts %}<script src="{% static 'swap_request/js/my-swaps.js' %}" defer></script><script src="{% static 'clothing_catalog/js/marketplace.js' %}" defer></script>{% endblock %}
