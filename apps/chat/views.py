@@ -9,7 +9,7 @@ from django.views.generic import DetailView, ListView
 
 from . import services
 from .forms import ChatMessageForm
-from .http import error_response, json_response, wants_json
+from .http import JsonChatMixin, error_response, json_response, wants_json
 from .models import ChatMessage, ChatRoom, SwapRequest
 from .queries import after_cursor
 from .serializers import serialize_message
@@ -95,7 +95,7 @@ class ChatRoomDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class MessageCreateView(LoginRequiredMixin, View):
+class MessageCreateView(JsonChatMixin, LoginRequiredMixin, View):
     """Kirim pesan melalui AJAX atau form biasa."""
 
     http_method_names = ["post"]
@@ -150,7 +150,7 @@ class MessageCreateView(LoginRequiredMixin, View):
         return redirect("chat:detail", pk=room.pk)
 
 
-class MessageListJsonView(LoginRequiredMixin, View):
+class MessageListJsonView(JsonChatMixin, LoginRequiredMixin, View):
     """Endpoint JSON untuk polling pesan baru: ?after=<id_pesan_terakhir>."""
 
     http_method_names = ["get"]

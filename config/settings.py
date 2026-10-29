@@ -201,3 +201,5 @@ NOMINATIM_BASE_URL = os.getenv(
 NOMINATIM_USER_AGENT = os.getenv(
     "NOMINATIM_USER_AGENT", "Swapify/1.0 (+https://github.com/F12-PBP/swapify)"
 )
+
+CSRF_FAILURE_VIEW = "apps.chat.http.csrf_failure"
