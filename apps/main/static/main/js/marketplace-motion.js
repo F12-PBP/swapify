@@ -39,6 +39,7 @@
   };
 
   const page = (main) => {
+    if (!main) return;
     if (main.querySelector('[class*="animate-profile-reveal"], [class*="animate-landing"]')) return;
     let groups;
     if (main.querySelector("[data-chat-root]")) {
@@ -46,7 +47,7 @@
     } else if (main.querySelector("[data-catalog]")) {
       const catalog = main.querySelector("[data-catalog]");
       const introduction = catalog.previousElementSibling;
-      groups = [...introduction.children, ...catalog.children,
+      groups = [...(introduction?.children || []), ...catalog.children,
         ...[...main.children].filter((element) => element !== introduction && element !== catalog)];
     } else if (main.querySelector("[data-my-swaps]")) {
       groups = main.querySelector("[data-my-swaps]").children;
@@ -65,6 +66,13 @@
   };
   window.SwapifyMotion = { play, reveal, page, reset };
   reducedMotion.addEventListener("change", () => { if (reducedMotion.matches) reset(); });
-  const main = document.querySelector("main");
-  if (main) page(main);
+  const enter = () => {
+    document.querySelectorAll('[data-market-entrance]').forEach((element, index) => {
+      reveal(element, { delay: index * 60 });
+    });
+    page(document.querySelector("main"));
+  };
+  // Initialize after page modules so their layout is ready for the first reveal.
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", enter, { once: true });
+  else enter();
 })();
