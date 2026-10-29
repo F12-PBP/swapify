@@ -39,6 +39,7 @@
     </div>
     <p id="swap-filter-errors" class="text-b9 text-red-70" role="status" {% if not filter_form.errors %}hidden{% endif %}>Some filters weren’t recognised and have been ignored.</p>
     <div id="swap-feedback" role="status" aria-live="polite" class="invisible min-h-6 text-b9 text-neutral-80"><span data-swap-status></span><button type="button" data-swap-retry class="ml-2 cursor-pointer font-semibold text-primary-base underline" hidden>Try again</button></div>
+    <p class="sr-only" aria-live="polite" data-swap-announce></p>
   </div>
   {% endif %}
 
@@ -47,4 +48,4 @@
 {% endblock %}
 
 {% block dialogs %}{% include "swap_request/partials/propose_dialog.html" %}{% endblock %}
-{% block scripts %}<script src="{% static 'clothing_catalog/js/marketplace.js' %}" defer></script>{% endblock %}
+{% block scripts %}<script src="{% static 'swap_request/js/my-swaps.js' %}" defer></script><script src="{% static 'clothing_catalog/js/marketplace.js' %}" defer></script>{% endblock %}

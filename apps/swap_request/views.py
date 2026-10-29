@@ -87,6 +87,7 @@ class SwapRequestListView(LoginRequiredMixin, ListView):
                     ),
                     "filters": self.filters,
                     "page": context["page_obj"].number,
+                    "count": context["paginator"].count,
                     "has_errors": bool(self.filter_form.errors),
                 }
             )
