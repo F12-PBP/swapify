@@ -1,4 +1,4 @@
-(() => {
+window.MarketplacePages.register((scope) => {
   const root = document.querySelector("[data-my-swaps]");
   const search = document.getElementById("swap-search");
   if (!root || !search) return;
@@ -54,10 +54,11 @@
   };
 
   const invalidatePending = () => {
-    clearTimeout(debounce);
+    scope.clearTimeout(debounce);
     controller?.abort();
     requestSequence += 1;
   };
+  scope.cleanup(invalidatePending);
 
   const load = async (url, { history = "push", scroll = false, preserveLayout = false, quiet = false } = {}) => {
     invalidatePending();
@@ -71,9 +72,9 @@
       status.textContent = "Updating your swaps…";
       feedback.classList.remove("invisible");
     }
-    const timeout = setTimeout(() => activeController.abort(), 15000);
+    const timeout = scope.timeout(() => activeController.abort(), 15000);
     try {
-      const response = await fetch(url, {
+      const response = await scope.fetch(url, {
         headers: { "X-Swap-Request": "results", "Accept": "application/json" },
         credentials: "same-origin",
         signal: activeController.signal,
@@ -90,13 +91,14 @@
       if (preserveLayout) results.style.minHeight = `${results.getBoundingClientRect().height}px`;
       else results.style.removeProperty("min-height");
       results.innerHTML = data.html;
-      window.SwapifyMotion?.reveal(results);
+      window.SwapifyMotion?.reveal(results, { duration: 420 });
       synchronize(data.filters);
       filterErrors.hidden = !data.has_errors;
       const target = canonicalURL(data.filters, data.page);
       if (history === "push" && target.href !== window.location.href) window.history.pushState(null, "", target);
       else if (history === "replace" && target.href !== window.location.href) window.history.replaceState(null, "", target);
       appliedURL = target;
+      scope.locationChanged();
       status.textContent = "";
       feedback.classList.add("invisible");
       const summary = `${data.count} swap${data.count === 1 ? "" : "s"}`;
@@ -110,7 +112,7 @@
       feedback.classList.remove("invisible");
       retry.hidden = false;
     } finally {
-      clearTimeout(timeout);
+      scope.clearTimeout(timeout);
       if (sequence === requestSequence) results.setAttribute("aria-busy", "false");
     }
   };
@@ -119,30 +121,30 @@
     invalidatePending();
     results.setAttribute("aria-busy", "false");
     if (composing) return;
-    debounce = setTimeout(() => {
+    debounce = scope.timeout(() => {
       load(withChanges({ search: search.value.trim() }), { history: "replace", preserveLayout: true });
     }, 300);
   };
-  search.addEventListener("input", queueSearch);
-  search.addEventListener("compositionstart", () => { composing = true; invalidatePending(); });
-  search.addEventListener("compositionend", () => { composing = false; queueSearch(); });
-  search.form.addEventListener("submit", (event) => {
+  scope.on(search, "input", queueSearch);
+  scope.on(search, "compositionstart", () => { composing = true; invalidatePending(); });
+  scope.on(search, "compositionend", () => { composing = false; queueSearch(); });
+  scope.on(search.form, "submit", (event) => {
     event.preventDefault();
     load(withChanges({ search: search.value.trim() }));
   });
 
-  root.addEventListener("change", (event) => {
+  scope.on(root, "change", (event) => {
     const input = event.target.closest("[data-auto-submit]");
     if (!input?.closest("[data-swap-filter-form]")) return;
     load(withChanges({ status: input.value, search: search.value.trim() }));
   });
-  root.addEventListener("submit", (event) => {
+  scope.on(root, "submit", (event) => {
     const form = event.target.closest("[data-swap-filter-form]");
     if (!form) return;
     event.preventDefault();
     load(withChanges({ status: new FormData(form).get("status"), search: search.value.trim() }));
   });
-  root.addEventListener("click", (event) => {
+  scope.on(root, "click", (event) => {
     const link = event.target.closest("a[data-swap-filter-link]");
     if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
@@ -154,10 +156,10 @@
     }
     load(target, { scroll: link.hasAttribute("data-swap-page") });
   });
-  retry.addEventListener("click", () => load(pendingURL));
-  window.addEventListener("popstate", () => load(new URL(window.location.href), { history: "none" }));
+  scope.on(retry, "click", () => load(pendingURL));
+  scope.on(window, "popstate", () => load(new URL(window.location.href), { history: "none" }));
   // Accepting, rejecting, or resending in the dialog updates the cards behind it.
-  document.addEventListener("swap:changed", () => {
+  scope.on(document, "swap:changed", () => {
     load(appliedURL, { history: "none", preserveLayout: true, quiet: true });
   });
-})();
+});

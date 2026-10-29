@@ -1,4 +1,4 @@
-(() => {
+window.MarketplacePages.register((scope) => {
   const openDialog = (dialog) => {
     if (!dialog || dialog.open) return;
     dialog.showModal();
@@ -7,13 +7,13 @@
   window.SwapDialogs = { open: openDialog };
   document.querySelectorAll("[data-dialog-open]").forEach((button) => {
     button.hidden = false;
-    button.addEventListener("click", () => openDialog(document.getElementById(button.dataset.dialogOpen)));
+    scope.on(button, "click", () => openDialog(document.getElementById(button.dataset.dialogOpen)));
   });
   document.querySelectorAll(".market-dialog").forEach((dialog) => {
-    dialog.addEventListener("cancel", (event) => {
+    scope.on(dialog, "cancel", (event) => {
       if (dialog.dataset.submitting === "true") event.preventDefault();
     });
-    dialog.addEventListener("click", (event) => {
+    scope.on(dialog, "click", (event) => {
       if (dialog.dataset.submitting === "true") return;
       if (event.target.closest("[data-dialog-close]")) dialog.close();
       if (event.target === dialog) {
@@ -21,7 +21,7 @@
         if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
       }
     });
-    dialog.addEventListener("close", () => {
+    scope.on(dialog, "close", () => {
       if (dialog.open) return;
       document.documentElement.classList.remove("market-dialog-open");
       dialog.querySelector("form")?.reset();
@@ -36,18 +36,19 @@
   const status = swapDialog.querySelector("[data-swap-status]");
   const closeButton = swapDialog.querySelector("[data-dialog-close]");
   let loadSequence = 0;
+  scope.cleanup(() => { loadSequence += 1; });
   const request = async (url, options = {}) => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = scope.timeout(() => controller.abort(), 15000);
     try {
-      return await fetch(url, {
+      return await scope.fetch(url, {
         ...options,
         credentials: "same-origin",
         signal: controller.signal,
         headers: { "X-Requested-With": "XMLHttpRequest", ...options.headers },
       });
     } finally {
-      clearTimeout(timeout);
+      scope.clearTimeout(timeout);
     }
   };
   const followSignIn = (response) => {
@@ -116,17 +117,17 @@
     }
   };
 
-  swapDialog.addEventListener("close", () => {
+  scope.on(swapDialog, "close", () => {
     loadSequence += 1;
     content.inert = false;
   });
-  document.addEventListener("click", (event) => {
+  scope.on(document, "click", (event) => {
     const link = event.target.closest("a[data-swap-link], a[data-swap-detail]");
     if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     load(link.href, link.hasAttribute("data-swap-detail") ? VIEWS.detail : VIEWS.propose);
   });
-  swapDialog.addEventListener("click", (event) => {
+  scope.on(swapDialog, "click", (event) => {
     // On the discovery page, keep the visitor's place instead of reloading it.
     if (event.target.closest("[data-swap-keep-discovering]") && document.querySelector("[data-catalog]")) {
       event.preventDefault();
@@ -173,7 +174,7 @@
         : "We couldn’t confirm your request. Check My swaps before trying again.";
     }
   };
-  swapDialog.addEventListener("submit", async (event) => {
+  scope.on(swapDialog, "submit", async (event) => {
     const form = event.target.closest("[data-swap-form], [data-swap-action]");
     if (!form) return;
     event.preventDefault();
@@ -188,4 +189,4 @@
       setSubmitting(form, false);
     }
   });
-})();
+});

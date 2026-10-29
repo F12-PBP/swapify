@@ -1,4 +1,4 @@
-(() => {
+window.MarketplacePages.register((scope) => {
   const root = document.querySelector('[data-public-profile]');
   if (!root) return;
   const form = root.querySelector('[data-member-filters]');
@@ -21,10 +21,11 @@
   let wardrobeSearch = form.elements.search.value;
   let discoverSearch = '';
   const invalidatePending = () => {
-    clearTimeout(debounce);
+    scope.clearTimeout(debounce);
     controller?.abort();
     sequence += 1;
   };
+  scope.cleanup(invalidatePending);
   const configureSearch = (name) => {
     if (searchScope === 'wardrobe') wardrobeSearch = search.value;
     else if (searchScope) discoverSearch = search.value;
@@ -90,12 +91,12 @@
     controller = new AbortController();
     const activeController = controller;
     const current = sequence;
-    const timeout = setTimeout(() => activeController.abort(), 15000);
+    const timeout = scope.timeout(() => activeController.abort(), 15000);
     results.setAttribute('aria-busy', 'true');
     feedback.classList.add('sr-only');
     feedback.textContent = 'Updating this wardrobe…';
     try {
-      const response = await fetch(url, {
+      const response = await scope.fetch(url, {
         headers: { 'X-Member-Wardrobe': '1', Accept: 'application/json' },
         signal: activeController.signal,
       });
@@ -112,6 +113,7 @@
       appliedURL = new URL(url);
       if (historyMode === 'push' && url.href !== location.href) history.pushState(null, '', url);
       else if (historyMode === 'replace') history.replaceState(null, '', url);
+      scope.locationChanged();
       feedback.textContent = `${data.count} piece${data.count === 1 ? '' : 's'} found.`;
     } catch {
       if (current !== sequence) return;
@@ -119,7 +121,7 @@
       feedback.textContent = 'Couldn’t update this wardrobe. Your previous results are still shown. Try searching or filtering again.';
       synchronize(Object.fromEntries(appliedURL.searchParams), appliedURL);
     } finally {
-      clearTimeout(timeout);
+      scope.clearTimeout(timeout);
       if (current === sequence) results.setAttribute('aria-busy', 'false');
     }
   };
@@ -139,23 +141,23 @@
     results.setAttribute('aria-busy', 'false');
     feedback.textContent = '';
     if (composing) return;
-    debounce = setTimeout(() => load(filterURL(), { historyMode: 'replace', preserveLayout: true }), 250);
+    debounce = scope.timeout(() => load(filterURL(), { historyMode: 'replace', preserveLayout: true }), 250);
   };
-  search.addEventListener('input', queueSearch);
-  search.addEventListener('compositionstart', () => {
+  scope.on(search, 'input', queueSearch);
+  scope.on(search, 'compositionstart', () => {
     composing = true;
     queueSearch();
   });
-  search.addEventListener('compositionend', () => { composing = false; queueSearch(); });
-  searchForm.addEventListener('submit', (event) => {
+  scope.on(search, 'compositionend', () => { composing = false; queueSearch(); });
+  scope.on(searchForm, 'submit', (event) => {
     if (searchScope !== 'wardrobe') return;
     event.preventDefault();
     if (!composing) load(filterURL());
   });
   configureSearch(document.getElementById('member-wardrobe').hidden ? 'profile' : 'wardrobe');
-  form.addEventListener('submit', (event) => { event.preventDefault(); load(filterURL()); });
-  form.addEventListener('change', () => load(filterURL()));
-  root.addEventListener('click', (event) => {
+  scope.on(form, 'submit', (event) => { event.preventDefault(); load(filterURL()); });
+  scope.on(form, 'change', () => load(filterURL()));
+  scope.on(root, 'click', (event) => {
     const link = event.target.closest('a[data-member-tab], a[data-member-category], a[data-member-page]');
     if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
@@ -173,6 +175,7 @@
       target.searchParams.set('tab', link.dataset.memberTab);
       selectTab(link.dataset.memberTab);
       if (target.href !== location.href) history.pushState(null, '', target);
+      scope.locationChanged();
       if (searchScope === 'wardrobe' && search.value.trim() !== form.elements.search.value) {
         load(filterURL(), { historyMode: 'replace', preserveLayout: true });
       }
@@ -183,10 +186,10 @@
       load(target);
     } else load(url);
   });
-  window.addEventListener('popstate', () => {
+  scope.on(window, 'popstate', () => {
     const url = new URL(location.href);
     const name = url.searchParams.get('tab') || (url.searchParams.has('reviews_page') ? 'profile' : defaultTab);
     selectTab(name === 'profile' ? 'profile' : 'wardrobe');
     load(url, { historyMode: 'none' });
   });
-})();
+});

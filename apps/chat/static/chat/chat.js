@@ -1,4 +1,4 @@
-(() => {
+window.MarketplacePages.register((scope) => {
     "use strict";
     function mountChat(root, previousPosition = null) {
         const lifecycle = new AbortController();
@@ -55,7 +55,7 @@
             let busy = false;
             let stopped = false;
             let delay = 3000;
-            on(lifecycle.signal, "abort", () => { stopped = true; clearTimeout(timer); });
+            on(lifecycle.signal, "abort", () => { stopped = true; scope.clearTimeout(timer); });
 
             function showStatus(message, login = false) {
                 if (!status) return;
@@ -66,10 +66,10 @@
             }
 
             function schedule(wait = delay) {
-                clearTimeout(timer);
+                scope.clearTimeout(timer);
 
                 if (!stopped && !document.hidden && navigator.onLine) {
-                    timer = setTimeout(refresh, wait);
+                    timer = scope.timeout(refresh, wait);
                 }
             }
 
@@ -117,7 +117,7 @@
             }
 
             on(window, "offline", () => {
-                clearTimeout(timer);
+                scope.clearTimeout(timer);
 
                 if (!stopped) {
                     showStatus(
@@ -132,7 +132,7 @@
                 if (!document.hidden) schedule(0);
             });
 
-            on(window, "pagehide", () => clearTimeout(timer));
+            on(window, "pagehide", () => scope.clearTimeout(timer));
 
             on(window, "pageshow", (event) => {
                 if (event.persisted) schedule(0);
@@ -160,7 +160,7 @@
         let hasOlder = root.dataset.hasOlder === "true";
         let active = root.dataset.active === "true";
         let sending = false, busy = false, halted = false, timer, delay = 3000, receiptOffset = 0, noticeOwner = "";
-        on(lifecycle.signal, "abort", () => { halted = true; saveDraft(); clearTimeout(timer); });
+        on(lifecycle.signal, "abort", () => { halted = true; saveDraft(); scope.clearTimeout(timer); });
         const draftKey = `swapify:chat:${root.dataset.userId}:${root.dataset.roomId}`;
         const timeFormat = new Intl.DateTimeFormat("id-ID", { hour: "2-digit", minute: "2-digit" });
 
@@ -199,7 +199,7 @@
         function handleError(error, owner) {
             if ([401, 403, 404].includes(error.status)) {
             halted = true;
-            clearTimeout(timer);
+            scope.clearTimeout(timer);
             }
             if (error.status === 409) active = false;
             const login = error.status === 401;
@@ -216,9 +216,9 @@
             const controller = new AbortController();
             const abort = () => controller.abort();
             lifecycle.signal.addEventListener("abort", abort, { once: true });
-            const timeout = setTimeout(abort, 15000);
+            const timeout = scope.timeout(abort, 15000);
             try {
-            const response = await fetch(url, {
+            const response = await scope.fetch(url, {
                 ...options, credentials: "same-origin", cache: "no-store", signal: controller.signal,
                 headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest", ...options.headers }
             });
@@ -237,7 +237,7 @@
             throw new Error(options.method === "POST"
                 ? "Pengiriman belum dapat dipastikan. Tulisan tetap disimpan; periksa riwayat sebelum mencoba lagi."
                 : "Koneksi bermasalah. Chat akan mencoba terhubung kembali.");
-            } finally { clearTimeout(timeout); lifecycle.signal.removeEventListener("abort", abort); }
+            } finally { scope.clearTimeout(timeout); lifecycle.signal.removeEventListener("abort", abort); }
         }
         function receipt(node, read) {
             node.dataset.read = String(node.dataset.read === "true" || read === true);
@@ -292,8 +292,8 @@
             return result.join(",");
         }
         function schedule(wait = delay) {
-            clearTimeout(timer);
-            if (!halted && navigator.onLine) timer = setTimeout(poll, wait);
+            scope.clearTimeout(timer);
+            if (!halted && navigator.onLine) timer = scope.timeout(poll, wait);
         }
         async function poll() {
             if (halted) return;
@@ -370,12 +370,12 @@
         on(window.visualViewport, "scroll", fitViewport);
         on(window, "resize", fitViewport);
         on(window, "offline", () => {
-            clearTimeout(timer);
+            scope.clearTimeout(timer);
             if (noticeOwner !== "send" && noticeOwner !== "terminal") showNotice("Koneksi terputus. Tulisan tetap tersimpan.", "sync");
         });
         on(window, "online", () => schedule(0));
         on(document, "visibilitychange", () => { if (!document.hidden) schedule(0); });
-        on(window, "pagehide", () => { saveDraft(); clearTimeout(timer); });
+        on(window, "pagehide", () => { saveDraft(); scope.clearTimeout(timer); });
         on(window, "pageshow", (event) => { if (event.persisted) schedule(0); });
         try { field.value = sessionStorage.getItem(draftKey) || field.value; } catch { /* Tetap bisa mengirim tanpa storage. */ }
         list.querySelectorAll("time[datetime]").forEach((time) => { if (time.dateTime) time.textContent = timeFormat.format(new Date(time.dateTime)); });
@@ -390,34 +390,36 @@
     let root = document.querySelector("[data-chat-root]");
     if (!root) return;
     let mounted = mountChat(root);
+    scope.cleanup(() => { mounted.destroy(); navigation?.abort(); });
+    scope.beforeLeave(() => mounted.whenIdle());
     let navigation;
     let sequence = 0;
     let currentURL = new URL(location.href);
     const scrollRestoration = history.scrollRestoration;
     history.scrollRestoration = "manual";
-    window.addEventListener("pagehide", () => { history.scrollRestoration = scrollRestoration; });
-    window.addEventListener("pageshow", () => { history.scrollRestoration = "manual"; });
+    scope.on(window, "pagehide", () => { history.scrollRestoration = scrollRestoration; });
+    scope.on(window, "pageshow", () => { history.scrollRestoration = "manual"; });
     const roomPath = new URL(root.dataset.unreadUrl, location.href).pathname;
     const navigate = async (url, push = true) => {
         navigation?.abort();
         const current = ++sequence;
         const controller = new AbortController();
         navigation = controller;
-        const timeout = setTimeout(() => controller.abort(), 15000);
+        const timeout = scope.timeout(() => controller.abort(), 15000);
         root.setAttribute("aria-busy", "true");
         root.querySelector("[data-chat-navigation-status]").hidden = true;
         try {
             await mounted.whenIdle();
             if (current !== sequence) return;
-            const response = await fetch(url, { credentials: "same-origin", signal: controller.signal, headers: { Accept: "text/html" } });
+            const response = await scope.fetch(url, { credentials: "same-origin", signal: controller.signal, headers: { Accept: "text/html" } });
             if (current !== sequence) return;
             if (response.redirected || [401, 403, 404].includes(response.status)) {
                 location.assign(response.redirected ? response.url : url);
                 return;
             }
             if (!response.ok) throw new Error("Conversation unavailable");
-            const page = new DOMParser().parseFromString(await response.text(), "text/html");
-            const next = page.querySelector("[data-chat-root]");
+            const nextDocument = new DOMParser().parseFromString(await response.text(), "text/html");
+            const next = nextDocument.querySelector("[data-chat-root]");
             if (!next) throw new Error("Conversation unavailable");
             await mounted.whenIdle();
             if (current !== sequence) return;
@@ -441,9 +443,10 @@
             }
             root.replaceWith(next);
             root = next;
-            document.title = page.title;
+            document.title = nextDocument.title;
             if (push && location.href !== url.href) history.pushState(null, "", url);
             currentURL = new URL(url);
+            scope.locationChanged();
             mounted = mountChat(root, previousPosition);
             const nextSearch = root.querySelector("[data-chat-search]");
             if (nextSearch && searchValue) {
@@ -452,7 +455,7 @@
             }
             const nextSidebar = root.querySelector("[data-chat-rooms]");
             if (nextSidebar) nextSidebar.scrollTop = sidebarScroll;
-            if (hadLinkFocus) root.querySelector('.chat-room[aria-current="page"]')?.focus({ preventScroll: true });
+            if (hadLinkFocus && document.documentElement.dataset.chatKeyboard === "true") root.querySelector('.chat-room[aria-current="page"]')?.focus({ preventScroll: true });
             window.SwapifyMotion?.reveal(root.querySelector(".chat-pane") || root.querySelector(".chat-placeholder"), { duration: 320 });
         } catch {
             if (current === sequence) {
@@ -460,18 +463,19 @@
                 if (!push) history.replaceState(null, "", currentURL);
             }
         } finally {
-            clearTimeout(timeout);
+            scope.clearTimeout(timeout);
             if (current === sequence) root.removeAttribute("aria-busy");
         }
     };
-    document.addEventListener("pointerdown", (event) => {
+    scope.on(document, "keydown", (event) => { if (event.key === "Tab") document.documentElement.dataset.chatKeyboard = "true"; });
+    scope.on(document, "pointerdown", (event) => {
         const link = event.target.closest(".chat-room, .chat-pane a[aria-label]");
         if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !link || !root.contains(link)) return;
+        document.documentElement.dataset.chatKeyboard = "false";
         if (link.matches(".chat-room") && event.pointerType !== "mouse") return;
         event.preventDefault();
-        if (link.matches(".chat-room")) link.focus({ preventScroll: true });
     });
-    document.addEventListener("click", (event) => {
+    scope.on(document, "click", (event) => {
         const link = event.target.closest(".chat-room, .chat-pane a[aria-label]");
         if (!link || !root.contains(link) || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         const url = new URL(link.href);
@@ -479,8 +483,8 @@
         event.preventDefault();
         if (url.pathname !== location.pathname) navigate(url);
     });
-    window.addEventListener("popstate", () => {
+    scope.on(window, "popstate", () => {
         if (location.pathname.startsWith(roomPath)) navigate(new URL(location.href), false);
         else location.reload();
     });
-})();
+});

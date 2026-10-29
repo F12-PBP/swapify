@@ -1,4 +1,4 @@
-(() => {
+window.MarketplacePages.register((scope) => {
   const initPhoto = (root) => {
     const input = root.querySelector('[data-profile-photo]');
     if (!input) return;
@@ -24,10 +24,10 @@
       prompt.hidden = true;
       status.textContent = `${file.name} — save changes to update your profile.`;
     };
-    input.addEventListener('change', update);
+    scope.on(input, 'change', update);
     const drop = root.querySelector('[data-profile-photo-drop]');
-    drop.addEventListener('dragover', (event) => event.preventDefault());
-    drop.addEventListener('drop', (event) => {
+    scope.on(drop, 'dragover', (event) => event.preventDefault());
+    scope.on(drop, 'drop', (event) => {
       event.preventDefault();
       if (event.dataTransfer.files.length !== 1) {
         status.textContent = 'Choose one profile photo.';
@@ -41,6 +41,7 @@
 
   const dialog = document.querySelector('#profile-edit-dialog');
   let releasePhoto = initPhoto(document);
+  scope.cleanup(() => releasePhoto?.());
   if (dialog) {
     const content = dialog.querySelector('[data-profile-dialog-content]');
     let loading;
@@ -51,6 +52,7 @@
       window.SwapLocation?.destroy(content);
       content.replaceChildren();
     };
+    scope.cleanup(() => { lifecycle += 1; loading?.abort(); cleanup(); });
     const initialize = () => {
       releasePhoto?.();
       releasePhoto = initPhoto(content);
@@ -60,7 +62,7 @@
       target?.focus();
     };
     document.querySelectorAll('[data-profile-edit]').forEach((link) => {
-      link.addEventListener('click', async (event) => {
+      scope.on(link, 'click', async (event) => {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
         const revision = ++lifecycle;
@@ -71,7 +73,7 @@
         content.innerHTML = '<h2 id="profile-edit-title" class="pr-9 font-display text-h4 text-primary-base">Loading…</h2><p role="status" class="text-b8 text-neutral-80">Opening your profile settings.</p>';
         window.SwapDialogs.open(dialog);
         try {
-          const response = await fetch(link.href, {
+          const response = await scope.fetch(link.href, {
             headers: { 'X-Profile-Dialog': '1' }, signal: request.signal,
           });
           if (revision !== lifecycle || !dialog.open) return;
@@ -88,13 +90,13 @@
         }
       });
     });
-    content.addEventListener('click', (event) => {
+    scope.on(content, 'click', (event) => {
       if (event.target.closest('[data-profile-cancel]')) {
         event.preventDefault();
         if (dialog.dataset.submitting !== 'true') dialog.close();
       }
     });
-    content.addEventListener('submit', async (event) => {
+    scope.on(content, 'submit', async (event) => {
       const form = event.target.closest('[data-profile-form]');
       if (!form) return;
       event.preventDefault();
@@ -110,7 +112,7 @@
       status.hidden = false;
       status.textContent = 'Saving your changes…';
       try {
-        const response = await fetch(form.action, {
+        const response = await scope.fetch(form.action, {
           method: 'POST', body: new FormData(form),
           headers: { 'X-Profile-Dialog': '1' },
         });
@@ -138,7 +140,7 @@
         closeButton.disabled = false;
       }
     });
-    dialog.addEventListener('close', () => {
+    scope.on(dialog, 'close', () => {
       if (dialog.open) return;
       const revision = ++lifecycle;
       loading?.abort();
@@ -167,7 +169,9 @@
       const color = getComputedStyle(document.documentElement).getPropertyValue('--color-primary-base').trim();
       window.L.circle(area, { radius: 1000, color, weight: 1, fillOpacity: 0.12 }).addTo(map);
       window.L.circleMarker(area, { radius: 5, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1 }).addTo(map);
-      new ResizeObserver(() => map.invalidateSize({ pan: false })).observe(mapElement);
+      const observer = new ResizeObserver(() => map.invalidateSize({ pan: false }));
+      observer.observe(mapElement);
+      scope.cleanup(() => { observer.disconnect(); map.remove(); });
     }
   }
 
@@ -176,6 +180,7 @@
     const results = reviews.querySelector('[data-review-results]');
     const error = reviews.querySelector('[data-review-error]');
     let request;
+    scope.cleanup(() => request?.abort());
     const load = async (url, push = true) => {
       request?.abort();
       const controller = new AbortController();
@@ -183,7 +188,7 @@
       results.setAttribute('aria-busy', 'true');
       error.textContent = '';
       try {
-        const response = await fetch(url, { headers: { 'X-Profile-Reviews': '1' }, signal: controller.signal });
+        const response = await scope.fetch(url, { headers: { 'X-Profile-Reviews': '1' }, signal: controller.signal });
         if (response.redirected) { window.location.assign(response.url); return; }
         if (!response.ok) throw new Error();
         const data = await response.json();
@@ -198,18 +203,19 @@
           else link.removeAttribute('aria-current');
         });
         if (push) history.pushState(null, '', url);
+        scope.locationChanged();
       } catch (reason) {
         if (reason.name !== 'AbortError') error.textContent = 'Reviews could not be loaded. Please try again.';
       } finally {
         if (request === controller) results.removeAttribute('aria-busy');
       }
     };
-    reviews.addEventListener('click', (event) => {
+    scope.on(reviews, 'click', (event) => {
       const link = event.target.closest('[data-review-filter], [data-review-page]');
       if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
       load(link.href);
     });
-    window.addEventListener('popstate', () => load(window.location.href, false));
+    scope.on(window, 'popstate', () => load(window.location.href, false));
   }
-})();
+});

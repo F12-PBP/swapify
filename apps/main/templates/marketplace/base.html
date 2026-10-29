@@ -37,11 +37,12 @@
       <form method="dialog" class="modal-backdrop"><button aria-label="Close sign-in prompt">Close</button></form>
     </dialog>
   {% endif %}
-  {% block dialogs %}{% endblock %}
+  <div id="market-page-dialogs">{% block dialogs %}{% endblock %}</div>
   <script src="{% static 'js/design-system-dropdown.js' %}" defer></script>
+  <script src="{% static 'main/js/marketplace-pages.js' %}" defer></script>
   <script src="{% static 'main/js/marketplace-motion.js' %}" defer></script>
   <script src="{% static 'main/js/marketplace-navbar.js' %}?v=shared-layout-2" defer></script>
-  {% block scripts %}{% endblock %}
+  <div id="market-page-assets" hidden>{% block scripts %}{% endblock %}</div>
   {% include "components/swapy-companion.html" %}
 </body>
 </html>

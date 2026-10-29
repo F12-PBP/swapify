@@ -1,4 +1,4 @@
-(() => {
+window.MarketplacePages.register((scope) => {
   const catalog = document.querySelector("[data-catalog]");
   if (!catalog) return;
   const results = document.getElementById("catalog-results");
@@ -68,10 +68,11 @@
   };
 
   const invalidatePending = () => {
-    clearTimeout(debounce);
+    scope.clearTimeout(debounce);
     controller?.abort();
     requestSequence += 1;
   };
+  scope.cleanup(invalidatePending);
 
   const load = async (url, { history = "push", scroll = false, preserveLayout = false } = {}) => {
     invalidatePending();
@@ -83,9 +84,9 @@
     status.textContent = "Updating finds…";
     feedback.classList.remove("invisible");
     retry.hidden = true;
-    const timeout = setTimeout(() => activeController.abort("timeout"), 15000);
+    const timeout = scope.timeout(() => activeController.abort("timeout"), 15000);
     try {
-      const response = await fetch(url, {
+      const response = await scope.fetch(url, {
         headers: { "X-Catalog-Request": "results", "Accept": "application/json" },
         credentials: "same-origin",
         signal: activeController.signal,
@@ -99,12 +100,13 @@
       if (preserveLayout) results.style.minHeight = `${results.getBoundingClientRect().height}px`;
       else results.style.removeProperty("min-height");
       results.innerHTML = data.html;
-      window.SwapifyMotion?.reveal(results);
+      window.SwapifyMotion?.reveal(results, { duration: 420 });
       synchronize(data.filters, target);
       document.getElementById("catalog-filter-errors").hidden = Object.keys(data.errors).length === 0;
       if (history === "push" && target.href !== window.location.href) window.history.pushState(null, "", target);
       else if (history === "replace") window.history.replaceState(null, "", target);
       appliedURL = target;
+      scope.locationChanged();
       feedback.classList.add("invisible");
       if (scroll) catalog.scrollIntoView({ block: "start" });
     } catch {
@@ -112,7 +114,7 @@
       status.textContent = "We couldn’t update your finds. Your previous results are still shown.";
       retry.hidden = false;
     } finally {
-      clearTimeout(timeout);
+      scope.clearTimeout(timeout);
       if (sequence === requestSequence) results.setAttribute("aria-busy", "false");
     }
   };
@@ -139,20 +141,20 @@
     invalidatePending();
     results.setAttribute("aria-busy", "false");
     if (composing) return;
-    debounce = setTimeout(() => load(searchURL(), { history: "replace", preserveLayout: true }), 250);
+    debounce = scope.timeout(() => load(searchURL(), { history: "replace", preserveLayout: true }), 250);
   };
-  search.addEventListener("input", queueSearch);
-  search.addEventListener("compositionstart", () => { composing = true; invalidatePending(); });
-  search.addEventListener("compositionend", () => { composing = false; queueSearch(); });
-  searchForm.addEventListener("submit", (event) => {
+  scope.on(search, "input", queueSearch);
+  scope.on(search, "compositionstart", () => { composing = true; invalidatePending(); });
+  scope.on(search, "compositionend", () => { composing = false; queueSearch(); });
+  scope.on(searchForm, "submit", (event) => {
     event.preventDefault();
     load(searchURL(), { history: "push", scroll: true });
   });
-  document.addEventListener("change", (event) => {
+  scope.on(document, "change", (event) => {
     const input = event.target.closest("[data-auto-submit]");
     if (input?.form?.matches("[data-catalog-form]")) load(formURL(input.form));
   });
-  document.addEventListener("submit", (event) => {
+  scope.on(document, "submit", (event) => {
     const form = event.target.closest("[data-catalog-form]");
     if (!form) return;
     event.preventDefault();
@@ -161,7 +163,7 @@
     if (dialog?.open) dialog.close();
     load(target);
   });
-  document.addEventListener("click", (event) => {
+  scope.on(document, "click", (event) => {
     const link = event.target.closest("a[data-catalog-link]");
     if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
@@ -175,6 +177,6 @@
     if (dialog?.open) dialog.close();
     load(target, { scroll: link.hasAttribute("data-catalog-page") });
   });
-  retry.addEventListener("click", () => load(pendingURL));
-  window.addEventListener("popstate", () => load(new URL(window.location.href), { history: "none" }));
-})();
+  scope.on(retry, "click", () => load(pendingURL));
+  scope.on(window, "popstate", () => load(new URL(window.location.href), { history: "none" }));
+});

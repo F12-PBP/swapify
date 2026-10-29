@@ -1,4 +1,4 @@
-(() => {
+window.MarketplacePages.register((scope) => {
   const form = document.querySelector('[data-clothing-form]');
   if (!form) return;
 
@@ -10,6 +10,7 @@
   const submit = form.querySelector('button[type="submit"]');
   const submitLabel = submit.textContent;
   let previewUrl;
+  scope.cleanup(() => { if (previewUrl) URL.revokeObjectURL(previewUrl); });
 
   const showPhoto = () => {
     const file = input.files[0];
@@ -30,9 +31,9 @@
     prompt.hidden = true;
     status.textContent = `${file.name} — choose another file to replace it.`;
   };
-  input.addEventListener('change', showPhoto);
-  drop.addEventListener('dragover', (event) => event.preventDefault());
-  drop.addEventListener('drop', (event) => {
+  scope.on(input, 'change', showPhoto);
+  scope.on(drop, 'dragover', (event) => event.preventDefault());
+  scope.on(drop, 'drop', (event) => {
     event.preventDefault();
     if (event.dataTransfer.files.length !== 1) {
       status.textContent = 'Choose one photo for this piece.';
@@ -69,7 +70,7 @@
     } catch {}
   });
 
-  form.addEventListener('submit', (event) => {
+  scope.on(form, 'submit', (event) => {
     for (const field of form.querySelectorAll('[data-dropdown-enhanced] input')) {
       if (!field.value) {
         event.preventDefault();
@@ -93,10 +94,10 @@
     submit.disabled = true;
     submit.textContent = submit.dataset.submittingLabel;
   });
-  window.addEventListener('pageshow', () => {
+  scope.on(window, 'pageshow', () => {
     delete form.dataset.submitting;
     form.removeAttribute('aria-busy');
     submit.disabled = false;
     submit.textContent = submitLabel;
   });
-})();
+});
