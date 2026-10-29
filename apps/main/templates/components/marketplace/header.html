@@ -44,7 +44,7 @@
         <a href="{% url 'chat:list' %}" class="market-nav {% if active_section == 'messages' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'messages' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/messages.svg' %}" alt="">Messages</a>
         <a href="{{ wardrobe_url }}" class="market-nav {% if active_section == 'wardrobe' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'wardrobe' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/wardrobe.svg' %}" alt="">My wardrobe</a>
       </div>
-      <a class="market-button shrink-0" href="{% url 'clothing_catalog:create' %}" {% if not user.is_authenticated %}data-add-item-signin{% endif %}>{% lucide "plus" size=20 %}Add Item</a>
+      <a class="market-button hidden shrink-0 md:inline-flex" href="{% url 'clothing_catalog:create' %}" {% if not user.is_authenticated %}data-add-item-signin{% endif %}>{% lucide "plus" size=20 %}Add Item</a>
     </nav>
   </div>
 </header>

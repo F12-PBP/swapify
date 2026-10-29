@@ -1,4 +1,4 @@
-{% load static tailwind_tags %}
+{% load static tailwind_tags lucide %}
 <!DOCTYPE html>
 <html lang="en" data-theme="swapify">
 <head>
@@ -12,6 +12,7 @@
 <body class="marketplace bg-neutral-10 font-sans text-neutral-100">
   <a class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-neutral-10 focus:p-4" href="#main-content">Skip to content</a>
   {% include "components/marketplace/header.html" %}
+  <a data-market-fab class="market-button fixed right-5 bottom-[calc(1.25rem_+_env(safe-area-inset-bottom))] z-40 size-14 justify-center p-0 shadow-lg md:hidden" href="{% url 'clothing_catalog:create' %}" aria-label="Add Item" {% if not user.is_authenticated %}data-add-item-signin{% endif %}>{% lucide "plus" size=24 %}</a>
   <main id="main-content" class="market-container min-h-[60vh] {% block main_spacing %}py-8 md:py-10 lg:py-12{% endblock %}">
     {% include "components/flash-messages.html" %}
     {% block content %}{% endblock %}
@@ -36,6 +37,6 @@
   <script src="{% static 'main/js/marketplace-motion.js' %}" defer></script>
   <script src="{% static 'main/js/marketplace-navbar.js' %}?v=shared-layout-2" defer></script>
   <div id="market-page-assets" hidden>{% block scripts %}{% endblock %}</div>
-  {% include "components/swapy-companion.html" %}
+  {% include "components/swapy-companion.html" with marketplace=True %}
 </body>
 </html>

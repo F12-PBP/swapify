@@ -90,11 +90,11 @@
   document.addEventListener("marketplace:error", settle);
 
   const signInDialog = document.querySelector("#add-item-signin");
-  navbar.querySelector("[data-add-item-signin]")?.addEventListener("click", (event) => {
+  document.querySelectorAll("[data-add-item-signin]").forEach((button) => button.addEventListener("click", (event) => {
     if (!signInDialog?.showModal || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     signInDialog.showModal();
-  });
+  }));
 
   const search = navbar.querySelector("#market-search");
   search?.addEventListener("pointerdown", (event) => {
