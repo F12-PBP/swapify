@@ -14,7 +14,7 @@
             <img src="{% static 'main/icons/menu.svg' %}" alt="" width="24" height="24">
         </button>
         <div id="navbar-mobile-menu" class="navbar-mobile-menu absolute inset-x-0 top-full max-h-[calc(100svh-4rem)] overflow-y-auto border-b border-primary-20 bg-neutral-10 p-6 shadow-lg md:px-8 xl:hidden" data-navbar-menu aria-hidden="true" inert>
-            <ul class="menu flex w-full flex-col gap-2 p-0 font-sans text-s7 font-semibold text-neutral-70">
+            <ul class="flex w-full flex-col gap-2 p-0 font-sans text-s7 font-semibold text-neutral-80 [&_a]:px-3 [&_a]:py-3 [&_a:hover]:bg-primary-10 [&_a:focus-visible]:bg-primary-10 [&_a:active]:bg-primary-20 [&_a[aria-current=location]]:bg-primary-10 [&_a[aria-current=location]]:text-primary-base">
                 {% include "components/navbar/navbar-links.html" %}
             </ul>
             <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-primary-20 pt-6">
