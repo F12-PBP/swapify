@@ -6,8 +6,12 @@
 
 {% block preview %}
     <div class="min-h-28">
-        <div class="alert swap-alert swap-alert-success max-w-xs" role="status">
-            <span>Barang berhasil ditambahkan.</span>
+        <div class="flex max-w-sm items-start gap-3 rounded-2xl border border-neutral-40 bg-neutral-10 p-4 shadow-lg" role="status">
+            <span aria-hidden="true" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-green-10 text-green-70">✓</span>
+            <div>
+                <p class="text-b8 font-semibold text-neutral-110">All set</p>
+                <p class="mt-1 text-b9 text-neutral-80">Item added successfully.</p>
+            </div>
         </div>
     </div>
 {% endblock %}

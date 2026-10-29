@@ -5,21 +5,22 @@
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const active = new Map();
   const variants = {
-    success: ['swap-alert-success', '✓'],
-    error: ['swap-alert-error', '!'],
-    warning: ['swap-alert-warning', '!'],
-    info: ['swap-alert-info', 'i'],
+    success: ['bg-green-10', 'text-green-70', 'All set'],
+    error: ['bg-red-10', 'text-red-70', 'Something went wrong'],
+    warning: ['bg-yellow-10', 'text-yellow-70', 'Please check'],
+    info: ['bg-primary-10', 'text-primary-base', 'Swapify'],
   };
-  const show = (message, { type = 'info' } = {}) => {
+  const show = (message, { type = 'info', title } = {}) => {
     const text = String(message || '').trim();
     if (!text) return;
     if (!Object.hasOwn(variants, type)) type = 'info';
-    const key = `${type}:${text}`;
+    const heading = title || variants[type][2];
+    const key = `${type}:${heading}:${text}`;
     if (active.has(key)) return active.get(key).element;
     const element = template.content.firstElementChild.cloneNode(true);
-    element.classList.add(variants[type][0]);
-    element.querySelector('[data-toast-icon]').textContent = variants[type][1];
-    const live = element.querySelector('[data-toast-text]');
+    element.querySelector('[data-toast-icon]').classList.add(...variants[type].slice(0, 2));
+    element.querySelector(`[data-toast-symbol="${type}"]`).hidden = false;
+    const live = element.querySelector('[data-toast-announcement]');
     live.setAttribute('role', type === 'error' ? 'alert' : 'status');
     live.setAttribute('aria-atomic', 'true');
     let timer;
@@ -45,7 +46,7 @@
         }
       };
       if (reducedMotion.matches) finish();
-      else element.animate([{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(8px)' }], { duration: 160, easing: 'ease-in' }).finished.then(finish, finish);
+      else element.animate([{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-8px)' }], { duration: 160, easing: 'ease-in' }).finished.then(finish, finish);
     };
     const resume = () => {
       if (closing || timer || !remaining || document.hidden || element.matches(':hover') || element.contains(document.activeElement)) return;
@@ -64,8 +65,9 @@
       if (region.matches(':popover-open')) region.hidePopover();
       region.showPopover();
     }
-    live.textContent = text;
-    if (!reducedMotion.matches) element.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 300, easing: 'cubic-bezier(.22,1,.36,1)' });
+    element.querySelector('[data-toast-title]').textContent = heading;
+    element.querySelector('[data-toast-text]').textContent = text;
+    if (!reducedMotion.matches) element.animate([{ opacity: 0, transform: 'translateY(-12px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 300, easing: 'cubic-bezier(.22,1,.36,1)' });
     resume();
     return element;
   };
