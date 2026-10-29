@@ -91,11 +91,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Final foreign keys are added after the referenced primary key is switched.
         SwapAddField(
             model_name="swaprequest",
             name="requested_clothing_uuid",
             field=models.ForeignKey(
                 db_column="requested_clothing_uuid_id",
+                db_constraint=False,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="+",
@@ -108,6 +110,7 @@ class Migration(migrations.Migration):
             name="offered_clothing_uuid",
             field=models.ForeignKey(
                 db_column="offered_clothing_uuid_id",
+                db_constraint=False,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="+",
@@ -124,6 +127,7 @@ class Migration(migrations.Migration):
             name="requested_clothing_uuid",
             field=models.ForeignKey(
                 db_column="requested_clothing_uuid_id",
+                db_constraint=False,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="+",
                 to="clothing_catalog.clothing",
@@ -135,6 +139,7 @@ class Migration(migrations.Migration):
             name="offered_clothing_uuid",
             field=models.ForeignKey(
                 db_column="offered_clothing_uuid_id",
+                db_constraint=False,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="+",
                 to="clothing_catalog.clothing",
