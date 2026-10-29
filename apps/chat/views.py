@@ -29,6 +29,23 @@ class ChatRoomListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return conversation_rooms(self.request.user)
 
+    def get(self, request, *args, **kwargs):
+        if wants_json(request):
+            return json_response(
+                {
+                    "ok": True,
+                    "rooms": [
+                        {
+                            "id": room.pk,
+                            "unread_count": room.unread_count,
+                        }
+                        for room in self.get_queryset()
+                    ],
+                }
+            )
+
+        return super().get(request, *args, **kwargs)
+
 
 class StartChatView(LoginRequiredMixin, View):
     """Buka chat dari sebuah swap request. Ditolak kalau belum Accepted."""
