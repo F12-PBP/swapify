@@ -1,9 +1,16 @@
+import io
 import uuid
+from unittest.mock import patch
 
+from cloudinary import CloudinaryResource
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.urls import reverse
+from PIL import Image
+
+from common.images import ImageUploadError
 
 from .forms import ClothingForm
 from .models import Clothing
@@ -208,7 +215,7 @@ class ClothingViewTests(TestCase):
 
         self.assertContains(response, "data-submit-once")
         self.assertContains(response, 'data-submitting-label="Adding..."')
-        self.assertContains(response, ">Add</button>")
+        self.assertContains(response, ">Add Item</button>")
 
     def test_edit_form_keeps_save_labels(self):
         self.client.force_login(self.owner)
@@ -546,3 +553,99 @@ class DiscoveryViewTests(TestCase):
         user.profile.onboarding_completed = True
         user.profile.save(update_fields=["onboarding_completed"])
         self.assertNotContains(self.client.get(route), "Finish my setup")
+
+
+class WardrobeListingFlowTests(TestCase):
+    def setUp(self):
+        self.member = get_user_model().objects.create_user(username="listing-member")
+        self.client.force_login(self.member)
+        self.url = reverse("clothing_catalog:create")
+        self.data = {
+            "wardrobe_form": "1",
+            "name": "Everyday denim",
+            "description": "Soft denim with a little wear at the cuffs.",
+            "type": "outerwear",
+            "size": "M",
+            "condition": "good",
+            "exchange_methods": ["meetup"],
+        }
+
+    def photo(self):
+        image = io.BytesIO()
+        Image.new("RGB", (12, 12), "blue").save(image, format="PNG")
+        return SimpleUploadedFile(
+            "denim.png", image.getvalue(), content_type="image/png"
+        )
+
+    def test_current_form_requires_photo_and_at_least_one_method(self):
+        response = self.client.post(self.url, {**self.data, "exchange_methods": []})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("new_image", response.context["form"].errors)
+        self.assertIn("exchange_methods", response.context["form"].errors)
+        self.assertContains(response, self.data["name"])
+        self.assertFalse(Clothing.objects.exists())
+
+    @patch("apps.clothing_catalog.mixins.upload_image")
+    def test_create_returns_to_wardrobe_and_persists_methods_and_photo(self, upload):
+        upload.return_value = CloudinaryResource(
+            "wardrobe/denim", resource_type="image"
+        )
+        response = self.client.post(self.url, {**self.data, "new_image": self.photo()})
+        self.assertRedirects(
+            response,
+            reverse("user_profile:public", args=[self.member.username]),
+            fetch_redirect_response=False,
+        )
+        self.assertContains(self.client.get(response.url), "Item added successfully.")
+        item = Clothing.objects.get()
+        self.assertEqual(item.owner, self.member)
+        self.assertEqual(item.exchange_methods, ["meetup"])
+        self.assertEqual(item.image.public_id, "wardrobe/denim")
+        detail = self.client.get(item.get_absolute_url())
+        self.assertContains(detail, "Meet nearby")
+        self.assertNotContains(detail, "Send a package")
+
+    @patch("apps.clothing_catalog.mixins.upload_image")
+    def test_upload_failure_preserves_details_and_does_not_create_or_report_success(
+        self, upload
+    ):
+        upload.side_effect = ImageUploadError("Upload unavailable.")
+        response = self.client.post(self.url, {**self.data, "new_image": self.photo()})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Upload unavailable.")
+        self.assertContains(response, self.data["name"])
+        self.assertNotContains(response, "Item added successfully.")
+        self.assertFalse(Clothing.objects.exists())
+
+    def test_edit_keeps_photo_and_saves_new_methods(self):
+        item = Clothing.objects.create(
+            owner=self.member,
+            image="wardrobe/existing",
+            **{
+                key: value for key, value in self.data.items() if key != "wardrobe_form"
+            },
+        )
+        response = self.client.post(
+            reverse("clothing_catalog:update", args=[item.pk]),
+            {**self.data, "exchange_methods": ["delivery"]},
+        )
+        self.assertRedirects(response, item.get_absolute_url())
+        item.refresh_from_db()
+        self.assertEqual(item.exchange_methods, ["delivery"])
+        self.assertEqual(item.image.public_id, "wardrobe/existing")
+
+    def test_login_preserves_add_item_destination(self):
+        self.member.set_password("wardrobe-test-password")
+        self.member.save()
+        self.client.logout()
+        login = reverse("user_profile:login") + "?next=" + self.url
+        self.assertRedirects(self.client.get(self.url), login)
+        response = self.client.post(
+            login,
+            {
+                "username": self.member.username,
+                "password": "wardrobe-test-password",
+                "next": self.url,
+            },
+        )
+        self.assertRedirects(response, self.url)

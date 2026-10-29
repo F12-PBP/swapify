@@ -1,0 +1,12 @@
+{% load lucide %}
+<article class="flex min-w-0 flex-col gap-3 rounded-3xl border border-neutral-40 bg-neutral-20 p-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <a href="{% url 'user_profile:public' review.author.username %}" class="flex min-w-0 items-center gap-3 text-b7 font-semibold text-neutral-100 hover:text-primary-base">
+      <span class="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary-20 text-secondary-80">{% if review.author.profile.profile_picture %}<img src="{{ review.author.profile.profile_picture.url }}" alt="" loading="lazy" class="size-full object-cover">{% else %}{{ review.author.profile.display_name|default:review.author.username|first|upper }}{% endif %}</span>
+      <span class="break-words">{{ review.author.profile.display_name|default:review.author.username }}</span>
+    </a>
+    <span class="inline-flex items-center gap-2 text-b7 font-semibold text-primary-base">{% lucide "star" size=24 %}<span>{{ review.rating }}<span class="sr-only"> out of 5 stars</span></span></span>
+  </div>
+  <p class="whitespace-pre-line break-words text-b7 text-neutral-100">{{ review.comment|default:"No written comment." }}</p>
+  <time class="sr-only" datetime="{{ review.created_at|date:'c' }}">{{ review.created_at|date:"M j, Y" }}</time>
+</article>

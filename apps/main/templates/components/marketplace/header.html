@@ -1,15 +1,16 @@
 {% load static lucide marketplace %}
 {% marketplace_section request as active_section %}
-{% if user.is_authenticated %}{% url 'user_profile:public' user.username as wardrobe_url %}{% else %}{% url 'user_profile:detail' as wardrobe_url %}{% endif %}
+{% if user.is_authenticated %}{% url 'user_profile:public' user.username as wardrobe_url %}{% else %}{% url 'user_profile:wardrobe' as wardrobe_url %}{% endif %}
 <header class="sticky top-0 z-40 bg-neutral-10 shadow-sm" data-market-navbar>
   {% url 'user_profile:location_edit' as location_url %}
   {% include "components/marketplace/marquee.html" %}
   <div class="market-container flex flex-wrap items-center justify-between gap-x-5 gap-y-3 py-4 lg:flex-nowrap lg:gap-10 lg:py-6">
     {% include "components/marketplace/logo.html" %}
-    <form method="get" action="{% url 'clothing_catalog:list' %}#finds" role="search" class="order-last flex h-12 w-full items-center gap-3 rounded-full border border-neutral-40 bg-neutral-20 px-5 lg:order-none lg:max-w-[620px] lg:flex-1">
-      <button type="submit" aria-label="Search clothing" class="cursor-pointer p-1"><img src="{% static 'main/icons/marketplace/search.svg' %}" alt=""></button>
-      <label for="market-search" class="sr-only">Search clothing</label>
-      <input id="market-search" name="search" type="search" value="{{ filters.search }}" placeholder="Find your next favourite..." maxlength="150" class="min-w-0 flex-1 bg-transparent text-b9 text-neutral-100 outline-none placeholder:text-neutral-70">
+    <form method="get" action="{% if active_tab == 'wardrobe' %}{{ request.path }}{% else %}{% url 'clothing_catalog:list' %}#finds{% endif %}" data-discovery-action="{% url 'clothing_catalog:list' %}#finds" role="search" class="order-last flex h-12 w-full items-center gap-3 rounded-full border border-neutral-40 bg-neutral-20 px-5 lg:order-none lg:max-w-[620px] lg:flex-1">
+      <button type="submit" aria-label="{% if active_tab == 'wardrobe' %}Search this wardrobe{% else %}Search clothing{% endif %}" class="cursor-pointer p-1"><img src="{% static 'main/icons/marketplace/search.svg' %}" alt=""></button>
+      <label for="market-search" class="sr-only">{% if active_tab == 'wardrobe' %}Search this wardrobe{% else %}Search clothing{% endif %}</label>
+      <input id="market-search" name="search" type="search" value="{{ filters.search }}" placeholder="{% if active_tab == 'wardrobe' %}Search this wardrobe...{% else %}Find your next favourite...{% endif %}" maxlength="150" class="min-w-0 flex-1 bg-transparent text-b9 text-neutral-100 outline-none placeholder:text-neutral-70">
+      {% if active_tab %}<input type="hidden" name="tab" value="wardrobe" {% if active_tab != 'wardrobe' %}disabled{% endif %}>{% endif %}
       {% if filters.type %}<input type="hidden" name="type" value="{{ filters.type }}">{% endif %}
       {% if filters.size %}<input type="hidden" name="size" value="{{ filters.size }}">{% endif %}
       {% if filters.condition %}<input type="hidden" name="condition" value="{{ filters.condition }}">{% endif %}
@@ -43,7 +44,7 @@
         <a href="{% url 'chat:list' %}" class="market-nav {% if active_section == 'messages' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'messages' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/messages.svg' %}" alt="">Messages</a>
         <a href="{{ wardrobe_url }}" class="market-nav {% if active_section == 'wardrobe' %}border-primary-base text-primary-base{% else %}border-transparent{% endif %}" {% if active_section == 'wardrobe' %}aria-current="page"{% endif %}><img class="hidden sm:block" src="{% static 'main/icons/marketplace/wardrobe.svg' %}" alt="">My wardrobe</a>
       </div>
-      <a class="market-button shrink-0" href="{% url 'clothing_catalog:create' %}">{% lucide "plus" size=20 %}Add Item</a>
+      <a class="market-button shrink-0" href="{% url 'clothing_catalog:create' %}" {% if not user.is_authenticated %}data-add-item-signin{% endif %}>{% lucide "plus" size=20 %}Add Item</a>
     </nav>
   </div>
 </header>

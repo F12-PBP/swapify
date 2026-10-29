@@ -22,10 +22,20 @@ def send_message(room, sender, text):
     return ChatMessage.objects.create(chat_room=room, sender=sender, message=text)
 
 
-def mark_read(room, user):
-    """Tandai semua pesan dari lawan bicara sebagai sudah dibaca."""
-    return (
-        ChatMessage.objects.filter(chat_room=room, is_read=False)
-        .exclude(sender=user)
-        .update(is_read=True)
-    )
+def mark_read(room, user, *, loaded_messages=None):
+    """Tandai pesan lawan dibaca; dapat dibatasi pada batch yang dimuat."""
+
+    queryset = room.messages.filter(is_read=False).exclude(sender=user)
+
+    if loaded_messages is not None:
+        loaded_messages = list(loaded_messages)
+        queryset = queryset.filter(pk__in=[message.pk for message in loaded_messages])
+
+    updated = queryset.update(is_read=True)
+
+    if loaded_messages is not None:
+        for message in loaded_messages:
+            if message.sender_id != user.pk:
+                message.is_read = True
+
+    return updated

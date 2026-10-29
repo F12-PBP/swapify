@@ -1,10 +1,11 @@
 {% load static %}
-<article class="flex w-full min-w-0 flex-col overflow-hidden rounded-[20px] bg-neutral-10 shadow-[4px_4px_16px_rgb(0_0_0/0.04)] sm:w-[calc((100%_-_1.5rem)/2)] lg:w-[calc((100%_-_4.5rem)/4)]">
-  <a href="{{ clothing.get_absolute_url }}" class="group relative block aspect-[4/3] overflow-hidden bg-neutral-30" aria-label="View {{ clothing.name }}">
+<article class="flex w-full min-w-0 flex-col overflow-hidden rounded-[20px] {% if variant == "wardrobe" and clothing.pending_request_id %}bg-secondary-10{% else %}bg-neutral-10{% endif %} shadow-[4px_4px_16px_rgb(0_0_0/0.04)] sm:w-[calc((100%_-_1.5rem)/2)] lg:w-[calc((100%_-_4.5rem)/4)]">
+  <a href="{{ clothing.get_absolute_url }}" class="group relative block {% if variant == 'wardrobe' %}aspect-[17/10]{% else %}aspect-[4/3]{% endif %} overflow-hidden bg-neutral-30" aria-label="View {{ clothing.name }}">
     {% if clothing.image_url %}<img src="{{ clothing.image_url }}" alt="{{ clothing.name }}" loading="lazy" width="600" height="450" class="size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-105">{% else %}<span class="flex size-full items-center justify-center font-display text-h5 text-neutral-70">A new chapter awaits</span>{% endif %}
     <span class="absolute top-3 left-3 rounded-full bg-primary-10 px-2 py-1.5 text-b8 font-semibold text-primary-base">{{ clothing.get_condition_display }}</span>
   </a>
-  <div class="flex flex-1 flex-col gap-4 p-4 pt-5">
+  <div class="flex flex-1 flex-col gap-4 p-4 {% if variant == 'wardrobe' %}pt-9{% else %}pt-5{% endif %}">
+    {% if variant == "wardrobe" %}<p class="text-b7 font-semibold {% if clothing.pending_request_id %}text-secondary-70{% else %}text-neutral-80{% endif %}">{% if clothing.pending_request_id %}Requested{% else %}{{ clothing.get_status_display }}{% endif %}</p>{% endif %}
     <div class="flex flex-1 flex-col gap-2 border-b border-neutral-40 pb-4">
       <div class="flex flex-wrap items-center justify-between gap-2 text-b8 text-neutral-70">
         <span>{{ clothing.get_type_display }} · Size {{ clothing.get_size_display }}</span>
@@ -12,6 +13,13 @@
       </div>
       <h3 class="text-s6 font-semibold text-neutral-110"><a href="{{ clothing.get_absolute_url }}" class="line-clamp-2 hover:text-primary-base">{{ clothing.name }}</a></h3>
     </div>
+    {% if variant == "wardrobe" %}
+      {% if clothing.pending_request_id %}
+        <a href="{% url 'swap_request:detail' clothing.pending_request_id %}" class="btn btn-secondary flex items-center justify-center">View Request<span class="sr-only"> for {{ clothing.name }}</span></a>
+      {% else %}
+        <a href="{{ clothing.get_absolute_url }}" class="btn flex items-center justify-center border-0 bg-neutral-20 text-primary-base hover:bg-primary-10">View Detail<span class="sr-only">: {{ clothing.name }}</span></a>
+      {% endif %}
+    {% else %}
     <div class="flex items-center justify-between gap-3">
       <a href="{% url 'user_profile:public' clothing.owner.username %}" class="flex min-w-0 flex-1 items-center gap-1 text-b9 text-neutral-90">
         <span class="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary-20 text-[8px] text-secondary-70">{% if clothing.owner.profile.profile_picture %}<img src="{{ clothing.owner.profile.profile_picture.url }}" alt="" loading="lazy" class="size-full object-cover">{% else %}{{ clothing.owner.profile.display_name|default:clothing.owner.username|first|upper }}{% endif %}</span>
@@ -20,5 +28,6 @@
       </a>
       <a href="{% url 'swap_request:create' clothing.pk %}" class="market-button shrink-0 gap-2 px-4 text-b8" data-swap-link>Let’s Swap</a>
     </div>
+    {% endif %}
   </div>
 </article>

@@ -1,0 +1,12 @@
+<div class="flex flex-col gap-5">
+  <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="text-s6 font-semibold text-neutral-80">My Rating &amp; Review</h2>{% include "user_profile/partials/rating_summary.html" %}</div>
+  <p class="sr-only" role="status">{{ paginator.count }} review{{ paginator.count|pluralize }}{% if rating %} rated {{ rating }} star{{ rating|pluralize }}{% endif %}</p>
+  {% for review in reviews %}{% include "user_profile/partials/review_card.html" %}{% empty %}<p class="rounded-3xl border border-neutral-40 bg-neutral-20 p-6 text-b7 text-neutral-80">{% if rating %}No {{ rating }}-star reviews yet.{% else %}Reviews will appear here after completed exchanges.{% endif %}</p>{% endfor %}
+  {% if is_paginated %}
+    <nav class="flex flex-wrap items-center justify-between gap-3" aria-label="Review pages">
+      {% if page_obj.has_previous %}<a href="?rating={{ rating }}&amp;page={{ page_obj.previous_page_number }}" class="btn btn-primary-ghost inline-flex items-center justify-center" data-review-page>Previous</a>{% endif %}
+      <span class="text-b8 text-neutral-80">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a href="?rating={{ rating }}&amp;page={{ page_obj.next_page_number }}" class="btn btn-primary-ghost inline-flex items-center justify-center" data-review-page>Next</a>{% endif %}
+    </nav>
+  {% endif %}
+</div>

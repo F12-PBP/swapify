@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.cache import patch_vary_headers
 from django.utils.functional import cached_property
 from django.views.generic import (
@@ -141,12 +141,17 @@ class ClothingCreateView(LoginRequiredMixin, ClothingImageUploadMixin, CreateVie
     template_name = "clothing_catalog/clothing_form.html"
 
     def get_success_url(self):
-        return safe_return_url(self.request, super().get_success_url())
+        default = super().get_success_url()
+        if self.request.POST.get("wardrobe_form") == "1":
+            default = reverse("user_profile:public", args=[self.request.user.username])
+        return safe_return_url(self.request, default)
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
-        messages.success(self.request, "Item added successfully.")
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if response.status_code == 302:
+            messages.success(self.request, "Item added successfully.")
+        return response
 
 
 class OwnerRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -179,8 +184,10 @@ class ClothingUpdateView(
     template_name = "clothing_catalog/clothing_form.html"
 
     def form_valid(self, form):
-        messages.success(self.request, "Item updated successfully.")
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if response.status_code == 302:
+            messages.success(self.request, "Item updated successfully.")
+        return response
 
 
 class ClothingDeleteView(OwnerRequiredMixin, AvailableClothingMixin, DeleteView):

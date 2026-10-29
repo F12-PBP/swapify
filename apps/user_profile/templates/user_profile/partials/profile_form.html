@@ -1,0 +1,23 @@
+{% load lucide %}
+<form action="{% url 'user_profile:edit' %}" method="post" enctype="multipart/form-data" class="flex flex-col gap-7" data-profile-form>
+  {% csrf_token %}
+  <{% if dialog_mode %}h2{% else %}h1{% endif %} id="profile-edit-title" class="{% if dialog_mode %}pr-9 {% endif %}font-display text-h4 text-primary-base">Edit Profile</{% if dialog_mode %}h2{% else %}h1{% endif %}>
+  {% if form.non_field_errors %}<div class="swap-field-error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  {% include "user_profile/auth/field.html" with field=form.display_name %}
+  {% include "user_profile/auth/field.html" with field=form.bio %}
+  <div class="flex flex-col gap-2">
+    <label for="{{ form.new_profile_picture.id_for_label }}" class="swap-field-label">Profile Photo</label>
+    {{ form.new_profile_picture }}
+    <label for="{{ form.new_profile_picture.id_for_label }}" class="flex h-32 cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border border-dashed border-neutral-60 bg-neutral-30 p-3 text-b7 text-neutral-70 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-primary-base" data-profile-photo-drop>
+      <img {% if profile.profile_picture %}src="{{ profile.profile_picture.url }}"{% else %}hidden{% endif %} alt="Profile photo preview" class="size-24 rounded-full object-cover" data-profile-photo-preview>
+      <span data-profile-photo-prompt {% if profile.profile_picture %}hidden{% endif %} class="flex flex-col items-center gap-3">{% lucide "upload" size=20 %}Choose File</span>
+    </label>
+    <p id="profile-photo-help" class="text-b9 text-neutral-70" data-profile-photo-status aria-live="polite">JPG, PNG, or WebP, up to 5 MB. Leave blank to keep your current photo.</p>
+    {% for error in form.new_profile_picture.errors %}<p class="swap-field-error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  <div class="flex gap-3">
+    <a href="{% url 'user_profile:detail' %}" class="btn btn-primary-ghost flex flex-1 items-center justify-center" data-profile-cancel>Cancel</a>
+    <button type="submit" class="btn btn-primary flex-1">Save Changes</button>
+  </div>
+  <p class="text-b8 text-red-base" role="status" data-profile-form-status hidden></p>
+</form>

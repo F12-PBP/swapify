@@ -1,0 +1,2 @@
+{% load lucide %}
+{% if rating_summary.count %}<p class="inline-flex items-center gap-2 text-b7 text-primary-base">{% lucide "star" size=24 %}<span><strong>{{ rating_summary.average|floatformat:1 }}/5</strong> ({{ rating_summary.count }})</span></p>{% else %}<p class="text-b8 text-neutral-70">No reviews yet.</p>{% endif %}

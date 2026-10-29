@@ -1,77 +1,70 @@
-{% extends "marketplace/base.html" %}
+{% extends "chat/base.html" %}
+{% load static %}
 
-{% block title %}Pesan · Swapify{% endblock %}
+{% block title %}Message · Swapify{% endblock %}
 
-{% block content %}
-<div class="pb-16">
+{% block chat_content %}
+{% if chat_rooms %}
+    <section
+        class="chat-page grid min-h-96 grid-cols-[minmax(0,1fr)]
+            overflow-hidden rounded-2xl border border-neutral-40
+            bg-neutral-10
+            h-[calc(100dvh_-_var(--market-navbar-height,15rem)_-_2rem)]
+            md:h-[min(41.25rem,calc(100dvh_-_var(--market-navbar-height,12.625rem)_-_5rem))]
+            md:grid-cols-[21rem_minmax(0,1fr)]
+            md:rounded-[1.75rem]"
+        data-chat-root
+        data-unread-url="{% url 'chat:list' %}"
+    >
+        {% include "chat/partials/sidebar.html" %}
 
-    <div class="mb-6">
-        <h1 class="text-2xl md:text-3xl font-bold">Pesan</h1>
-        <p class="mt-1 text-base-content/60">
-            Chat dengan pengguna yang swap request-nya sudah diterima.
+        <div
+        class="chat-placeholder hidden place-items-center
+                bg-secondary-10 p-6 text-center text-secondary-50 md:grid"
+        >
+        Choose a chatroom to send messages
+        </div>
+    </section>
+    {% else %}
+    <section class="chat-empty">
+        <h1
+        class="font-display text-h3 font-normal text-primary-base md:text-h2"
+        >
+        Messages
+        </h1>
+
+        <p class="mt-3 text-b6 text-neutral-80">
+        From the first hello to a happy handover.
         </p>
-    </div>
 
+        <div
+        class="chat-empty-card mt-10 flex min-h-[27rem] flex-col
+                items-center justify-center gap-4 rounded-3xl
+                bg-secondary-10 px-5 py-8 text-center"
+        >
+        <img src="{% static 'chat/icons/empty.svg' %}" alt="">
 
-    <div class="space-y-3">
-        {% for room in chat_rooms %}
-            {% with partner=room.partner %}
-                <a href="{% url 'chat:detail' room.pk %}"
-                    class="card bg-base-100 border border-base-300 transition hover:border-primary hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-                    <div class="card-body flex-row items-center gap-4 p-4">
+        <h2 class="font-display text-h5 font-normal text-secondary-80">
+            No messages for you yet.
+        </h2>
 
-                        {# Avatar inisial #}
-                        <div class="w-12 h-12 shrink-0 rounded-full bg-primary text-primary-content flex items-center justify-center text-lg font-semibold"
-                            aria-hidden="true">
-                            {{ partner.get_username|slice:":1"|upper }}
-                        </div>
+        <p class="text-secondary-60">
+            Find a piece to swap to chat with someone.
+        </p>
 
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2">
-                                <h2 class="font-semibold truncate">{{ partner.get_username }}</h2>
-                                {% if not room.is_active %}
-                                    <span class="badge badge-ghost badge-sm">Tidak aktif</span>
-                                {% endif %}
-                            </div>
+        <a
+            class="btn btn-primary mt-2 gap-3"
+            href="{% url 'clothing_catalog:list' %}"
+        >
+            Discover my first swap
 
-                            <p class="text-xs text-base-content/50 truncate">
-                                {{ room.swap_request.requested_clothing.name }}
-                                &harr; {{ room.swap_request.offered_clothing.name }}
-                            </p>
-
-                            {% if room.last_message %}
-                                <p class="text-sm text-base-content/70 truncate">
-                                    {% if room.last_sender_id == user.id %}Kamu: {% endif %}{{ room.last_message }}
-                                </p>
-                            {% else %}
-                                <p class="text-sm text-base-content/50 italic">Belum ada pesan</p>
-                            {% endif %}
-                        </div>
-
-                        <div class="shrink-0 flex flex-col items-end gap-1">
-                            <time class="text-xs text-base-content/50"
-                                datetime="{{ room.last_activity|date:'c' }}">
-                                {{ room.last_activity|date:"d M Y, H:i" }}
-                            </time>
-                            {% if room.unread_count %}
-                                <span class="badge badge-primary badge-sm">{{ room.unread_count }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </a>
-            {% endwith %}
-        {% empty %}
-            <div class="card bg-base-100 border border-dashed border-base-300">
-                <div class="card-body items-center text-center py-12">
-                    <h2 class="text-lg font-semibold">Belum ada percakapan</h2>
-                    <p class="max-w-md text-base-content/60">
-                        Chat akan muncul di sini setelah swap request kamu diterima
-                        atau kamu menerima swap request dari pengguna lain.
-                    </p>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-
-</div>
+            <span
+            class="inline-flex size-6 shrink-0 items-center justify-center"
+            >
+            <img src="{% static 'chat/icons/send.svg' %}" alt="">
+            </span>
+        </a>
+        </div>
+    </section>
+{% endif %}
 {% endblock %}

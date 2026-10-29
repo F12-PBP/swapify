@@ -6,8 +6,8 @@
   <div id="location-map" class="location-map" role="region" aria-label="Map showing your approximate detected area" tabindex="0"
        data-leaflet-css="{% static 'user_profile/vendor/leaflet/leaflet.css' %}"
        data-leaflet-js="{% static 'user_profile/vendor/leaflet/leaflet.js' %}"
-       data-latitude="{{ profile.latitude|default_if_none:''|unlocalize }}"
-       data-longitude="{{ profile.longitude|default_if_none:''|unlocalize }}"></div>
+       data-latitude="{% if not dialog_mode %}{{ profile.latitude|default_if_none:''|unlocalize }}{% endif %}"
+       data-longitude="{% if not dialog_mode %}{{ profile.longitude|default_if_none:''|unlocalize }}{% endif %}"></div>
   <p id="location-map-status" role="status" class="text-b9 text-neutral-80"></p>
 
 </section>
