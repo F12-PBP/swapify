@@ -1,178 +1,77 @@
 {% extends "marketplace/base.html" %}
-
-{% block title %}{{ profile.display_name }} | Swapify{% endblock %}
-
+{% load static lucide %}
+{% block title %}{% if guest_wardrobe %}My Wardrobe{% else %}{{ profile.display_name }}’s wardrobe{% endif %} | Swapify{% endblock %}
 {% block content %}
-<section class="mx-auto max-w-3xl">
-    <div class="card border border-neutral-40 bg-base-100 shadow-sm">
-        <div class="card-body gap-4">
-          {% if profile.profile_picture %}
-          <img
-               src="{{ profile.profile_picture.url }}"
-               alt="Profile photo of {{ profile.display_name }}"
-               width="96"
-               height="96"
-               class="rounded-full object-cover"
-               style="width: 96px; height: 96px;"
-          >
-          {% else %}
-          <div
-               class="flex size-24 items-center justify-center rounded-full bg-primary text-primary-content"
-               aria-hidden="true"
-          >
-               {{ profile.display_name|slice:":1"|upper }}
+{% if guest_wardrobe %}
+<section class="flex flex-col gap-8 motion-safe:animate-profile-reveal" aria-labelledby="wardrobe-heading">
+  <div class="flex flex-col gap-3"><h1 id="wardrobe-heading" class="font-display text-h3 text-primary-base md:text-h2">My Wardrobe</h1><p class="text-b7 text-neutral-80 md:text-b6">Thoughtfully listed. Ready for their next chapter.</p></div>
+        <div class="flex min-h-[432px] w-full flex-col items-center justify-center gap-5 rounded-3xl bg-secondary-10 px-6 py-12 text-center shadow-[4px_4px_16px_rgb(0_0_0/0.04)]">
+          {% lucide "shield-check" size=44 class="text-secondary-70" %}
+          <div class="flex flex-col items-center gap-6">
+            <div class="flex flex-col gap-2">
+              <h2 class="font-display text-h5 text-secondary-80">Every great find starts with a member.</h2>
+              <p class="max-w-3xl text-b7 text-secondary-60">Sign in to save your details, manage your wardrobe, and keep your conversations in one place.</p>
+            </div>
+            <a href="{% url 'user_profile:login' %}?next={% url 'user_profile:wardrobe' %}" class="btn btn-primary inline-flex items-center justify-center gap-3">Sign in{% lucide "arrow-right" size=24 %}</a>
           </div>
-          {% endif %}
-
-            <h1 class="font-display text-h3">
-                {{ profile.display_name }}
-            </h1>
-
-            <p class="text-base-content/60">
-                @{{ profile.user.username }}
-            </p>
-            {% if profile.city and profile.province %}
-                <p class="text-sm text-base-content/60">{{ profile.city }}, {{ profile.province }}</p>
-            {% endif %}
-
-            <p class="whitespace-pre-line">
-                {{ profile.bio|default:"No bio yet." }}
-            </p>
-            {% if rating_summary.count %}
-               <p class="text-sm">
-                    <span class="font-semibold">
-                         {{ rating_summary.average|floatformat:1 }} / 5
-                    </span>
-                    <span class="text-base-content/60">
-                         · {{ rating_summary.count }}
-                         review{{ rating_summary.count|pluralize }}
-                    </span>
-               </p>
-               {% else %}
-               <p class="text-sm text-base-content/60">
-                    No reviews yet.
-               </p>
-               {% endif %}
-
-            {% if user.is_authenticated and user.pk == profile.user_id %}
-                <div>
-                    <a
-                        href="{% url 'user_profile:edit' %}"
-                        class="btn btn-primary-ghost"
-                    >
-                        Edit Profile
-                    </a>
-                    <a href="{% url 'clothing_catalog:my_list' %}" class="btn btn-primary-ghost">Manage clothing</a>
-                </div>
-            {% endif %}
         </div>
-    </div>
-
-    <div class="mt-8">
-        <h2 class="font-display text-h4 mb-4">
-            Available Clothing
-        </h2>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-            {% for clothing in clothing_items %}
-                <article class="card border border-neutral-40 bg-base-100">
-                    <div class="card-body">
-                        <h3 class="font-semibold">
-                            {{ clothing.name }}
-                        </h3>
-
-                        <p class="text-sm text-base-content/60">
-                            {{ clothing.get_type_display }}
-                            · {{ clothing.get_size_display }}
-                        </p>
-
-                        <a
-                            href="{{ clothing.get_absolute_url }}"
-                            class="btn btn-primary-ghost"
-                        >
-                            View Clothing
-                        </a>
-                    </div>
-                </article>
-            {% empty %}
-                <p class="text-base-content/60">
-                    No clothing available to swap yet.
-                </p>
-            {% endfor %}
-        </div>
-    </div>
-    <div id="reviews" class="mt-8">
-          <h2 class="font-display text-h4 mb-4">Reviews</h2>
-
-          <div class="space-y-4">
-               {% for review in reviews_page %}
-                    <article class="card border border-neutral-40 bg-base-100">
-                         <div class="card-body gap-3">
-                              <div class="flex flex-wrap items-center justify-between gap-2">
-                              <a
-                                   href="{% url 'user_profile:public' review.author.username %}"
-                                   class="link font-semibold"
-                              >
-                                   @{{ review.author.username }}
-                              </a>
-
-                              <span class="badge badge-outline">
-                                   {{ review.rating }} / 5
-                              </span>
-                              </div>
-
-                              <time
-                              datetime="{{ review.created_at|date:'c' }}"
-                              class="text-sm text-base-content/60"
-                              >
-                              {{ review.created_at|date:"M j, Y" }}
-                              </time>
-
-                              {% if review.comment %}
-                              <p class="whitespace-pre-line">{{ review.comment }}</p>
-                              {% else %}
-                              <p class="text-sm text-base-content/60">
-                                   No written comment.
-                              </p>
-                              {% endif %}
-                         </div>
-                    </article>
-               {% empty %}
-                    <p class="text-base-content/60">
-                         Reviews will appear here after completed exchanges.
-                    </p>
-               {% endfor %}
-          </div>
-
-          {% if reviews_page.has_other_pages %}
-               <nav
-                    class="mt-5 flex flex-wrap items-center justify-between gap-3"
-                    aria-label="Review pages"
-               >
-                    {% if reviews_page.has_previous %}
-                         <a
-                              href="?reviews_page={{ reviews_page.previous_page_number }}#reviews"
-                              class="btn btn-primary-ghost"
-                         >
-                              Previous
-                         </a>
-                    {% endif %}
-
-                    <span class="text-sm text-base-content/60">
-                         Page {{ reviews_page.number }}
-                         of {{ reviews_page.paginator.num_pages }}
-                    </span>
-
-                    {% if reviews_page.has_next %}
-                         <a
-                              href="?reviews_page={{ reviews_page.next_page_number }}#reviews"
-                              class="btn btn-primary-ghost"
-                         >
-                              Next
-                         </a>
-                    {% endif %}
-               </nav>
-          {% endif %}
-          </div>
 </section>
+{% else %}
+<div data-public-profile data-default-tab="{% if is_owner %}wardrobe{% else %}profile{% endif %}" class="flex min-w-0 flex-col gap-8 md:gap-10">
+  <div class="flex flex-col justify-between gap-6 motion-safe:animate-profile-reveal lg:flex-row lg:items-center lg:gap-12">
+    <div class="flex min-w-0 items-start gap-3">
+      <a href="{% url 'clothing_catalog:list' %}" aria-label="Back to discover" class="mt-2 shrink-0 rounded-full p-1 text-neutral-80 hover:bg-neutral-20 focus-visible:outline-2 focus-visible:outline-primary-base">{% lucide "arrow-left" size=24 %}</a>
+      <div class="flex min-w-0 flex-col gap-2">
+        <h1 class="break-words font-display text-h3 text-primary-base">{{ profile.display_name }}’s Wardrobe</h1>
+        {% if rating_summary.count %}<p class="flex flex-wrap items-center gap-1 text-b7 text-neutral-80 md:text-b6">{% lucide "star" size=28 class="shrink-0 text-primary-base" %}<span class="font-semibold text-primary-base">{{ rating_summary.average|floatformat:1 }} / 5</span><span>Rated by {{ rating_summary.count }} swapper{{ rating_summary.count|pluralize }}</span></p>{% else %}<p class="text-b7 text-neutral-80">No reviews yet.</p>{% endif %}
+      </div>
+    </div>
+    <nav aria-label="Member views" class="relative isolate flex w-full gap-3 rounded-full bg-neutral-20 p-2 shadow-[0_4px_32px_rgb(0_0_0/0.04)] lg:w-[46%]">
+      <span data-member-indicator aria-hidden="true" class="pointer-events-none absolute inset-y-2 left-2 z-10 w-[calc((100%_-_1.75rem)/2)] rounded-full bg-primary-base transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none {% if active_tab == 'wardrobe' %}translate-x-[calc(100%_+_0.75rem)]{% endif %}"></span>
+      <a id="member-profile-tab" href="?tab=profile" data-member-tab="profile" aria-controls="member-profile" {% if active_tab == 'profile' %}aria-current="page"{% endif %} class="relative flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-full bg-neutral-30 px-4 text-b7 font-semibold transition-colors duration-300 ease-out motion-reduce:transition-none {% if active_tab == 'profile' %}text-neutral-10{% else %}text-neutral-80{% endif %}"><span class="relative z-20">Profile</span></a>
+      <a id="member-wardrobe-tab" href="?tab=wardrobe" data-member-tab="wardrobe" aria-controls="member-wardrobe" {% if active_tab == 'wardrobe' %}aria-current="page"{% endif %} class="relative flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-full bg-neutral-30 px-4 text-b7 font-semibold transition-colors duration-300 ease-out motion-reduce:transition-none {% if active_tab == 'wardrobe' %}text-neutral-10{% else %}text-neutral-80{% endif %}"><span class="relative z-20">Wardrobe</span></a>
+    </nav>
+  </div>
+  <section id="member-profile" aria-labelledby="member-profile-tab" {% if active_tab != 'profile' %}hidden{% endif %}>
+    <div class="flex min-w-0 flex-col gap-10 lg:flex-row lg:items-start lg:gap-20">
+      <div class="flex min-w-0 flex-col gap-10 motion-safe:animate-profile-reveal motion-safe:[animation-delay:60ms] lg:w-[44%] lg:shrink-0">
+        <div class="flex justify-center">{% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}" alt="Profile photo of {{ profile.display_name }}" width="120" height="120" class="size-30 rounded-full object-cover">{% else %}<span class="flex size-30 items-center justify-center rounded-full bg-neutral-40 font-display text-h3 text-neutral-80" aria-label="{{ profile.display_name }}">{{ profile.display_name|first|upper }}</span>{% endif %}</div>
+        <div class="flex flex-col gap-6">
+          <dl class="flex flex-col gap-6 text-neutral-80">
+            <div class="flex flex-col gap-1"><dt class="text-b7 font-semibold">Username</dt><dd class="break-all text-b6">{{ profile.user.username }}</dd></div>
+            <div class="flex flex-col gap-1"><dt class="text-b7 font-semibold">Bio</dt><dd class="whitespace-pre-line break-words text-b6">{{ profile.bio|default:"No bio yet." }}</dd></div>
+            <div class="flex flex-col gap-1"><dt class="text-b7 font-semibold">Location</dt><dd class="text-b6">{% if profile.city and profile.province %}{{ profile.city }}, {{ profile.province }}{% else %}Location not shared{% endif %}</dd></div>
+          </dl>
+          <div class="flex flex-col gap-2"><h2 class="text-b7 font-semibold text-neutral-80">Preferences</h2>{% include "user_profile/partials/style_choices.html" with two_columns=True %}</div>
+        </div>
+      </div>
+      <div id="reviews" class="flex min-w-0 flex-1 scroll-mt-72 flex-col gap-5 motion-safe:animate-profile-reveal motion-safe:[animation-delay:120ms]">
+        <h2 class="text-b6 font-semibold text-neutral-80">Rating &amp; Review</h2>
+        {% for review in reviews_page %}{% include "user_profile/partials/review_card.html" %}{% empty %}<p class="rounded-3xl bg-neutral-20 p-6 text-b7 text-neutral-80">Reviews will appear here after completed exchanges.</p>{% endfor %}
+        {% if reviews_page.has_other_pages %}<nav aria-label="Review pages" class="flex flex-wrap items-center justify-between gap-3">
+          {% if reviews_page.has_previous %}<a href="?tab=profile&amp;reviews_page={{ reviews_page.previous_page_number }}#reviews" class="btn btn-primary-ghost">Previous</a>{% endif %}<span class="text-b8 text-neutral-80">Page {{ reviews_page.number }} of {{ reviews_page.paginator.num_pages }}</span>{% if reviews_page.has_next %}<a href="?tab=profile&amp;reviews_page={{ reviews_page.next_page_number }}#reviews" class="btn btn-primary-ghost">Next</a>{% endif %}
+        </nav>{% endif %}
+      </div>
+    </div>
+  </section>
+  <section id="member-wardrobe" aria-labelledby="member-wardrobe-tab" {% if active_tab != 'wardrobe' %}hidden{% endif %}>
+    <div class="flex flex-col gap-5 motion-safe:animate-profile-reveal motion-safe:[animation-delay:60ms]">
+      <div class="flex flex-wrap gap-3 border-b border-neutral-40 pb-5" aria-label="Clothing categories">
+        <a href="{% querystring tab='wardrobe' type=None %}" data-member-category="" class="market-chip {% if not filters.type %}market-chip-active{% endif %}" {% if not filters.type %}aria-current="true"{% endif %}>All finds</a>
+        {% for value, label in categories %}<a href="{% querystring tab='wardrobe' type=value %}" data-member-category="{{ value }}" class="market-chip {% if filters.type == value %}market-chip-active{% endif %}" {% if filters.type == value %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+      </div>
+      <form method="get" data-member-filters class="flex flex-wrap items-start gap-3" aria-label="Filter this wardrobe">
+        <input type="hidden" name="tab" value="wardrobe"><input type="hidden" name="type" value="{{ filters.type }}"><input type="hidden" name="search" value="{{ filters.search }}">
+        {% include "clothing_catalog/discovery/filter_fields.html" with suffix="member" dropdown_size="sm" %}
+        <div class="ml-auto flex items-center gap-2 text-b9 text-neutral-80"><span>Sort by:</span>{% include "components/dropdown.html" with dropdown_id="member-sort" name="sort" label="Sort wardrobe" choices=filter_form.fields.sort.choices value=filters.sort|default:"recommended" size="sm" %}</div>
+        <button type="submit" data-member-apply class="market-secondary px-3 py-2 text-b9">Apply</button>
+      </form>
+      {% if is_owner %}<a href="{% url 'clothing_catalog:my_list' %}" class="self-start text-b8 font-semibold text-primary-base underline">Manage clothing</a>{% endif %}
+      <p data-member-feedback role="status" aria-live="polite" class="sr-only text-b9 text-neutral-80"></p>
+      <div id="member-wardrobe-results" data-member-results aria-busy="false">{% include "user_profile/partials/public_wardrobe_results.html" %}</div>
+    </div>
+  </section>
+</div>
+{% endif %}
 {% endblock %}
+{% block scripts %}{% if not guest_wardrobe %}<script src="{% static 'user_profile/js/public-profile.js' %}" defer></script>{% endif %}{% endblock %}

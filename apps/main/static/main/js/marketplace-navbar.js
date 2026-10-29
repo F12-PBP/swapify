@@ -10,6 +10,13 @@
   updateOffset();
   new ResizeObserver(updateOffset).observe(navbar);
 
+  const signInDialog = document.querySelector("#add-item-signin");
+  navbar.querySelector("[data-add-item-signin]")?.addEventListener("click", (event) => {
+    if (!signInDialog?.showModal || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    signInDialog.showModal();
+  });
+
   const search = navbar.querySelector("#market-search");
   search?.addEventListener("pointerdown", (event) => {
     if (document.activeElement === search || event.button !== 0) return;

@@ -432,6 +432,36 @@ class ProfileEditingTests(TestCase):
             )
 
 
+class WardrobeEntryTests(TestCase):
+    def test_guest_wardrobe_has_signin_prompt_without_private_profile(self):
+        response = self.client.get(reverse("user_profile:wardrobe"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Every great find starts with a member.")
+        self.assertContains(response, 'id="add-item-signin"')
+        self.assertContains(response, "data-add-item-signin")
+        self.assertContains(
+            response,
+            reverse("user_profile:login")
+            + "?next="
+            + reverse("clothing_catalog:create"),
+        )
+        self.assertNotContains(response, 'id="swapper-heading"')
+        self.assertNotContains(response, "No clothing available to swap yet.")
+
+    def test_signed_in_wardrobe_entry_opens_members_public_wardrobe(self):
+        member = get_user_model().objects.create_user(username="wardrobe-entry")
+        self.client.force_login(member)
+        self.assertRedirects(
+            self.client.get(reverse("user_profile:wardrobe")),
+            reverse("user_profile:public", args=[member.username]),
+        )
+        response = self.client.get(
+            reverse("user_profile:public", args=[member.username])
+        )
+        self.assertNotContains(response, 'id="add-item-signin"')
+        self.assertNotContains(response, "data-add-item-signin")
+
+
 class PublicProfileTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -545,6 +575,64 @@ class PublicProfileTests(TestCase):
         self.assertNotContains(response, "Someone else's shirt")
         self.assertEqual(len(response.context["clothing_items"]), 1)
 
+    def test_wardrobe_request_state_is_owner_only_and_uses_latest_pending_request(self):
+        requester = get_user_model().objects.create_user(username="wardrobe_requester")
+        details = {
+            "name": "Wardrobe denim",
+            "description": "A well-loved piece",
+            "type": Clothing.Type.OUTERWEAR,
+            "size": Clothing.Size.M,
+            "condition": Clothing.Condition.GOOD,
+        }
+        requested = Clothing.objects.create(owner=self.member, **details)
+        offered = Clothing.objects.create(owner=requester, **details)
+        swaps = [
+            SwapRequest.objects.create(
+                requester=requester,
+                requested_clothing=requested,
+                offered_clothing=offered,
+            )
+            for _ in range(2)
+        ]
+        SwapRequest.objects.create(
+            requester=requester,
+            requested_clothing=requested,
+            offered_clothing=offered,
+            status=SwapRequest.Status.REJECTED,
+        )
+        self.client.force_login(self.member)
+        response = self.client.get(self.public_url())
+        self.assertTrue(response.context["is_owner"])
+        self.assertEqual(
+            response.context["clothing_items"][0].pending_request_id, swaps[-1].pk
+        )
+        self.assertContains(response, "Requested")
+        self.assertContains(response, f'href="{swaps[-1].get_absolute_url()}"')
+        self.assertNotContains(response, f'href="{swaps[0].get_absolute_url()}"')
+        self.assertContains(response, reverse("clothing_catalog:my_list"))
+
+        for visitor in (None, requester):
+            if visitor:
+                self.client.force_login(visitor)
+            else:
+                self.client.logout()
+            response = self.client.get(self.public_url())
+            self.assertFalse(response.context["is_owner"])
+            self.assertContains(response, "Wardrobe denim")
+            self.assertNotContains(response, "View Request")
+            self.assertNotContains(response, swaps[-1].get_absolute_url())
+
+    def test_empty_wardrobe_offers_owner_listing_and_visitor_discovery(self):
+        self.client.force_login(self.member)
+        response = self.client.get(self.public_url())
+        self.assertContains(response, "Nama Publik’s Wardrobe")
+        self.assertContains(response, "List your first piece")
+        self.assertContains(response, reverse("clothing_catalog:create"))
+        self.client.logout()
+        response = self.client.get(self.public_url())
+        self.assertContains(response, "Explore other wardrobes")
+        self.assertNotContains(response, "List your first piece")
+
     def test_private_profile_and_catalog_links_use_username(self):
         self.client.force_login(self.member)
         response = self.client.get(reverse("user_profile:detail"))
@@ -568,6 +656,142 @@ class PublicProfileTests(TestCase):
         response = self.client.get(self.public_url())
         self.assertNotContains(response, "-6.123456789")
         self.assertNotContains(response, "106.987654321")
+
+    def test_member_views_have_distinct_active_panels(self):
+        response = self.client.get(self.public_url())
+        self.assertEqual(response.context["active_tab"], "profile")
+        self.assertContains(
+            response,
+            'id="member-wardrobe" aria-labelledby="member-wardrobe-tab" hidden',
+        )
+        self.client.force_login(self.member)
+        response = self.client.get(self.public_url())
+        self.assertEqual(response.context["active_tab"], "wardrobe")
+        response = self.client.get(self.public_url(), {"tab": "profile"})
+        self.assertEqual(response.context["active_tab"], "profile")
+        response = self.client.get(self.public_url(), {"tab": "invalid"})
+        self.assertEqual(response.context["active_tab"], "wardrobe")
+
+    def test_explicit_wardrobe_tab_can_coexist_with_review_pagination(self):
+        response = self.client.get(
+            self.public_url(), {"tab": "wardrobe", "reviews_page": "2"}
+        )
+        self.assertEqual(response.context["active_tab"], "wardrobe")
+
+    def test_shared_search_targets_open_wardrobe_with_native_fallback(self):
+        response = self.client.get(
+            self.public_url(), {"tab": "wardrobe", "search": "denim", "size": "M"}
+        )
+        self.assertContains(
+            response, f'action="{self.public_url()}" data-discovery-action='
+        )
+        self.assertContains(response, 'aria-label="Search this wardrobe"')
+        self.assertContains(response, 'name="tab" value="wardrobe" >')
+        self.assertContains(response, 'id="member-wardrobe-results"')
+        response = self.client.get(self.public_url(), {"tab": "profile"})
+        catalog = reverse("clothing_catalog:list")
+        self.assertContains(
+            response, f'action="{catalog}#finds" data-discovery-action='
+        )
+        self.assertContains(response, 'aria-label="Search clothing"')
+        self.assertContains(response, 'name="tab" value="wardrobe" disabled')
+
+    def test_wardrobe_filters_remain_scoped_and_return_partial_results(self):
+        other = get_user_model().objects.create_user(username="filter_other")
+        details = {"type": "top", "size": "M", "condition": "good"}
+        matched = Clothing.objects.create(
+            owner=self.member, name="Vintage cotton", **details
+        )
+        Clothing.objects.create(owner=self.member, name="Another piece", **details)
+        Clothing.objects.create(owner=other, name="Vintage other owner", **details)
+        Clothing.objects.create(
+            owner=self.member, name="Vintage reserved", status="reserved", **details
+        )
+        response = self.client.get(
+            self.public_url(),
+            {
+                "tab": "wardrobe",
+                "search": "Vintage",
+                "type": "top",
+                "size": "M",
+                "condition": "good",
+            },
+            HTTP_X_MEMBER_WARDROBE="1",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["count"], 1)
+        self.assertIn(matched.name, data["html"])
+        self.assertNotIn("Vintage other owner", data["html"])
+        self.assertNotIn("Vintage reserved", data["html"])
+        self.assertNotIn("<header", data["html"])
+        self.assertEqual(data["filters"]["type"], "top")
+        self.assertIn("X-Member-Wardrobe", response["Vary"])
+
+    def test_member_distance_filters_use_viewer_location_without_exposing_coordinates(
+        self,
+    ):
+        viewer = get_user_model().objects.create_user(username="nearby_viewer")
+        for user, latitude in ((viewer, -6.2), (self.member, -6.21)):
+            profile = user.profile
+            profile.latitude = latitude
+            profile.longitude = 106.8
+            profile.save()
+        Clothing.objects.create(
+            owner=self.member,
+            name="Nearby piece",
+            type="top",
+            size="M",
+            condition="good",
+        )
+        self.client.force_login(viewer)
+        response = self.client.get(
+            self.public_url(), {"tab": "wardrobe", "distance": "5", "sort": "nearest"}
+        )
+        self.assertEqual(response.context["clothing_page"].paginator.count, 1)
+        self.assertGreater(response.context["clothing_items"][0].distance_km, 1)
+        self.assertNotContains(response, "106.8")
+        profile = viewer.profile
+        profile.latitude = 0
+        profile.save()
+        response = self.client.get(self.public_url(), {"distance": "5"})
+        self.assertEqual(response.context["clothing_page"].paginator.count, 0)
+
+    def test_wardrobe_pagination_and_invalid_filters(self):
+        for index in range(13):
+            Clothing.objects.create(
+                owner=self.member,
+                name=f"Piece {index}",
+                type="top",
+                size="M",
+                condition="good",
+            )
+        response = self.client.get(
+            self.public_url(), {"tab": "wardrobe", "wardrobe_page": "2"}
+        )
+        self.assertEqual(len(response.context["clothing_page"]), 1)
+        self.assertEqual(response.context["clothing_page"].paginator.count, 13)
+        response = self.client.get(
+            self.public_url(), {"size": "bogus", "distance": "5"}
+        )
+        self.assertTrue(response.context["filter_form"].errors)
+        self.assertEqual(response.context["clothing_page"].paginator.count, 13)
+        self.assertTrue(response.context["filter_form"].fields["distance"].disabled)
+
+    def test_visitor_cards_offer_swap_but_owner_cards_do_not(self):
+        Clothing.objects.create(
+            owner=self.member,
+            name="Swap candidate",
+            type="top",
+            size="M",
+            condition="good",
+        )
+        response = self.client.get(self.public_url(), {"tab": "wardrobe"})
+        self.assertContains(response, "Let’s Swap")
+        self.client.force_login(self.member)
+        response = self.client.get(self.public_url(), {"tab": "wardrobe"})
+        self.assertNotContains(response, "Let’s Swap")
+        self.assertContains(response, "View Detail")
 
 
 class ProfileLocationTests(TestCase):
@@ -1238,7 +1462,7 @@ class ProfileReviewTests(TestCase):
             [review.pk for review in first.context["reviews_page"]],
             [review.pk for review in reversed(reviews[1:])],
         )
-        self.assertContains(first, "?reviews_page=2#reviews")
+        self.assertContains(first, "?tab=profile&amp;reviews_page=2#reviews")
         second = self.client.get(self.url, {"reviews_page": 2})
         self.assertEqual(
             [review.pk for review in second.context["reviews_page"]], [reviews[0].pk]
@@ -1248,13 +1472,176 @@ class ProfileReviewTests(TestCase):
         self.assertEqual(
             first.context["rating_summary"], second.context["rating_summary"]
         )
-        self.assertContains(second, "?reviews_page=1#reviews")
+        self.assertContains(second, "?tab=profile&amp;reviews_page=1#reviews")
 
         for value, expected_page in (("invalid", 1), ("999", 2), ("-1", 2)):
             with self.subTest(page=value):
                 response = self.client.get(self.url, {"reviews_page": value})
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.context["reviews_page"].number, expected_page)
+
+    def test_private_dashboard_uses_received_reviews_and_own_email(self):
+        self.member.email = "owner-private@example.com"
+        self.member.save()
+        latest = self.add_review(rating=4, comment="A thoughtful swap.")
+        self.add_review(rating=1, recipient=self.other, comment="Another member only")
+        self.client.force_login(self.member)
+        response = self.client.get(reverse("user_profile:detail"))
+        self.assertEqual(response.context["latest_review"], latest)
+        self.assertEqual(
+            response.context["rating_summary"], {"average": 4.0, "count": 1}
+        )
+        self.assertContains(response, "owner-private@example.com")
+        self.assertContains(response, "A thoughtful swap.")
+        self.assertNotContains(response, "Another member only")
+        self.assertNotContains(self.client.get(self.url), "owner-private@example.com")
+
+    def test_private_reviews_filter_keeps_overall_summary_and_member_scope(self):
+        self.add_review(rating=5, comment="Five star received")
+        self.add_review(rating=2, comment="Two star received")
+        self.add_review(rating=5, recipient=self.other, comment="Another recipient")
+        self.client.force_login(self.member)
+        url = reverse("user_profile:reviews")
+        response = self.client.get(url, {"rating": "5"})
+        self.assertEqual(
+            response.context["rating_summary"], {"average": 3.5, "count": 2}
+        )
+        self.assertContains(response, "Five star received")
+        self.assertNotContains(response, "Two star received")
+        self.assertNotContains(response, "Another recipient")
+        fragment = self.client.get(url, {"rating": "2"}, HTTP_X_PROFILE_REVIEWS="1")
+        self.assertIn("Two star received", fragment.json()["html"])
+        self.assertNotIn("Five star received", fragment.json()["html"])
+        self.assertIn("X-Profile-Reviews", fragment.headers["Vary"])
+        empty = self.client.get(url, {"rating": "1"})
+        self.assertContains(empty, "No 1-star reviews yet.")
+        invalid = self.client.get(url, {"rating": "invalid"})
+        self.assertEqual(len(invalid.context["reviews"]), 2)
+
+    def test_private_reviews_paginate_and_require_signin(self):
+        url = reverse("user_profile:reviews")
+        self.assertEqual(self.client.get(url).status_code, 302)
+        for index in range(11):
+            self.add_review(rating=5, comment=f"Received review {index}")
+        self.client.force_login(self.member)
+        response = self.client.get(url, {"rating": "5"})
+        self.assertEqual(len(response.context["reviews"]), 10)
+        self.assertContains(response, "rating=5&amp;page=2")
+        last = self.client.get(url, {"rating": "5", "page": "2"})
+        self.assertEqual(len(last.context["reviews"]), 1)
+
+
+class ProfileDialogTests(TestCase):
+    def setUp(self):
+        self.member = get_user_model().objects.create_user(username="profile-editor")
+        self.other = get_user_model().objects.create_user(username="other-profile")
+        self.client.force_login(self.member)
+
+    def test_preferences_save_clear_and_reject_unknown_values_without_onboarding(self):
+        url = reverse("user_profile:preferences_edit")
+        response = self.client.post(
+            url,
+            {"preferences": ["tops", "shoes"], "user_id": self.other.pk},
+            HTTP_X_PROFILE_DIALOG="1",
+        )
+        self.assertEqual(response.json(), {"redirect": reverse("user_profile:detail")})
+        self.member.profile.refresh_from_db()
+        self.other.profile.refresh_from_db()
+        self.assertEqual(self.member.profile.preferences, ["tops", "shoes"])
+        self.assertFalse(self.member.profile.onboarding_completed)
+        self.assertEqual(self.other.profile.preferences, [])
+        invalid = self.client.post(
+            url, {"preferences": ["unknown"]}, HTTP_X_PROFILE_DIALOG="1"
+        )
+        self.assertEqual(invalid.status_code, 422)
+        self.member.profile.refresh_from_db()
+        self.assertEqual(self.member.profile.preferences, ["tops", "shoes"])
+        self.client.post(url, {}, HTTP_X_PROFILE_DIALOG="1")
+        self.member.profile.refresh_from_db()
+        self.assertEqual(self.member.profile.preferences, [])
+
+    def test_dialog_forms_are_fragments_and_full_pages_are_fallbacks(self):
+        for name in ("edit", "preferences_edit", "location_edit"):
+            url = reverse(f"user_profile:{name}")
+            fragment = self.client.get(url, HTTP_X_PROFILE_DIALOG="1")
+            self.assertEqual(fragment.status_code, 200)
+            self.assertContains(fragment, "data-profile-form")
+            self.assertNotContains(fragment, "<html")
+            self.assertIn("X-Profile-Dialog", fragment.headers["Vary"])
+            self.assertContains(self.client.get(url), "<html")
+        invalid = self.client.post(
+            reverse("user_profile:edit"),
+            {"display_name": ""},
+            HTTP_X_PROFILE_DIALOG="1",
+        )
+        self.assertEqual(invalid.status_code, 422)
+        self.assertNotContains(invalid, "<html", status_code=422)
+        success = self.client.post(
+            reverse("user_profile:edit"),
+            {"display_name": "Edited name", "bio": "Changed bio"},
+            HTTP_X_PROFILE_DIALOG="1",
+        )
+        self.assertEqual(success.status_code, 200)
+        self.member.profile.refresh_from_db()
+        self.assertEqual(self.member.profile.display_name, "Edited name")
+
+    @patch("apps.user_profile.views.upload_profile_picture")
+    def test_dialog_upload_failure_preserves_profile_and_returns_errors(self, upload):
+        profile = self.member.profile
+        profile.profile_picture = "existing-photo"
+        profile.save()
+        upload.side_effect = ProfilePhotoUploadError("Photo upload unavailable.")
+        response = self.client.post(
+            reverse("user_profile:edit"),
+            {
+                "display_name": "Unsaved name",
+                "bio": "Unsaved bio",
+                "new_profile_picture": image_upload(),
+            },
+            HTTP_X_PROFILE_DIALOG="1",
+        )
+        self.assertEqual(response.status_code, 422)
+        self.assertContains(response, "Photo upload unavailable.", status_code=422)
+        profile.refresh_from_db()
+        self.assertEqual(profile.display_name, self.member.username)
+        self.assertEqual(profile.profile_picture.public_id, "existing-photo")
+        self.assertEqual(profile.bio, "")
+
+    def test_location_dialog_keeps_validation_and_manual_coordinate_reset(self):
+        profile = self.member.profile
+        profile.city = "Depok"
+        profile.province = "West Java"
+        profile.latitude = -6.36
+        profile.longitude = 106.83
+        profile.save()
+        url = reverse("user_profile:location_edit")
+        invalid = self.client.post(url, {"city": ""}, HTTP_X_PROFILE_DIALOG="1")
+        self.assertEqual(invalid.status_code, 422)
+        profile.refresh_from_db()
+        self.assertEqual(profile.city, "Depok")
+        response = self.client.post(
+            url,
+            {"city": "Bogor", "province": "West Java", "next": "https://example.com/"},
+            HTTP_X_PROFILE_DIALOG="1",
+        )
+        self.assertEqual(response.json()["redirect"], reverse("user_profile:detail"))
+        profile.refresh_from_db()
+        self.assertEqual(profile.city, "Bogor")
+        self.assertIsNone(profile.latitude)
+        self.assertIsNone(profile.longitude)
+
+    def test_preferences_require_authentication_and_csrf(self):
+        url = reverse("user_profile:preferences_edit")
+        protected = Client(enforce_csrf_checks=True)
+        protected.force_login(self.member)
+        self.assertEqual(
+            protected.post(url, {"preferences": ["tops"]}).status_code, 403
+        )
+        self.client.logout()
+        self.assertEqual(self.client.get(url).status_code, 302)
+        self.assertEqual(
+            self.client.post(url, {"preferences": ["tops"]}).status_code, 302
+        )
 
 
 class OnboardingTests(TestCase):

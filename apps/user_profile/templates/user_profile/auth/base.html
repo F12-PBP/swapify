@@ -21,7 +21,7 @@
     </a>
     {% endblock %}
   </header>
-  <main class="flex w-full flex-1 flex-col {% block main_class %}items-center justify-center px-5 py-12 sm:px-8{% endblock %}">
+  <main class="flex w-full flex-1 flex-col motion-safe:animate-profile-reveal {% block main_class %}items-center justify-center px-5 py-12 sm:px-8{% endblock %}">
     {% block content %}{% endblock %}
   </main>
   {% block decoration %}{% endblock %}

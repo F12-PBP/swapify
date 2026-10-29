@@ -1,0 +1,24 @@
+{% load lucide %}
+<div class="flex flex-col gap-8">
+  {% if filter_form.errors %}<p class="text-b8 text-red-70" role="alert">Some filter values were invalid and have been ignored. Please choose from the available options.</p>{% endif %}
+  <p class="text-b9 text-neutral-70"><span class="font-semibold text-neutral-100">{{ clothing_page.paginator.count }} lovely find{{ clothing_page.paginator.count|pluralize }}</span> waiting for their next chapter</p>
+  <div class="flex flex-wrap items-stretch gap-6">
+    {% for clothing in clothing_page %}
+      {% if is_owner %}{% include "clothing_catalog/partials/product_card.html" with variant="wardrobe" %}{% else %}{% include "clothing_catalog/partials/product_card.html" %}{% endif %}
+    {% empty %}
+      <div class="flex w-full flex-col items-center gap-4 rounded-3xl bg-secondary-10 px-6 py-12 text-center md:py-16">
+        <span class="flex size-16 items-center justify-center rounded-full bg-secondary-20 text-secondary-70" aria-hidden="true">{% lucide "shirt" size=32 %}</span>
+        <h2 class="font-display text-h5 text-primary-base">A little space for a fresh start.</h2>
+        {% if wardrobe_filtered %}<p class="text-b7 text-neutral-80">No pieces match these filters.</p><a href="?tab=wardrobe" data-member-page class="btn btn-primary-ghost">Clear filters</a>{% else %}
+          <p class="text-b7 text-neutral-80">No clothing available to swap yet.</p>
+          {% if is_owner %}<a href="{% url 'clothing_catalog:create' %}" class="btn btn-primary">List your first piece</a>{% else %}<a href="{% url 'clothing_catalog:list' %}" class="btn btn-primary">Explore other wardrobes</a>{% endif %}
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  {% if clothing_page.has_other_pages %}<nav aria-label="Wardrobe pages" class="flex flex-wrap items-center justify-between gap-3">
+    {% if clothing_page.has_previous %}<a href="{% querystring tab='wardrobe' wardrobe_page=clothing_page.previous_page_number %}" data-member-page class="btn btn-primary-ghost">Previous</a>{% endif %}
+    <span class="text-b8 text-neutral-80">Page {{ clothing_page.number }} of {{ clothing_page.paginator.num_pages }}</span>
+    {% if clothing_page.has_next %}<a href="{% querystring tab='wardrobe' wardrobe_page=clothing_page.next_page_number %}" data-member-page class="btn btn-primary-ghost">Next</a>{% endif %}
+  </nav>{% endif %}
+</div>

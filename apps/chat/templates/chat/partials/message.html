@@ -1,0 +1,35 @@
+<article
+    class="chat-message group mb-4 flex min-w-0 flex-col items-start
+            gap-1 data-[mine=true]:items-end"
+    data-message-id="{{ msg.id|default:'' }}"
+    data-mine="{% if msg.sender_id == user.id %}true{% else %}false{% endif %}"
+    data-read="{{ msg.is_read|yesno:'true,false' }}"
+    >
+    <p
+        class="max-w-[92%] rounded-2xl rounded-tl-none
+            bg-secondary-10 p-3 text-b8 whitespace-pre-wrap
+            text-secondary-80 [overflow-wrap:anywhere]
+            group-data-[mine=true]:rounded-tl-2xl
+            group-data-[mine=true]:rounded-br-none
+            group-data-[mine=true]:bg-primary-base
+            group-data-[mine=true]:text-neutral-10
+            md:max-w-[min(46.25rem,85%)]"
+        data-message-text
+    >{{ msg.message }}</p>
+
+    <p
+        class="max-w-full text-b10 text-neutral-60
+            [overflow-wrap:anywhere]
+            group-data-[mine=true]:text-right"
+    >
+        <time
+        data-message-time
+        datetime="{{ msg.sent_at|date:'c' }}"
+        >{{ msg.sent_at|date:'H:i' }}</time>
+
+        <span
+        data-message-receipt
+        {% if msg.sender_id != user.id %}hidden{% endif %}
+        > · {% if msg.is_read %}Dibaca{% else %}Terkirim{% endif %}</span>
+    </p>
+</article>

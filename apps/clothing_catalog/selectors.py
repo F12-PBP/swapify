@@ -93,6 +93,17 @@ def discover_listings(user, filters=None):
     queryset = listings_with_owners().filter(status=Clothing.Status.AVAILABLE)
     if user.is_authenticated:
         queryset = queryset.exclude(owner=user)
+    return filter_listings(queryset, user, filters)
+
+
+def member_listings(user, owner_id, filters=None):
+    queryset = listings_with_owners().filter(
+        owner_id=owner_id, status=Clothing.Status.AVAILABLE
+    )
+    return filter_listings(queryset, user, filters or {})
+
+
+def filter_listings(queryset, user, filters):
     queryset = catalog_search(queryset, filters.get("search"))
     for field in ("type", "size", "condition"):
         if filters.get(field):

@@ -5,15 +5,26 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core import signing
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
+from django.utils.cache import patch_vary_headers
 from django.views import View
-from django.views.generic import CreateView, DetailView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 
-from apps.clothing_catalog.models import Clothing
+from apps.clothing_catalog.categories import DISCOVERY_TYPES, STYLE_CHOICES
+from apps.clothing_catalog.forms import DiscoveryFilterForm
+from apps.clothing_catalog.selectors import member_listings, viewer_coordinates
 from apps.review_rating.models import Review
+from apps.swap_request.models import SwapRequest
 from common.redirects import safe_return_url
 
 from .forms import (
@@ -63,6 +74,66 @@ class LogoutUserView(LogoutView):
     next_page = reverse_lazy("main:home")
 
 
+class WardrobeView(TemplateView):
+    template_name = "user_profile/profile_public.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("user_profile:public", username=request.user.username)
+        return self.render_to_response({"guest_wardrobe": True})
+
+
+def profile_style_choices():
+    labels = dict(STYLE_CHOICES)
+    return [
+        (key, labels[key])
+        for key in (
+            "tops",
+            "outerwear",
+            "bottoms",
+            "dresses",
+            "bags",
+            "accessories",
+            "shoes",
+        )
+    ]
+
+
+class ProfileDialogMixin:
+    dialog_template_name = None
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "dialog_mode": self.request.headers.get("X-Profile-Dialog") == "1",
+        }
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        patch_vary_headers(response, ["X-Profile-Dialog"])
+        return response
+
+    def get_template_names(self):
+        if self.request.headers.get("X-Profile-Dialog") == "1":
+            return [self.dialog_template_name]
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if (
+            self.request.headers.get("X-Profile-Dialog") == "1"
+            and response.status_code == 302
+        ):
+            return JsonResponse({"redirect": response.url})
+        return response
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if self.request.headers.get("X-Profile-Dialog") == "1":
+            response.status_code = 422
+        return response
+
+
 class MyProfileDetailView(LoginRequiredMixin, DetailView):
     model = Profile
     template_name = "user_profile/profile_detail.html"
@@ -71,11 +142,90 @@ class MyProfileDetailView(LoginRequiredMixin, DetailView):
     def get_object(self, queryset=None):
         return self.request.user.profile
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        reviews = Review.objects.filter(recipient=self.request.user).select_related(
+            "author__profile"
+        )
+        context["rating_summary"] = reviews.aggregate(
+            average=Avg("rating"), count=Count("pk")
+        )
+        context["latest_review"] = reviews.first()
+        context["style_choices"] = profile_style_choices()
+        return context
 
-class MyProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+
+class MyReviewListView(LoginRequiredMixin, ListView):
+    template_name = "user_profile/profile_reviews.html"
+    context_object_name = "reviews"
+    paginate_by = 10
+
+    def get_queryset(self):
+        self.received_reviews = Review.objects.filter(
+            recipient=self.request.user
+        ).select_related("author__profile")
+        self.rating = self.request.GET.get("rating", "")
+        if self.rating not in {"1", "2", "3", "4", "5"}:
+            self.rating = ""
+        return (
+            self.received_reviews.filter(rating=self.rating)
+            if self.rating
+            else self.received_reviews
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["rating"] = self.rating
+        context["rating_choices"] = range(1, 6)
+        context["rating_summary"] = self.received_reviews.aggregate(
+            average=Avg("rating"), count=Count("pk")
+        )
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get("X-Profile-Reviews") == "1":
+            response = JsonResponse(
+                {
+                    "html": render_to_string(
+                        "user_profile/partials/review_results.html",
+                        context,
+                        request=self.request,
+                    )
+                }
+            )
+        else:
+            response = super().render_to_response(context, **response_kwargs)
+        patch_vary_headers(response, ["X-Profile-Reviews"])
+        return response
+
+
+class MyProfilePreferencesUpdateView(
+    LoginRequiredMixin, ProfileDialogMixin, SuccessMessageMixin, UpdateView
+):
+    model = Profile
+    form_class = PreferencesForm
+    template_name = "user_profile/preferences_form.html"
+    dialog_template_name = "user_profile/partials/preferences_form.html"
+    success_url = reverse_lazy("user_profile:detail")
+    success_message = "Your style preferences have been updated."
+
+    def get_object(self, queryset=None):
+        return self.request.user.profile
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "style_choices": profile_style_choices(),
+        }
+
+
+class MyProfileUpdateView(
+    LoginRequiredMixin, ProfileDialogMixin, SuccessMessageMixin, UpdateView
+):
     model = Profile
     form_class = ProfileUpdateForm
     template_name = "user_profile/profile_form.html"
+    dialog_template_name = "user_profile/partials/profile_form.html"
     context_object_name = "profile"
     success_url = reverse_lazy("user_profile:detail")
     success_message = "Your profile has been updated."
@@ -104,10 +254,13 @@ class MyProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super().form_valid(form)
 
 
-class MyProfileLocationUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class MyProfileLocationUpdateView(
+    LoginRequiredMixin, ProfileDialogMixin, SuccessMessageMixin, UpdateView
+):
     model = Profile
     form_class = ProfileLocationForm
     template_name = "user_profile/location_form.html"
+    dialog_template_name = "user_profile/partials/location_form.html"
     context_object_name = "profile"
     success_url = reverse_lazy("user_profile:detail")
     success_message = "Your location has been updated."
@@ -163,6 +316,24 @@ class PublicProfileDetailView(DetailView):
     template_name = "user_profile/profile_public.html"
     context_object_name = "profile"
 
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get("X-Member-Wardrobe") == "1":
+            response = JsonResponse(
+                {
+                    "html": render_to_string(
+                        "user_profile/partials/public_wardrobe_results.html",
+                        context,
+                        request=self.request,
+                    ),
+                    "filters": context["filters"],
+                    "count": context["clothing_page"].paginator.count,
+                }
+            )
+        else:
+            response = super().render_to_response(context, **response_kwargs)
+        patch_vary_headers(response, ["X-Member-Wardrobe", "Cookie"])
+        return response
+
     def get_queryset(self):
         return Profile.objects.select_related("user").filter(user__is_active=True)
 
@@ -177,14 +348,49 @@ class PublicProfileDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["clothing_items"] = Clothing.objects.filter(
-            owner_id=self.object.user_id,
-            status=Clothing.Status.AVAILABLE,
-        ).order_by("-created_at")
+        is_owner = (
+            self.request.user.is_authenticated
+            and self.request.user.pk == self.object.user_id
+        )
+        has_location = viewer_coordinates(self.request.user) is not None
+        filter_form = DiscoveryFilterForm(self.request.GET, has_location=has_location)
+        filter_form.is_valid()
+        clothing_items = member_listings(
+            self.request.user, self.object.user_id, filter_form.cleaned_data
+        )
+        if is_owner:
+            pending_requests = SwapRequest.objects.filter(
+                requested_clothing_id=OuterRef("pk"),
+                status=SwapRequest.Status.PENDING,
+            ).order_by("-created_at", "-pk")
+            clothing_items = clothing_items.annotate(
+                pending_request_id=Subquery(pending_requests.values("pk")[:1]),
+            )
+        context["is_owner"] = is_owner
+        context["clothing_items"] = clothing_items
+        context["clothing_page"] = Paginator(clothing_items, 12).get_page(
+            self.request.GET.get("wardrobe_page")
+        )
+        context["wardrobe_filtered"] = any(
+            filter_form.cleaned_data.get(key)
+            for key in ("search", "type", "size", "condition", "distance")
+        )
+        context["filter_form"] = filter_form
+        context["filters"] = filter_form.cleaned_data
+        context["has_location"] = has_location
+        context["categories"] = DISCOVERY_TYPES
+        context["style_choices"] = profile_style_choices()
+        default_tab = "wardrobe" if is_owner else "profile"
+        if self.request.GET.get("reviews_page"):
+            default_tab = "profile"
+        requested_tab = self.request.GET.get("tab", default_tab)
+        context["active_tab"] = (
+            requested_tab if requested_tab in {"profile", "wardrobe"} else default_tab
+        )
 
         received_reviews = Review.objects.filter(
             recipient_id=self.object.user_id,
-        ).select_related("author")
+        ).select_related("author__profile")
 
         context["rating_summary"] = received_reviews.aggregate(
             average=Avg("rating"),
