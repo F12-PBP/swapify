@@ -11,7 +11,13 @@ from . import services
 from .forms import ChatMessageForm
 from .http import JsonChatMixin, error_response, json_response, wants_json
 from .models import ChatMessage, ChatRoom, SwapRequest
-from .queries import InvalidMessageQuery, message_page, page_parameters
+from .queries import (
+    InvalidMessageQuery,
+    message_page,
+    page_parameters,
+    read_receipts,
+    receipt_ids,
+)
 from .serializers import serialize_message
 
 
@@ -176,6 +182,7 @@ class MessageListJsonView(JsonChatMixin, LoginRequiredMixin, View):
 
         try:
             direction, cursor, limit = page_parameters(request)
+            ids = receipt_ids(request)
         except InvalidMessageQuery as error:
             return error_response(
                 "invalid_query",
@@ -211,5 +218,10 @@ class MessageListJsonView(JsonChatMixin, LoginRequiredMixin, View):
                 "has_more": has_more,
                 "next_after": next_after,
                 "next_before": batch[0].pk if batch else None,
+                "read_receipts": read_receipts(
+                    room,
+                    request.user,
+                    ids,
+                ),
             }
         )

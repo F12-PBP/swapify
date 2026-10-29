@@ -1,6 +1,7 @@
 MAX_ID = (1 << 63) - 1
 DEFAULT_PAGE_SIZE = 30
 MAX_PAGE_SIZE = 100
+MAX_RECEIPTS = 100
 
 
 class InvalidMessageQuery(ValueError):
@@ -67,3 +68,32 @@ def message_page(room, *, direction, cursor=0, limit=DEFAULT_PAGE_SIZE):
         batch.reverse()
 
     return batch, has_more
+
+
+def receipt_ids(request):
+    raw = request.GET.get("read_ids")
+
+    if raw is None:
+        return None
+
+    if raw == "":
+        return []
+
+    if len(raw) > MAX_RECEIPTS * 20:
+        raise InvalidMessageQuery("read_ids terlalu panjang.")
+
+    parts = raw.split(",")
+
+    if len(parts) > MAX_RECEIPTS:
+        raise InvalidMessageQuery("read_ids maksimal berisi 100 ID.")
+
+    return list(dict.fromkeys(positive_integer(part, "read_ids") for part in parts))
+
+
+def read_receipts(room, user, ids):
+    queryset = room.messages.filter(sender=user).order_by("-id")
+
+    if ids is not None:
+        queryset = queryset.filter(id__in=ids)
+
+    return list(queryset.values("id", "is_read")[:MAX_RECEIPTS])
