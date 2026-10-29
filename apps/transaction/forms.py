@@ -22,13 +22,19 @@ class CreateTransactionForm(forms.ModelForm):
                     "id": "methodSelect",
                 }
             ),
-            "requester_resi": forms.TextInput(
+            "courier_name": forms.TextInput(
+                attrs={
+                    "class": ("input w-full"),
+                    "placeholder": "e.g., Lefi",
+                }
+            ),
+            "resi": forms.TextInput(
                 attrs={
                     "class": ("input w-full"),
                     "placeholder": "e.g., JNE1234567890",
                 }
             ),
-            "requester_delivery_estimate": forms.DateTimeInput(
+            "delivery_estimate": forms.DateTimeInput(
                 attrs={
                     "class": ("input w-full"),
                     "type": "datetime-local",
@@ -43,17 +49,18 @@ class CreateTransactionForm(forms.ModelForm):
             "meetup_location": forms.TextInput(
                 attrs={
                     "class": ("input w-full"),
-                    "placeholder": "e.g., Taman Nasional Komodo",
+                    "placeholder": "e.g., Central Park Mall Lobby",
                 }
             ),
         }
 
         labels = {
             "method": "Transaction Method",
-            "requester_resi": "Your Tracking Number (Resi)",
-            "requester_delivery_estimate": "Estimated Delivery Date",
-            "meetup_date": "Agreed Meetup Date & Time",
-            "meetup_location": "Agreed Meetup Location",
+            "courier_name": "Your Courier",
+            "requester_resi": "Your Tracking Number",
+            "requester_delivery_estimate": "Your Package's Estimated Arrival Time",
+            "meetup_date": "Meetup Date & Time",
+            "meetup_location": "Meetup Location",
         }
 
     def clean(self):

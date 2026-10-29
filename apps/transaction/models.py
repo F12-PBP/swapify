@@ -39,6 +39,12 @@ class Transaction(models.Model):
     )
 
     # Requester's delivery information
+    requester_courier = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+
     requester_resi = models.CharField(
         max_length=100,
         blank=True,
@@ -64,6 +70,12 @@ class Transaction(models.Model):
     )
 
     # Owner's delivery information
+    owner_courier = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+
     owner_resi = models.CharField(
         max_length=100,
         blank=True,
