@@ -1,5 +1,5 @@
 {% extends "marketplace/base.html" %}
 {% load static %}
 {% block title %}Edit Profile | Swapify{% endblock %}
-{% block content %}<section class="mx-auto max-w-[524px] rounded-[32px] bg-neutral-10 p-6 sm:p-9">{% include "user_profile/partials/profile_form.html" %}</section>{% endblock %}
+{% block content %}<section class="motion-safe:animate-profile-reveal mx-auto max-w-[524px] rounded-[32px] bg-neutral-10 p-6 sm:p-9">{% include "user_profile/partials/profile_form.html" %}</section>{% endblock %}
 {% block scripts %}<script src="{% static 'user_profile/js/profile.js' %}" defer></script>{% endblock %}

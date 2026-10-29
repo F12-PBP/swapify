@@ -3,7 +3,7 @@
 {% block title %}{% if guest_wardrobe %}My Wardrobe{% else %}{{ profile.display_name }}’s wardrobe{% endif %} | Swapify{% endblock %}
 {% block content %}
 {% if guest_wardrobe %}
-<section class="flex flex-col gap-8" aria-labelledby="wardrobe-heading">
+<section class="flex flex-col gap-8 motion-safe:animate-profile-reveal" aria-labelledby="wardrobe-heading">
   <div class="flex flex-col gap-3"><h1 id="wardrobe-heading" class="font-display text-h3 text-primary-base md:text-h2">My Wardrobe</h1><p class="text-b7 text-neutral-80 md:text-b6">Thoughtfully listed. Ready for their next chapter.</p></div>
         <div class="flex min-h-[432px] w-full flex-col items-center justify-center gap-5 rounded-3xl bg-secondary-10 px-6 py-12 text-center shadow-[4px_4px_16px_rgb(0_0_0/0.04)]">
           {% lucide "shield-check" size=44 class="text-secondary-70" %}
@@ -18,7 +18,7 @@
 </section>
 {% else %}
 <div data-public-profile data-default-tab="{% if is_owner %}wardrobe{% else %}profile{% endif %}" class="flex min-w-0 flex-col gap-8 md:gap-10">
-  <div class="flex flex-col justify-between gap-6 lg:flex-row lg:items-center lg:gap-12">
+  <div class="flex flex-col justify-between gap-6 motion-safe:animate-profile-reveal lg:flex-row lg:items-center lg:gap-12">
     <div class="flex min-w-0 items-start gap-3">
       <a href="{% url 'clothing_catalog:list' %}" aria-label="Back to discover" class="mt-2 shrink-0 rounded-full p-1 text-neutral-80 hover:bg-neutral-20 focus-visible:outline-2 focus-visible:outline-primary-base">{% lucide "arrow-left" size=24 %}</a>
       <div class="flex min-w-0 flex-col gap-2">
@@ -34,7 +34,7 @@
   </div>
   <section id="member-profile" aria-labelledby="member-profile-tab" {% if active_tab != 'profile' %}hidden{% endif %}>
     <div class="flex min-w-0 flex-col gap-10 lg:flex-row lg:items-start lg:gap-20">
-      <div class="flex min-w-0 flex-col gap-10 lg:w-[44%] lg:shrink-0">
+      <div class="flex min-w-0 flex-col gap-10 motion-safe:animate-profile-reveal motion-safe:[animation-delay:60ms] lg:w-[44%] lg:shrink-0">
         <div class="flex justify-center">{% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}" alt="Profile photo of {{ profile.display_name }}" width="120" height="120" class="size-30 rounded-full object-cover">{% else %}<span class="flex size-30 items-center justify-center rounded-full bg-neutral-40 font-display text-h3 text-neutral-80" aria-label="{{ profile.display_name }}">{{ profile.display_name|first|upper }}</span>{% endif %}</div>
         <div class="flex flex-col gap-6">
           <dl class="flex flex-col gap-6 text-neutral-80">
@@ -46,7 +46,7 @@
           {% if is_owner %}<a href="{% url 'user_profile:edit' %}" class="btn btn-primary-ghost inline-flex items-center justify-center gap-2">{% lucide "pencil" size=16 %}Edit Profile</a>{% endif %}
         </div>
       </div>
-      <div id="reviews" class="flex min-w-0 flex-1 scroll-mt-72 flex-col gap-5">
+      <div id="reviews" class="flex min-w-0 flex-1 scroll-mt-72 flex-col gap-5 motion-safe:animate-profile-reveal motion-safe:[animation-delay:120ms]">
         <h2 class="text-b6 font-semibold text-neutral-80">Rating &amp; Review</h2>
         {% for review in reviews_page %}{% include "user_profile/partials/review_card.html" %}{% empty %}<p class="rounded-3xl bg-neutral-20 p-6 text-b7 text-neutral-80">Reviews will appear here after completed exchanges.</p>{% endfor %}
         {% if reviews_page.has_other_pages %}<nav aria-label="Review pages" class="flex flex-wrap items-center justify-between gap-3">
@@ -56,7 +56,7 @@
     </div>
   </section>
   <section id="member-wardrobe" aria-labelledby="member-wardrobe-tab" {% if active_tab != 'wardrobe' %}hidden{% endif %}>
-    <div class="flex flex-col gap-5">
+    <div class="flex flex-col gap-5 motion-safe:animate-profile-reveal motion-safe:[animation-delay:60ms]">
       <div class="flex flex-wrap gap-3 border-b border-neutral-40 pb-5" aria-label="Clothing categories">
         <a href="{% querystring tab='wardrobe' type=None %}" data-member-category="" class="market-chip {% if not filters.type %}market-chip-active{% endif %}" {% if not filters.type %}aria-current="true"{% endif %}>All finds</a>
         {% for value, label in categories %}<a href="{% querystring tab='wardrobe' type=value %}" data-member-category="{{ value }}" class="market-chip {% if filters.type == value %}market-chip-active{% endif %}" {% if filters.type == value %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
