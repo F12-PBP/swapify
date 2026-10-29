@@ -6,6 +6,10 @@ from django.db import models
 from django.urls import reverse
 
 
+def default_exchange_methods():
+    return ["meetup", "delivery"]
+
+
 class Clothing(models.Model):
     id = models.BigAutoField(primary_key=True)
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
@@ -65,6 +69,7 @@ class Clothing(models.Model):
         choices=Status.choices,
         default=Status.AVAILABLE,
     )
+    exchange_methods = models.JSONField(default=default_exchange_methods)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -28,14 +28,18 @@
     <section aria-labelledby="exchange-options" class="flex flex-col gap-3">
       <h2 id="exchange-options" class="text-s6 font-semibold">Available options</h2>
       <div class="flex flex-col gap-4 sm:flex-row">
+        {% if 'meetup' in clothing.exchange_methods %}
         <div class="flex flex-1 items-center gap-3 rounded-[20px] border border-neutral-40 p-4">
           <img src="{% static 'clothing_catalog/images/imgIcon11.svg' %}" alt="">
           <div class="flex flex-col gap-1"><h3 class="text-b8 font-semibold text-neutral-90">Meet nearby</h3><p class="text-b9 text-neutral-90">Arrange a handover in a safe, public place.</p></div>
         </div>
+        {% endif %}
+        {% if 'delivery' in clothing.exchange_methods %}
         <div class="flex flex-1 items-center gap-3 rounded-[20px] border border-neutral-40 p-4">
           <img src="{% static 'clothing_catalog/images/imgIcon12.svg' %}" alt="">
           <div class="flex flex-col gap-1"><h3 class="text-b8 font-semibold text-neutral-90">Send a package</h3><p class="text-b9 text-neutral-90">Agree on delivery and shipping costs with your partner.</p></div>
         </div>
+        {% endif %}
       </div>
     </section>
     <a href="{% url 'user_profile:public' clothing.owner.username %}" class="flex flex-col gap-3 rounded-[20px] border border-primary-20 bg-primary-10 p-5">

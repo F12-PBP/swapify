@@ -38,6 +38,13 @@ html {
 }
 
 @theme {
+  --animate-profile-reveal: profile-reveal 560ms cubic-bezier(.22, 1, .36, 1) backwards;
+
+  @keyframes profile-reveal {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   --animate-landing-arrive: landing-arrive 700ms both;
   --animate-landing-scene: landing-arrive 900ms 100ms both;
 
