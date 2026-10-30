@@ -16,10 +16,12 @@ from apps.swap_request.models import SwapRequest
 from .forms import UpdateTransactionForm
 from .models import Transaction
 from .services import (
+    cancel_ready_both,
     cancel_ready_transaction,
     confirm_receipt,
     start_transaction,
     unvalidate_resi,
+    unvalidate_resi_both,
     validate_resi,
 )
 
@@ -84,6 +86,14 @@ class TransactionUpdateView(TransactionParticipantMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        unvalidate_resi_both(self.object.pk, self.request.user)
+        cancel_ready_both(self.object.pk, self.request.user)
+
+        return response
 
     def get_success_url(self):
         return reverse("transaction_detail", kwargs={"pk": self.object.pk})
