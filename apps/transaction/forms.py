@@ -1,5 +1,7 @@
 from django import forms
 
+from apps.clothing_catalog.models import shared_exchange_methods
+
 from .models import Transaction
 
 
@@ -30,6 +32,15 @@ class UpdateTransactionForm(forms.ModelForm):
         for field in self.fields.values():
             field.required = False
         self.fields["method"].required = True
+        shared = shared_exchange_methods(
+            self.instance.swap_request.requested_clothing,
+            self.instance.swap_request.offered_clothing,
+        )
+        self.fields["method"].choices = [
+            (value, label)
+            for value, label in Transaction.Method.choices
+            if value.lower() in shared
+        ] or Transaction.Method.choices
 
     def clean(self):
         cleaned_data = super().clean()

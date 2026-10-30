@@ -2,7 +2,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.chat.services import open_chat_room
-from apps.clothing_catalog.models import Clothing
+from apps.clothing_catalog.models import Clothing, shared_exchange_methods
 from apps.transaction.models import Transaction
 
 from .models import SwapRequest
@@ -38,6 +38,11 @@ def create_swap_request(
     if any(item.status != Clothing.Status.AVAILABLE for item in items.values()):
         raise SwapCreationError(
             "One of these pieces is no longer available. Please choose another."
+        )
+    if not shared_exchange_methods(requested, offered):
+        raise SwapCreationError(
+            "These pieces don't share an exchange method. "
+            "Choose a piece that can be swapped the same way."
         )
     if SwapRequest.objects.filter(
         requester=requester,
@@ -79,6 +84,11 @@ def accept_swap_request(request_id, acting_user):
             item.status != Clothing.Status.AVAILABLE for item in items
         ):
             raise SwapAcceptanceError("Both clothing items must still be available.")
+        methods = shared_exchange_methods(*items)
+        if not methods:
+            raise SwapAcceptanceError(
+                "These pieces no longer share an exchange method."
+            )
 
         swap_request.clean()
 
@@ -103,11 +113,22 @@ def accept_swap_request(request_id, acting_user):
     elif swap_request.status != SwapRequest.Status.ACCEPTED:
         raise SwapAcceptanceError("This request can no longer be accepted.")
 
-    open_chat_room(swap_request)
+    else:
+        methods = shared_exchange_methods(
+            swap_request.requested_clothing, swap_request.offered_clothing
+        )
 
+    open_chat_room(swap_request)
     Transaction.objects.get_or_create(
         swap_request=swap_request,
-        defaults={"status": Transaction.Status.WAITING},
+        defaults={
+            "status": Transaction.Status.WAITING,
+            "method": (
+                Transaction.Method.DELIVERY
+                if methods == ["delivery"]
+                else Transaction.Method.MEETUP
+            ),
+        },
     )
 
     return swap_request

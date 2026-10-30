@@ -10,6 +10,15 @@ def default_exchange_methods():
     return ["meetup", "delivery"]
 
 
+def shared_exchange_methods(*items):
+    """Exchange methods every piece supports, in the default order."""
+    methods = default_exchange_methods()
+    for item in items:
+        supported = item.exchange_methods or default_exchange_methods()
+        methods = [method for method in methods if method in supported]
+    return methods
+
+
 class Clothing(models.Model):
     id = models.BigAutoField(primary_key=True)
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
