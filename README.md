@@ -114,3 +114,9 @@ Setelah kedua pengguna menerima barang yang dipertukarkan, transaksi dapat dikon
 Alfi | Rahel | Alvaro | Dawood | Wildan
 
 </div>
+
+## Marketplace demo data
+
+To populate 20 fictional Indonesian swappers and 52 products from the supplied
+photos, see the [marketplace seeder instructions](apps/clothing_catalog/seed_data/README.md),
+including PWS commands, optional demo passwords, dry runs and safe reruns.
