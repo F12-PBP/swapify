@@ -1,6 +1,8 @@
 {% extends "base.html" %}
+{% load tz %}
 
 {% block content %}
+{% timezone "Asia/Jakarta" %}
 {% with requester=transaction.swap_request.requester owner=transaction.swap_request.requested_clothing.owner %}
 {% with requester_name=requester.profile.display_name|default:requester.username owner_name=owner.profile.display_name|default:owner.username %}
 
@@ -506,4 +508,5 @@
 
 {% endwith %}
 {% endwith %}
+{% endtimezone %}
 {% endblock %}
