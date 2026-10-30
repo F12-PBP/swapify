@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -11,8 +11,9 @@ from apps.clothing_catalog.models import Clothing
 from apps.swap_request.models import SwapRequest
 from apps.swap_request.services import accept_swap_request
 
+from .forms import UpdateTransactionForm
 from .models import Transaction
-from .services import confirm_receipt, start_transaction
+from .services import confirm_receipt, start_transaction, validate_resi
 
 
 class TransactionPermissionTests(TestCase):
@@ -370,3 +371,265 @@ class TransactionPermissionTests(TestCase):
         response = self.client.get(self.url("detail"))
         self.assertContains(response, "This exchange is complete")
         self.assertNotContains(response, self.url("received"))
+
+
+class TransactionLifecycleGuardTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        cls.requester = User.objects.create_user(username="guard-requester")
+        cls.owner = User.objects.create_user(username="guard-owner")
+        for user, name in [
+            (cls.requester, "Requester Display"),
+            (cls.owner, "Owner Display"),
+        ]:
+            user.profile.display_name = name
+            user.profile.save(update_fields=["display_name"])
+        cls.offered = Clothing.objects.create(
+            owner=cls.requester,
+            name="Requester linen shirt",
+            type="top",
+            size="M",
+            condition="good",
+        )
+        cls.requested = Clothing.objects.create(
+            owner=cls.owner,
+            name="Owner denim jacket",
+            type="outerwear",
+            size="M",
+            condition="good",
+        )
+        cls.swap = SwapRequest.objects.create(
+            requester=cls.requester,
+            offered_clothing=cls.offered,
+            requested_clothing=cls.requested,
+        )
+        accept_swap_request(cls.swap.pk, cls.owner)
+        cls.exchange = Transaction.objects.get(swap_request=cls.swap)
+        cls.arrival = (timezone.now() + timedelta(days=3)).replace(
+            second=0, microsecond=0
+        )
+
+    def delivery(self):
+        self.exchange.method = Transaction.Method.DELIVERY
+        self.exchange.requester_courier = "Requester courier"
+        self.exchange.requester_resi = "REQUESTER-001"
+        self.exchange.requester_delivery_estimate = self.arrival
+        self.exchange.owner_courier = "Owner courier"
+        self.exchange.owner_resi = "OWNER-001"
+        self.exchange.owner_delivery_estimate = self.arrival
+        self.exchange.save()
+
+    def delivery_payload(self, party="requester", **changes):
+        return {
+            "method": "Delivery",
+            f"{party}_courier": getattr(self.exchange, f"{party}_courier"),
+            f"{party}_resi": getattr(self.exchange, f"{party}_resi"),
+            f"{party}_delivery_estimate": self.arrival.isoformat(),
+            **changes,
+        }
+
+    def validate_both(self):
+        validate_resi(self.exchange.pk, self.owner)
+        validate_resi(self.exchange.pk, self.requester)
+        self.exchange.refresh_from_db()
+
+    def test_empty_partner_tracking_number_cannot_be_validated(self):
+        for value in (None, "", "   "):
+            with self.subTest(value=value):
+                Transaction.objects.filter(pk=self.exchange.pk).update(owner_resi=value)
+                with self.assertRaisesMessage(
+                    ValidationError, "has not added a tracking number"
+                ):
+                    validate_resi(self.exchange.pk, self.requester)
+                self.exchange.refresh_from_db()
+                self.assertFalse(self.exchange.owner_resi_valid)
+
+    def test_delivery_waits_for_both_validations_and_both_ready_flags(self):
+        self.delivery()
+        with self.assertRaisesMessage(
+            ValidationError, "Both tracking numbers must be validated"
+        ):
+            start_transaction(self.exchange.pk, self.requester)
+        validate_resi(self.exchange.pk, self.owner)
+        with self.assertRaises(ValidationError):
+            start_transaction(self.exchange.pk, self.owner)
+        validate_resi(self.exchange.pk, self.requester)
+        exchange = start_transaction(self.exchange.pk, self.owner)
+        self.assertEqual(exchange.status, Transaction.Status.WAITING)
+        exchange = start_transaction(self.exchange.pk, self.requester)
+        self.assertEqual(exchange.status, Transaction.Status.IN_PROGRESS)
+        confirm_receipt(exchange.pk, self.requester)
+        confirm_receipt(exchange.pk, self.owner)
+        self.exchange.refresh_from_db()
+        self.assertEqual(self.exchange.status, Transaction.Status.COMPLETED)
+
+    def test_changed_delivery_details_reset_readiness_and_own_validation(self):
+        self.delivery()
+        self.validate_both()
+        start_transaction(self.exchange.pk, self.owner)
+        self.client.force_login(self.requester)
+        response = self.client.post(
+            reverse("transaction_update", args=[self.exchange.pk]),
+            self.delivery_payload(requester_resi="REQUESTER-002"),
+        )
+        self.assertEqual(response.status_code, 302)
+        self.exchange.refresh_from_db()
+        self.assertFalse(self.exchange.owner_started)
+        self.assertFalse(self.exchange.requester_started)
+        self.assertFalse(self.exchange.requester_resi_valid)
+        self.assertTrue(self.exchange.owner_resi_valid)
+        with self.assertRaises(ValidationError):
+            start_transaction(self.exchange.pk, self.requester)
+
+    def test_owner_edit_invalidates_only_the_owners_tracking_confirmation(self):
+        self.delivery()
+        self.validate_both()
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            reverse("transaction_update", args=[self.exchange.pk]),
+            self.delivery_payload("owner", owner_courier="New owner courier"),
+        )
+        self.assertEqual(response.status_code, 302)
+        self.exchange.refresh_from_db()
+        self.assertTrue(self.exchange.requester_resi_valid)
+        self.assertFalse(self.exchange.owner_resi_valid)
+
+    def test_delivery_post_requires_an_arrival_estimate(self):
+        self.delivery()
+        self.client.force_login(self.requester)
+        response = self.client.post(
+            reverse("transaction_update", args=[self.exchange.pk]),
+            self.delivery_payload(requester_delivery_estimate=""),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Estimated arrival is required for delivery.")
+
+    def test_method_change_resets_both_validations(self):
+        self.delivery()
+        self.validate_both()
+        start_transaction(self.exchange.pk, self.owner)
+        self.exchange.refresh_from_db()
+        form = UpdateTransactionForm(
+            {
+                "method": "Meetup",
+                "meetup_location": "Community library",
+                "meetup_date": self.arrival.isoformat(),
+            },
+            instance=self.exchange,
+            user=self.requester,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        form.save()
+        self.exchange.refresh_from_db()
+        self.assertFalse(self.exchange.requester_resi_valid)
+        self.assertFalse(self.exchange.owner_resi_valid)
+        self.assertFalse(self.exchange.owner_started)
+
+    def test_unchanged_submission_keeps_readiness_and_validation(self):
+        self.delivery()
+        self.validate_both()
+        start_transaction(self.exchange.pk, self.owner)
+        self.exchange.refresh_from_db()
+        form = UpdateTransactionForm(
+            self.delivery_payload(),
+            instance=self.exchange,
+            user=self.requester,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertFalse(form.has_changed(), form.changed_data)
+        form.save()
+        self.exchange.refresh_from_db()
+        self.assertTrue(self.exchange.owner_started)
+        self.assertTrue(self.exchange.requester_resi_valid)
+        self.assertTrue(self.exchange.owner_resi_valid)
+
+    def test_save_without_commit_resets_the_instance_but_does_not_write(self):
+        self.delivery()
+        self.validate_both()
+        start_transaction(self.exchange.pk, self.owner)
+        self.exchange.refresh_from_db()
+        form = UpdateTransactionForm(
+            self.delivery_payload(requester_courier="New courier"),
+            instance=self.exchange,
+            user=self.requester,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        draft = form.save(commit=False)
+        self.assertFalse(draft.requester_resi_valid)
+        self.assertFalse(draft.owner_started)
+        saved = Transaction.objects.get(pk=draft.pk)
+        self.assertTrue(saved.requester_resi_valid)
+        self.assertTrue(saved.owner_started)
+
+    def test_detail_shows_couriers_pieces_display_names_and_correct_receipt_colors(
+        self,
+    ):
+        self.delivery()
+        self.validate_both()
+        start_transaction(self.exchange.pk, self.requester)
+        start_transaction(self.exchange.pk, self.owner)
+        self.client.force_login(self.requester)
+        url = reverse("transaction_detail", args=[self.exchange.pk])
+        response = self.client.get(url)
+        for text in (
+            "Requester courier",
+            "Owner courier",
+            "Requester linen shirt",
+            "Owner denim jacket",
+            "From Requester Display",
+            "From Owner Display",
+        ):
+            self.assertContains(response, text)
+        self.assertRegex(
+            response.content.decode(),
+            r'Requester Display:\s*<span class="font-bold text-red-70">\s*Not yet',
+        )
+        confirm_receipt(self.exchange.pk, self.requester)
+        response = self.client.get(url)
+        self.assertRegex(
+            response.content.decode(),
+            r'Requester Display:\s*<span class="font-bold text-green-80">\s*Received',
+        )
+        self.assertRegex(
+            response.content.decode(),
+            r'Owner Display:\s*<span class="font-bold text-red-70">\s*Not yet',
+        )
+
+    def test_detail_uses_one_shared_flash_message_component(self):
+        self.client.force_login(self.requester)
+        self.client.post(reverse("validate_resi", args=[self.exchange.pk]))
+        response = self.client.get(
+            reverse("transaction_detail", args=[self.exchange.pk])
+        )
+        self.assertContains(response, "data-toast-messages", count=1)
+        self.assertNotContains(response, 'class="alert alert-error')
+
+    def test_meetup_still_completes_without_tracking_validations(self):
+        self.exchange.meetup_date = self.arrival
+        self.exchange.meetup_location = "Community library"
+        self.exchange.save(update_fields=["meetup_date", "meetup_location"])
+        start_transaction(self.exchange.pk, self.requester)
+        exchange = start_transaction(self.exchange.pk, self.owner)
+        self.assertEqual(exchange.status, Transaction.Status.IN_PROGRESS)
+        confirm_receipt(exchange.pk, self.requester)
+        confirm_receipt(exchange.pk, self.owner)
+        self.exchange.refresh_from_db()
+        self.assertEqual(self.exchange.status, Transaction.Status.COMPLETED)
+
+    def test_participant_queryset_preloads_profiles_and_both_pieces(self):
+        from .views import TransactionDetailView
+
+        request = RequestFactory().get("/")
+        request.user = self.requester
+        view = TransactionDetailView()
+        view.setup(request)
+        exchange = view.get_queryset().get(pk=self.exchange.pk)
+        with self.assertNumQueries(0):
+            self.assertEqual(
+                exchange.requester.profile.display_name, "Requester Display"
+            )
+            self.assertEqual(exchange.owner.profile.display_name, "Owner Display")
+            self.assertEqual(
+                exchange.swap_request.offered_clothing.name, self.offered.name
+            )
