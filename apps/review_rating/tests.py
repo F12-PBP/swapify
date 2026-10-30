@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -117,7 +119,7 @@ class ReviewServiceTests(ReviewTestData, TestCase):
 
     def test_missing_transaction_is_not_silently_created(self):
         with self.assertRaises(Transaction.DoesNotExist):
-            self.submit(transaction_id=self.exchange.pk + 1000)
+            self.submit(transaction_id=uuid4())
         self.assertFalse(Review.objects.exists())
 
 
@@ -210,7 +212,7 @@ class ReviewSubmissionTests(ReviewTestData, TestCase):
         self.assertFalse(Review.objects.exists())
 
     def test_missing_transaction_returns_404(self):
-        url = reverse("review_rating:create", args=[self.exchange.pk + 1000])
+        url = reverse("review_rating:create", args=[uuid4()])
         self.assertEqual(self.client.get(url).status_code, 404)
         self.assertEqual(self.client.post(url, {"rating": 5}).status_code, 404)
 
@@ -235,7 +237,7 @@ class ReviewSubmissionTests(ReviewTestData, TestCase):
                 "comment": "  Great swap.  ",
                 "author": self.outsider.pk,
                 "recipient": self.outsider.pk,
-                "transaction": self.exchange.pk + 1,
+                "transaction": uuid4(),
             },
             follow=True,
         )

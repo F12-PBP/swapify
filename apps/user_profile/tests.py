@@ -232,8 +232,9 @@ class AuthenticationTests(TestCase):
         response = self.client.get(reverse("main:home"))
         self.assertContains(response, "My Profile")
         self.assertContains(response, "Log Out")
-        self.assertContains(response, reverse("swap_request:list"))
-        self.assertContains(response, reverse("chat:list"))
+        marketplace = self.client.get(reverse("clothing_catalog:list"))
+        self.assertContains(marketplace, reverse("swap_request:list"))
+        self.assertContains(marketplace, reverse("chat:list"))
         self.assertNotContains(response, "Sign In")
 
     def test_development_does_not_automatically_authenticate_visitors(self):
@@ -334,6 +335,7 @@ class AuthenticatedExchangeFlowTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         owner.post(reverse("transaction_start", args=[exchange.pk]))
+        requester.post(reverse("transaction_start", args=[exchange.pk]))
         for client in (owner, requester):
             response = client.post(reverse("transaction_received", args=[exchange.pk]))
             self.assertEqual(response.status_code, 302)
@@ -496,15 +498,12 @@ class PublicProfileTests(TestCase):
             reverse("user_profile:edit"),
         )
 
-    def test_owner_sees_edit_link(self):
+    def test_owner_can_reach_editing_through_their_private_profile(self):
         self.client.force_login(self.member)
-
         response = self.client.get(self.public_url())
-
-        self.assertContains(
-            response,
-            reverse("user_profile:edit"),
-        )
+        self.assertContains(response, reverse("user_profile:detail"))
+        private_profile = self.client.get(reverse("user_profile:detail"))
+        self.assertContains(private_profile, reverse("user_profile:edit"))
 
     def test_inactive_account_is_not_public(self):
         self.member.is_active = False

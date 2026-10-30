@@ -103,7 +103,7 @@ class LandingDiscoveryTests(TestCase):
         self.assertContains(response, f'href="{reverse("clothing_catalog:list")}"')
         self.assertContains(response, "Just a demo. No items are exchanged.")
         self.assertContains(response, "not exact or live locations")
-        self.assertContains(response, "Example profile")
+        self.assertContains(response, "Example of a member profile")
 
 
 class MarketplaceLayoutTests(TestCase):
@@ -193,4 +193,11 @@ class MarketplaceLayoutTests(TestCase):
             {"display_name": "Alex", "bio": "Swapping favourites"},
             follow=True,
         )
-        self.assertContains(response, "Your profile has been updated.", count=1)
+        self.assertContains(response, "data-toast-messages", count=1)
+        self.assertContains(
+            response,
+            '<span data-toast-type="success">Your profile has been updated.</span>',
+            count=1,
+            html=True,
+        )
+        self.assertContains(response, "<noscript>")

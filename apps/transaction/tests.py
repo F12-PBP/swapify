@@ -50,6 +50,7 @@ class TransactionPermissionTests(TestCase):
         self.exchange.meetup_date = timezone.now() + timedelta(days=1)
         self.exchange.meetup_location = "Campus entrance"
         self.exchange.save(update_fields=["meetup_date", "meetup_location"])
+        start_transaction(self.exchange.pk, self.requester)
         self.exchange = start_transaction(self.exchange.pk, self.owner)
 
     def test_anonymous_users_cannot_view_edit_or_confirm(self):
@@ -120,6 +121,10 @@ class TransactionPermissionTests(TestCase):
                     {
                         "method": Transaction.Method.DELIVERY,
                         own: "my-new-tracking",
+                        f"{own.removesuffix('_resi')}_courier": "JNE",
+                        f"{own.removesuffix('_resi')}_delivery_estimate": (
+                            timezone.now() + timedelta(days=2)
+                        ).isoformat(),
                         other: "tampered-tracking",
                     },
                 )
@@ -178,17 +183,30 @@ class TransactionPermissionTests(TestCase):
     def test_waiting_transaction_can_be_validated_without_meetup_details(self):
         self.exchange.full_clean()
 
-    def test_method_can_be_selected_and_incomplete_draft_saved(self):
+    def test_delivery_method_requires_own_details_before_saving(self):
         self.client.force_login(self.requester)
         response = self.client.post(
             self.url("update"), {"method": Transaction.Method.DELIVERY}
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("requester_resi", response.context["form"].errors)
+        self.assertIn("requester_delivery_estimate", response.context["form"].errors)
         self.exchange.refresh_from_db()
-        self.assertEqual(self.exchange.method, Transaction.Method.DELIVERY)
+        self.assertEqual(self.exchange.method, Transaction.Method.MEETUP)
         self.assertEqual(self.exchange.status, Transaction.Status.WAITING)
 
+    def test_incomplete_meetup_draft_can_be_saved_before_readiness(self):
+        self.client.force_login(self.requester)
+        response = self.client.post(
+            self.url("update"), {"method": Transaction.Method.MEETUP}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.exchange.refresh_from_db()
+        self.assertEqual(self.exchange.status, Transaction.Status.WAITING)
+        self.assertIsNone(self.exchange.meetup_date)
+
     def test_start_rejects_missing_meetup_details_with_visible_errors(self):
+        start_transaction(self.exchange.pk, self.requester)
         self.client.force_login(self.owner)
         response = self.client.post(self.url("start"), follow=True)
         self.assertContains(response, "Meetup date is required")
@@ -196,27 +214,48 @@ class TransactionPermissionTests(TestCase):
         self.exchange.refresh_from_db()
         self.assertEqual(self.exchange.status, Transaction.Status.WAITING)
 
-    def test_either_participant_can_start_a_ready_meetup(self):
+    def test_meetup_starts_only_after_both_participants_are_ready(self):
         self.exchange.meetup_date = timezone.now() + timedelta(days=1)
         self.exchange.meetup_location = "Campus"
         self.exchange.save()
-        for user in (self.owner, self.requester):
-            Transaction.objects.filter(pk=self.exchange.pk).update(
-                status=Transaction.Status.WAITING
-            )
-            self.client.force_login(user)
-            response = self.client.post(self.url("start"))
-            self.assertEqual(response.status_code, 302)
-            self.exchange.refresh_from_db()
-            self.assertEqual(self.exchange.status, Transaction.Status.IN_PROGRESS)
+        for first, second in (
+            (self.owner, self.requester),
+            (self.requester, self.owner),
+        ):
+            with self.subTest(first=first.username):
+                Transaction.objects.filter(pk=self.exchange.pk).update(
+                    status=Transaction.Status.WAITING,
+                    requester_started=False,
+                    owner_started=False,
+                )
+                self.client.force_login(first)
+                response = self.client.post(self.url("start"), follow=True)
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(
+                    response, "You are ready. Waiting for the other party"
+                )
+                self.exchange.refresh_from_db()
+                self.assertEqual(self.exchange.status, Transaction.Status.WAITING)
+                self.client.force_login(second)
+                response = self.client.post(self.url("start"), follow=True)
+                self.assertContains(
+                    response, "Exchange started. Details are now locked."
+                )
+                self.exchange.refresh_from_db()
+                self.assertEqual(self.exchange.status, Transaction.Status.IN_PROGRESS)
 
     def test_delivery_requires_details_from_both_participants(self):
         self.exchange.method = Transaction.Method.DELIVERY
         self.exchange.requester_resi = "REQUESTER123"
         self.exchange.requester_delivery_estimate = timezone.now() + timedelta(days=2)
         self.exchange.save()
-        with self.assertRaises(ValidationError) as result:
+        with self.assertRaisesMessage(
+            ValidationError, "Both tracking numbers must be validated"
+        ):
             start_transaction(self.exchange.pk, self.requester)
+        self.exchange.status = Transaction.Status.IN_PROGRESS
+        with self.assertRaises(ValidationError) as result:
+            self.exchange.full_clean()
         self.assertIn("owner_resi", result.exception.message_dict)
         self.assertIn("owner_delivery_estimate", result.exception.message_dict)
         self.exchange.refresh_from_db()
@@ -231,11 +270,22 @@ class TransactionPermissionTests(TestCase):
                 {
                     "method": Transaction.Method.DELIVERY,
                     f"{party}_resi": f"TRACK-{party}",
+                    f"{party}_courier": "JNE",
                     f"{party}_delivery_estimate": estimate,
                 },
             )
             self.assertEqual(response.status_code, 302)
-        self.client.post(self.url("start"))
+        for user in (self.requester, self.owner):
+            self.client.force_login(user)
+            self.assertEqual(
+                self.client.post(
+                    reverse("validate_resi", args=[self.exchange.pk])
+                ).status_code,
+                302,
+            )
+        for user in (self.requester, self.owner):
+            self.client.force_login(user)
+            self.assertEqual(self.client.post(self.url("start")).status_code, 302)
         self.exchange.refresh_from_db()
         self.assertEqual(self.exchange.status, Transaction.Status.IN_PROGRESS)
         confirm_receipt(self.exchange.pk, self.owner)
@@ -365,11 +415,11 @@ class TransactionPermissionTests(TestCase):
         self.assertNotContains(response, self.url("update"))
         confirm_receipt(self.exchange.pk, self.owner)
         response = self.client.get(self.url("detail"))
-        self.assertContains(response, "Your receipt is confirmed")
+        self.assertContains(response, "Your item has been confirmed")
         self.assertNotContains(response, self.url("received"))
         confirm_receipt(self.exchange.pk, self.requester)
         response = self.client.get(self.url("detail"))
-        self.assertContains(response, "This exchange is complete")
+        self.assertContains(response, "Swapping is complete!")
         self.assertNotContains(response, self.url("received"))
 
 
@@ -541,6 +591,22 @@ class TransactionLifecycleGuardTests(TestCase):
         form.save()
         self.exchange.refresh_from_db()
         self.assertTrue(self.exchange.owner_started)
+        self.assertTrue(self.exchange.requester_resi_valid)
+        self.assertTrue(self.exchange.owner_resi_valid)
+
+    def test_unchanged_delivery_post_preserves_readiness_and_validation(self):
+        self.delivery()
+        self.validate_both()
+        start_transaction(self.exchange.pk, self.owner)
+        self.client.force_login(self.requester)
+        response = self.client.post(
+            reverse("transaction_update", args=[self.exchange.pk]),
+            self.delivery_payload(),
+        )
+        self.assertEqual(response.status_code, 302)
+        self.exchange.refresh_from_db()
+        self.assertTrue(self.exchange.owner_started)
+        self.assertFalse(self.exchange.requester_started)
         self.assertTrue(self.exchange.requester_resi_valid)
         self.assertTrue(self.exchange.owner_resi_valid)
 

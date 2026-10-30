@@ -16,12 +16,10 @@ from apps.swap_request.models import SwapRequest
 from .forms import UpdateTransactionForm
 from .models import Transaction
 from .services import (
-    cancel_ready_both,
     cancel_ready_transaction,
     confirm_receipt,
     start_transaction,
     unvalidate_resi,
-    unvalidate_resi_both,
     validate_resi,
 )
 
@@ -88,14 +86,6 @@ class TransactionUpdateView(TransactionParticipantMixin, UpdateView):
         kwargs["user"] = self.request.user
         return kwargs
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-
-        unvalidate_resi_both(self.object.pk, self.request.user)
-        cancel_ready_both(self.object.pk, self.request.user)
-
-        return response
-
     def get_success_url(self):
         return reverse("transaction_detail", kwargs={"pk": self.object.pk})
 
@@ -104,7 +94,7 @@ class TransactionStartView(TransactionParticipantMixin, View):
     def post(self, request, pk):
         exchange = get_object_or_404(self.get_queryset(), pk=pk)
         try:
-            start_transaction(exchange.pk, request.user)
+            exchange = start_transaction(exchange.pk, request.user)
         except ValidationError as error:
             for message in error.messages:
                 messages.error(request, message)
