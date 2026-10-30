@@ -43,6 +43,7 @@
             aria-label="Kembali ke daftar percakapan"
         >←</a>
 
+        <a href="{% url 'user_profile:public' partner.username %}" class="flex min-w-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-base md:gap-4" aria-label="View {{ partner.profile.display_name|default:partner.get_username }}’s public profile">
         <span
             class="flex size-12 shrink-0 items-center justify-center
                 overflow-hidden rounded-full bg-primary-20 text-primary-base"
@@ -68,6 +69,7 @@
             ↔ {{ chat_room.swap_request.offered_clothing.name }}
             </p>
         </div>
+        </a>
         </header>
 
         <div

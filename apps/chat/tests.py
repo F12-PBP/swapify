@@ -315,6 +315,10 @@ class ChatProfilePresentationTests(ChatTestCase):
                 self.assertContains(
                     response, partner.profile.profile_picture.url, count=2
                 )
+                self.assertContains(
+                    response,
+                    f'href="{reverse("user_profile:public", args=[partner.username])}"',
+                )
                 self.assertContains(response, 'width="48" height="48"')
                 self.assertContains(response, 'width="40" height="40"')
                 self.assertContains(
