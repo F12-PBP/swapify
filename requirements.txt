@@ -9,3 +9,4 @@ honcho==2.0.0
 cloudinary
 Pillow
 lucide[django]
+coverage
