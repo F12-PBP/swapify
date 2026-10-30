@@ -574,6 +574,10 @@ class SharedExchangeMethodTests(SwapRequestTestCase):
         )
         self.assertFalse(forged.is_valid())
         self.assertIn("method", forged.errors)
+        self.client.force_login(self.requester)
+        response = self.client.get(reverse("transaction_update", args=[exchange.pk]))
+        self.assertContains(response, 'data-value="Delivery"')
+        self.assertNotContains(response, 'data-value="Meetup"')
 
     def test_completed_exchange_is_shown_on_the_swap_badge(self):
         self.offered.exchange_methods = ["delivery"]
