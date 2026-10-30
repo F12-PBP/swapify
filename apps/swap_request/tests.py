@@ -4,9 +4,17 @@ from django.urls import reverse
 
 from apps.chat.models import ChatRoom
 from apps.clothing_catalog.models import Clothing
+from apps.transaction.forms import UpdateTransactionForm
 from apps.transaction.models import Transaction
 
+from .forms import SwapRequestForm
 from .models import SwapRequest
+from .services import (
+    SwapAcceptanceError,
+    SwapCreationError,
+    accept_swap_request,
+    create_swap_request,
+)
 
 
 def make_clothing(owner, name):
@@ -489,3 +497,116 @@ class SwapRequestDetailStateTests(SwapRequestTestCase):
         )
         self.assertContains(self.client.get(listing_url), "Rate &amp; Review")
         self.assertContains(self.client.get(listing_url), review_url)
+
+
+class SharedExchangeMethodTests(SwapRequestTestCase):
+    def setUp(self):
+        super().setUp()
+        self.offered.exchange_methods = ["meetup"]
+        self.offered.save(update_fields=["exchange_methods"])
+        self.requested.exchange_methods = ["delivery"]
+        self.requested.save(update_fields=["exchange_methods"])
+
+    def test_form_and_page_exclude_incompatible_pieces(self):
+        form = SwapRequestForm(
+            requester=self.requester, requested_clothing=self.requested
+        )
+        self.assertFalse(form.fields["offered_clothing"].queryset.exists())
+        self.assertEqual(form.mismatched_count, 1)
+        self.client.force_login(self.requester)
+        response = self.client.get(
+            reverse("swap_request:create", args=[self.requested.pk])
+        )
+        self.assertContains(
+            response,
+            "None of your available pieces share a meetup or delivery option",
+        )
+
+    def test_picker_keeps_compatible_pieces_and_explains_exclusions(self):
+        matching = make_clothing(self.requester, "Delivery-ready shirt")
+        matching.exchange_methods = ["delivery"]
+        matching.save(update_fields=["exchange_methods"])
+        self.client.force_login(self.requester)
+        response = self.client.get(
+            reverse("swap_request:create", args=[self.requested.pk])
+        )
+        self.assertEqual(
+            list(response.context["form"].fields["offered_clothing"].queryset),
+            [matching],
+        )
+        self.assertContains(response, "1 of your piece can't be offered")
+        self.assertContains(response, "it doesn't share a meetup or delivery option")
+
+    def test_service_rejects_incompatible_pieces_even_without_the_form(self):
+        with self.assertRaisesMessage(
+            SwapCreationError, "don't share an exchange method"
+        ):
+            create_swap_request(
+                requester=self.requester,
+                requested_clothing_id=self.requested.pk,
+                offered_clothing_id=self.offered.pk,
+            )
+        self.assertEqual(SwapRequest.objects.count(), 1)
+
+    def test_acceptance_rechecks_methods_and_keeps_the_request_pending(self):
+        with self.assertRaisesMessage(SwapAcceptanceError, "no longer share"):
+            accept_swap_request(self.swap.pk, self.owner)
+        self.swap.refresh_from_db()
+        self.offered.refresh_from_db()
+        self.assertEqual(self.swap.status, SwapRequest.Status.PENDING)
+        self.assertEqual(self.offered.status, Clothing.Status.AVAILABLE)
+        self.assertFalse(Transaction.objects.exists())
+        self.assertFalse(ChatRoom.objects.exists())
+
+    def test_delivery_only_match_sets_transaction_default_and_form_choice(self):
+        self.offered.exchange_methods = ["delivery"]
+        self.offered.save(update_fields=["exchange_methods"])
+        accept_swap_request(self.swap.pk, self.owner)
+        exchange = Transaction.objects.get(swap_request=self.swap)
+        self.assertEqual(exchange.method, Transaction.Method.DELIVERY)
+        form = UpdateTransactionForm(instance=exchange, user=self.requester)
+        self.assertEqual(
+            list(form.fields["method"].choices),
+            [(Transaction.Method.DELIVERY, Transaction.Method.DELIVERY.label)],
+        )
+        forged = UpdateTransactionForm(
+            {"method": "Meetup"}, instance=exchange, user=self.requester
+        )
+        self.assertFalse(forged.is_valid())
+        self.assertIn("method", forged.errors)
+        self.client.force_login(self.requester)
+        response = self.client.get(reverse("transaction_update", args=[exchange.pk]))
+        self.assertContains(response, 'data-value="Delivery"')
+        self.assertNotContains(response, 'data-value="Meetup"')
+
+    def test_completed_exchange_is_shown_on_the_swap_badge(self):
+        self.offered.exchange_methods = ["delivery"]
+        self.offered.save(update_fields=["exchange_methods"])
+        accept_swap_request(self.swap.pk, self.owner)
+        Transaction.objects.filter(swap_request=self.swap).update(
+            status=Transaction.Status.COMPLETED
+        )
+        self.client.force_login(self.requester)
+        response = self.client.get(reverse("swap_request:list"))
+        self.assertContains(response, ">Completed</span>")
+
+    def test_in_progress_exchange_explains_receipt_confirmation(self):
+        self.offered.exchange_methods = ["delivery"]
+        self.offered.save(update_fields=["exchange_methods"])
+        accept_swap_request(self.swap.pk, self.owner)
+        Transaction.objects.filter(swap_request=self.swap).update(
+            status=Transaction.Status.IN_PROGRESS
+        )
+        self.client.force_login(self.requester)
+        response = self.client.get(reverse("swap_request:list"))
+        self.assertContains(response, ">In Progress</span>")
+        self.assertContains(response, "Confirm once your new piece arrives.")
+
+    def test_legacy_empty_methods_fall_back_to_default_order(self):
+        from apps.clothing_catalog.models import shared_exchange_methods
+
+        self.offered.exchange_methods = []
+        self.assertEqual(shared_exchange_methods(self.offered), ["meetup", "delivery"])
+        self.assertEqual(
+            shared_exchange_methods(self.offered, self.requested), ["delivery"]
+        )

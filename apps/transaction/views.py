@@ -27,8 +27,9 @@ from .services import (
 class TransactionParticipantMixin(LoginRequiredMixin):
     def get_queryset(self):
         return Transaction.objects.select_related(
-            "swap_request__requester",
-            "swap_request__requested_clothing__owner",
+            "swap_request__requester__profile",
+            "swap_request__requested_clothing__owner__profile",
+            "swap_request__offered_clothing",
         ).filter(
             Q(swap_request__requester=self.request.user)
             | Q(swap_request__requested_clothing__owner=self.request.user)
@@ -93,7 +94,7 @@ class TransactionStartView(TransactionParticipantMixin, View):
     def post(self, request, pk):
         exchange = get_object_or_404(self.get_queryset(), pk=pk)
         try:
-            start_transaction(exchange.pk, request.user)
+            exchange = start_transaction(exchange.pk, request.user)
         except ValidationError as error:
             for message in error.messages:
                 messages.error(request, message)

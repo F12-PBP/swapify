@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils.html import escape
 
 from apps.clothing_catalog.models import Clothing
 from apps.swap_request.models import SwapRequest
@@ -289,3 +290,59 @@ class BackendRevisionTests(ChatTestCase):
         self.assertEqual(response.status_code, 409)
         self.assertEqual(response.json()["error"]["code"], "chat_inactive")
         self.assertFalse(ChatMessage.objects.exists())
+
+
+class ChatProfilePresentationTests(ChatTestCase):
+    def setUp(self):
+        super().setUp()
+        self.room = self.accept()
+        for user, name in (
+            (self.alice, "Alice's pieces"),
+            (self.bob, "Bob's wardrobe"),
+        ):
+            user.profile.display_name = name
+            user.profile.profile_picture = f"chat/{user.username}"
+            user.profile.save()
+            user.profile.refresh_from_db()
+
+    def test_both_participants_see_partner_photo_and_display_name(self):
+        for user, partner in ((self.alice, self.bob), (self.bob, self.alice)):
+            with self.subTest(user=user.username):
+                self.client.force_login(user)
+                response = self.client.get(reverse("chat:detail", args=[self.room.pk]))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, escape(partner.profile.display_name))
+                self.assertContains(
+                    response, partner.profile.profile_picture.url, count=2
+                )
+                self.assertContains(
+                    response,
+                    f'href="{reverse("user_profile:public", args=[partner.username])}"',
+                )
+                self.assertContains(response, 'width="48" height="48"')
+                self.assertContains(response, 'width="40" height="40"')
+                self.assertContains(
+                    response, 'class="size-full object-cover" loading="lazy"'
+                )
+
+    def test_missing_photo_and_display_name_fall_back_to_username(self):
+        self.bob.profile.display_name = ""
+        self.bob.profile.profile_picture = None
+        self.bob.profile.save()
+        self.client.force_login(self.alice)
+        response = self.client.get(reverse("chat:detail", args=[self.room.pk]))
+        self.assertContains(response, "Chat dengan bob · Swapify")
+        self.assertNotContains(response, 'width="48" height="48"')
+        self.assertNotContains(response, 'width="40" height="40"')
+        self.assertRegex(
+            response.content.decode(), r'aria-hidden="true"\s*>\s*B\s*</span>'
+        )
+
+    def test_related_profiles_and_pieces_do_not_add_queries(self):
+        with self.assertNumQueries(1):
+            room = ChatRoom.objects.with_related().get(pk=self.room.pk)
+        with self.assertNumQueries(0):
+            for user in (room.swap_request.requester, room.swap_request.owner):
+                self.assertTrue(user.profile.display_name)
+                self.assertTrue(user.profile.profile_picture)
+            self.assertEqual(room.swap_request.offered_clothing.name, "Kemeja Alice")

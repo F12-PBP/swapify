@@ -446,7 +446,9 @@ html {
 @source inline("{bg,text,border}-yellow-{base,{10..90..10}}");
 @source inline("{bg,text,border}-green-{base,{10..50..10},{70..100..10}}");
 
-@plugin "./daisyui.mjs";
+@plugin "./daisyui.mjs" {
+  exclude: button;
+}
 
 @plugin "./daisyui-theme.mjs" {
   name: "swapify";
@@ -481,167 +483,45 @@ html {
   --color-success-content: var(--color-neutral-10);
 }
 
-.btn {
-  min-height: 3rem;
-  border-radius: 1.5rem;
-  padding-inline: 1rem;
-  font-family: var(--font-sans);
-  font-size: var(--text-b7);
-  font-weight: 600;
-  line-height: var(--text-b7--line-height);
-  box-shadow: 0 4px 24px rgb(0 0 0 / 4%);
-}
-
-/* ================================================== */
-/* Button */
-/* ================================================== */
-
-.btn-primary,
-.btn-secondary,
-.btn-primary-ghost,
-.btn-secondary-ghost {
-  border-width: 1px;
-  transition:
-    background-color 100ms ease,
-    border-color 100ms ease,
-    color 100ms ease;
-}
-
-.btn-primary {
-  border-color: var(--color-primary-base);
-  background-color: var(--color-primary-base);
-  color: var(--color-neutral-10);
-}
-
-.btn-primary:hover:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--color-primary-30);
-  background-color: var(--color-primary-30);
-  color: var(--color-primary-base);
-}
-
-.btn-primary:active:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--color-primary-80);
-  background-color: var(--color-primary-80);
-  color: var(--color-neutral-10);
-}
-
-.btn-primary-ghost {
-  border-color: var(--color-primary-base);
-  background-color: transparent;
-  color: var(--color-primary-base);
-}
-
-.btn-primary-ghost:hover:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--color-primary-base);
-  background-color: var(--color-primary-base);
-  color: var(--color-neutral-10);
-}
-
-.btn-primary-ghost:active:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--color-primary-80);
-  background-color: var(--color-primary-80);
-  color: var(--color-neutral-10);
-}
-
-.btn-secondary {
-  border-color: var(--color-secondary-base);
-  background-color: var(--color-secondary-base);
-  color: var(--color-neutral-10);
-}
-
-.btn-secondary:hover:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--color-secondary-40);
-  background-color: var(--color-secondary-40);
-  color: var(--color-secondary-60);
-}
-
-.btn-secondary:active:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--color-secondary-80);
-  background-color: var(--color-secondary-80);
-  color: var(--color-neutral-10);
-}
-
-.btn-secondary-ghost {
-  border-color: var(--color-secondary-base);
-  background-color: transparent;
-  color: var(--color-secondary-base);
-}
-
-.btn-secondary-ghost:hover:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--color-secondary-base);
-  background-color: var(--color-secondary-base);
-  color: var(--color-neutral-10);
-}
-
-.btn-secondary-ghost:active:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--color-secondary-80);
-  background-color: var(--color-secondary-80);
-  color: var(--color-neutral-10);
-}
-
-.btn-primary:disabled,
-.btn-primary-ghost:disabled {
-  border-color: var(--color-primary-30);
-  background-color: var(--color-primary-30);
-  color: var(--color-primary-60);
-}
-
-.btn-secondary:disabled,
-.btn-secondary-ghost:disabled {
-  border-color: var(--color-secondary-40);
-  background-color: var(--color-secondary-40);
-  color: var(--color-secondary-60);
-}
-
-.btn-error {
-  border-color: var(--color-red-base);
-  background-color: var(--color-red-base);
-  color: var(--color-neutral-10);
-}
-.btn-error:hover:not(:disabled) {
-  border-color: var(--color-red-20);
-  background-color: var(--color-red-20);
-  color: var(--color-red-base);
-}
-.btn-error:active:not(:disabled) {
-  border-color: var(--color-red-70);
-  background-color: var(--color-red-70);
-  color: var(--color-neutral-10);
-}
-.btn-error-ghost {
-  border: 1px solid var(--color-red-base);
-  background: transparent;
-  color: var(--color-red-base);
-}
-.btn-error-ghost:hover:not(:disabled) {
-  background: var(--color-red-base);
-  color: var(--color-neutral-10);
-}
-.btn-error-ghost:active:not(:disabled) {
-  background: var(--color-red-70);
-  color: var(--color-neutral-10);
-}
-.btn-neutral {
-  border-color: var(--color-neutral-20);
-  background: var(--color-neutral-20);
-  color: var(--color-neutral-90);
-}
-.btn-neutral:hover:not(:disabled) {
-  border-color: var(--color-neutral-90);
-  background: transparent;
-  color: var(--color-neutral-90);
-}
-.btn-neutral:active:not(:disabled) {
-  border-color: var(--color-neutral-50);
-  background: var(--color-neutral-50);
-  color: var(--color-neutral-90);
-}
-button.btn:disabled {
-  border-color: var(--color-neutral-40);
-  background: var(--color-neutral-40);
-  color: var(--color-neutral-50);
-  box-shadow: none;
-  cursor: not-allowed;
+@layer components {
+  .btn, .market-button, .market-secondary, .market-outline, .market-danger {
+    @apply inline-flex h-auto min-h-0 cursor-pointer items-center justify-center gap-3 rounded-full border-0 bg-neutral-20 px-5 py-3 font-sans text-b8 font-semibold text-primary-base shadow-none;
+    @apply motion-safe:transition-[background-color,color,transform] motion-safe:duration-200 motion-safe:active:scale-[.98];
+    text-shadow: none;
+  }
+  .btn-primary, .market-button {
+    @apply bg-primary-base text-neutral-20 hover:bg-primary-60 active:bg-primary-80;
+  }
+  .btn-secondary {
+    @apply bg-secondary-base text-neutral-10 hover:bg-secondary-60 active:bg-secondary-80;
+  }
+  .btn-neutral, .btn-ghost, .market-secondary {
+    @apply bg-neutral-20 text-primary-base hover:bg-primary-20 active:bg-primary-30;
+  }
+  .btn-primary-ghost, .btn-outline, .market-outline {
+    @apply border-[1.6px] border-primary-base bg-transparent text-primary-base hover:bg-primary-10 active:bg-primary-20;
+  }
+  .btn-secondary-ghost {
+    @apply border-[1.6px] border-secondary-base bg-transparent text-secondary-80 hover:bg-secondary-10 active:bg-secondary-20;
+  }
+  .btn-error, .market-danger {
+    @apply bg-red-base text-neutral-10 hover:bg-red-70 active:bg-red-80;
+  }
+  .btn-error-ghost {
+    @apply border-[1.6px] border-red-base bg-transparent text-red-base hover:bg-red-10 active:bg-red-20;
+  }
+  .btn-sm { @apply px-4 py-2 text-b9; }
+  .btn-circle { @apply size-12 p-0; }
+  :is(.btn, .market-button, .market-secondary, .market-outline, .market-danger):focus-visible {
+    @apply outline-2 outline-offset-4 outline-primary-base;
+  }
+  :is(.btn, .market-button, .market-secondary, .market-outline, .market-danger):is(:disabled, [aria-disabled="true"], .btn-disabled) {
+    @apply cursor-not-allowed bg-neutral-40 text-neutral-70 opacity-60 shadow-none;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn, .market-button, .market-secondary, .market-outline, .market-danger { transition: none; }
+  }
 }
 
 /* ================================================== */

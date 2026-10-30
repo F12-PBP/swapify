@@ -28,8 +28,13 @@
         {% block content %}
         {% endblock %}
     </main>
-    {% include "components/footer/footer.html" %}
+    {% if request.resolver_match.view_name == 'main:home' %}
+        {% include "components/footer/footer.html" %}
+    {% else %}
+        {% include "components/footer/footer.html" with compact=True %}
+    {% endif %}
     <script src="{% static 'main/js/marketplace-motion.js' %}" defer></script>
+    {% include "review_rating/review_dialog.html" %}
     {% include "components/toasts.html" %}
     {% include "components/swapy-companion.html" %}
 </body>

@@ -17,6 +17,13 @@ class HomeViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "marketplace/base.html")
 
+    def test_only_landing_page_displays_full_footer(self):
+        landing = self.client.get(reverse("main:home"))
+        catalog = self.client.get(reverse("clothing_catalog:list"))
+        self.assertContains(landing, "data-footer-main")
+        self.assertNotContains(catalog, "data-footer-main")
+        self.assertContains(catalog, "Made for a more sustainable future.")
+
     def test_legacy_discover_redirect_preserves_filters(self):
         response = self.client.get(
             reverse("main:legacy_discover"),
@@ -96,7 +103,7 @@ class LandingDiscoveryTests(TestCase):
         self.assertContains(response, f'href="{reverse("clothing_catalog:list")}"')
         self.assertContains(response, "Just a demo. No items are exchanged.")
         self.assertContains(response, "not exact or live locations")
-        self.assertContains(response, "Example profile")
+        self.assertContains(response, "Example of a member profile")
 
 
 class MarketplaceLayoutTests(TestCase):
@@ -186,4 +193,11 @@ class MarketplaceLayoutTests(TestCase):
             {"display_name": "Alex", "bio": "Swapping favourites"},
             follow=True,
         )
-        self.assertContains(response, "Your profile has been updated.", count=1)
+        self.assertContains(response, "data-toast-messages", count=1)
+        self.assertContains(
+            response,
+            '<span data-toast-type="success">Your profile has been updated.</span>',
+            count=1,
+            html=True,
+        )
+        self.assertContains(response, "<noscript>")

@@ -5,40 +5,49 @@
 {% endblock %}
 
 {% block preview %}
-    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <p class="mb-5 text-b8 text-neutral-80">Shared with the clothing catalog: pill shape, consistent spacing, and a smooth press response. Use outline for secondary actions and neutral for dismissing.</p>
+    <div class="flex flex-wrap gap-6 [&>div]:gap-3">
         <div class="flex flex-col items-center justify-center">
             <code class="text-[12px]">btn-primary</code>
-            <button class="btn btn-primary" type="button">Control to Action</button>
+            <button class="btn btn-primary" type="button">Explore clothing</button>
         </div>
         <div class="flex flex-col items-center justify-center">
             <code class="text-[12px]">btn-secondary</code>
-            <button class="btn btn-secondary" type="button">Control to Action</button>
+            <button class="btn btn-secondary" type="button">Explore clothing</button>
         </div>
         <div class="flex flex-col items-center justify-center">
             <code class="text-[12px]">btn-error</code>
-            <button class="btn btn-error" type="button">Control to Action</button>
+            <button class="btn btn-error" type="button">Explore clothing</button>
         </div>
         <div class="flex flex-col items-center justify-center">
             <code class="text-[12px]">btn-primary-ghost</code>
-            <button class="btn btn-primary-ghost" type="button">Control to Action</button>
+            <button class="btn btn-primary-ghost" type="button">Explore clothing</button>
         </div>
          <div class="flex flex-col items-center justify-center">
             <code class="text-[12px]">btn-secondary-ghost</code>
-            <button class="btn btn-secondary-ghost" type="button">Control to Action</button>
+            <button class="btn btn-secondary-ghost" type="button">Explore clothing</button>
         </div>
         <div class="flex flex-col items-center justify-center">
             <code class="text-[12px]">btn-error-ghost</code>
-            <button class="btn btn-error-ghost" type="button">Control to Action</button>
+            <button class="btn btn-error-ghost" type="button">Explore clothing</button>
         </div>
         <div class="flex flex-col items-center justify-center">
             <code class="text-[12px]">btn-neutral</code>
-            <button class="btn btn-neutral" type="button">Control to Action</button>
+            <button class="btn btn-neutral" type="button">Explore clothing</button>
         </div>
         <div class="flex flex-col items-center justify-center">
             <code class="text-[12px]">disabled</code>
-            <button class="btn btn-neutral" type="button" disabled>Control to Action</button>
+            <button class="btn btn-neutral" type="button" disabled>Explore clothing</button>
         </div>
 
+        <div class="flex flex-col items-center justify-center">
+            <code class="text-b10">btn-sm</code>
+            <button class="btn btn-primary btn-sm" type="button">Let’s swap</button>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+            <code class="text-b10">btn-circle</code>
+            <button class="btn btn-primary btn-circle" type="button" aria-label="Add a piece"><span aria-hidden="true" class="text-h5">+</span></button>
+        </div>
     </div>
 {% endblock %}
 
@@ -58,6 +67,8 @@
   Secondary ghost
 &lt;/button&gt;
 
+&lt;button class="btn btn-primary btn-sm" type="button"&gt;Let’s swap&lt;/button&gt;
+&lt;button class="btn btn-primary btn-circle" aria-label="Add a piece" type="button"&gt;+&lt;/button&gt;
 &lt;button class="btn btn-error" type="button"&gt;Danger&lt;/button&gt;
 &lt;button class="btn btn-neutral" type="button" disabled&gt;Disabled&lt;/button&gt;
 {% endblock %}

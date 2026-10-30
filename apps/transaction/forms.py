@@ -1,5 +1,7 @@
 from django import forms
 
+from apps.clothing_catalog.models import shared_exchange_methods
+
 from .models import Transaction
 
 
@@ -9,6 +11,7 @@ class UpdateTransactionForm(forms.ModelForm):
 
         self.user = user
         self.is_requester = user.pk == self.instance.swap_request.requester_id
+        self.party = "requester" if self.is_requester else "owner"
 
         if self.is_requester:
             other_party_fields = (
@@ -30,6 +33,15 @@ class UpdateTransactionForm(forms.ModelForm):
         for field in self.fields.values():
             field.required = False
         self.fields["method"].required = True
+        shared = shared_exchange_methods(
+            self.instance.swap_request.requested_clothing,
+            self.instance.swap_request.offered_clothing,
+        )
+        self.fields["method"].choices = [
+            (value, label)
+            for value, label in Transaction.Method.choices
+            if value.lower() in shared
+        ] or Transaction.Method.choices
 
     def clean(self):
         cleaned_data = super().clean()
@@ -45,12 +57,32 @@ class UpdateTransactionForm(forms.ModelForm):
                 courier = cleaned_data.get("owner_courier")
                 field_name = "owner_resi"
 
+            estimate_field = f"{self.party}_delivery_estimate"
+            if not cleaned_data.get(estimate_field):
+                self.add_error(
+                    estimate_field, "Estimated arrival is required for delivery."
+                )
+
             if not resi or not courier:
                 self.add_error(
                     field_name, "Tracking number and courier are required for delivery."
                 )
 
         return cleaned_data
+
+    def save(self, commit=True):
+        if self.has_changed():
+            self.instance.requester_started = False
+            self.instance.owner_started = False
+            if "method" in self.changed_data:
+                self.instance.requester_resi_valid = False
+                self.instance.owner_resi_valid = False
+            elif any(
+                f"{self.party}_{field}" in self.changed_data
+                for field in ("courier", "resi", "delivery_estimate")
+            ):
+                setattr(self.instance, f"{self.party}_resi_valid", False)
+        return super().save(commit=commit)
 
     class Meta:
         model = Transaction
@@ -71,7 +103,7 @@ class UpdateTransactionForm(forms.ModelForm):
             "method": forms.Select(attrs={"class": "select swap-input w-full"}),
             "requester_courier": forms.TextInput(
                 attrs={
-                    "class": ("select w-full border border-neutral-30 rounded-xl p-2"),
+                    "class": "input w-full",
                     "placeholder": "e.g., Lefi",
                 }
             ),

@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% with requester=transaction.swap_request.requester owner=transaction.swap_request.requested_clothing.owner %}
+{% with requester_name=requester.profile.display_name|default:requester.username owner_name=owner.profile.display_name|default:owner.username %}
 
 <div class="min-h-screen bg-neutral-10 pb-10 px-4">
     <div class="pl-10">
@@ -12,11 +14,7 @@
 
     <div class="max-w-3xl mx-auto">
 
-        {% for message in messages %}
-            <div role="alert" class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %} mb-4">
-                {{ message }}
-            </div>
-        {% endfor %}
+
 
         <div class="mb-6">
 
@@ -77,6 +75,24 @@
                 </div>
 
 
+                <section class="flex flex-col gap-4 py-3" aria-labelledby="exchange-pieces-title">
+                    <h3 id="exchange-pieces-title" class="text-base font-bold text-neutral-70">Pieces</h3>
+                    <div class="flex flex-col gap-4 sm:flex-row">
+                        {% with clothing=transaction.swap_request.offered_clothing %}
+                        <a href="{{ clothing.get_absolute_url }}" class="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-neutral-40 p-4 hover:bg-neutral-20">
+                            <span class="size-14 shrink-0 overflow-hidden rounded-xl bg-neutral-30">{% if clothing.image_url %}<img src="{{ clothing.image_url }}" alt="" loading="lazy" width="56" height="56" class="size-full object-cover">{% endif %}</span>
+                            <span class="flex min-w-0 flex-col gap-1"><span class="text-b9 text-neutral-80">From {{ requester_name }}</span><span class="line-clamp-2 text-b8 font-semibold text-neutral-100">{{ clothing.name }}</span></span>
+                        </a>
+                        {% endwith %}
+                        {% with clothing=transaction.swap_request.requested_clothing %}
+                        <a href="{{ clothing.get_absolute_url }}" class="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-neutral-40 p-4 hover:bg-neutral-20">
+                            <span class="size-14 shrink-0 overflow-hidden rounded-xl bg-neutral-30">{% if clothing.image_url %}<img src="{{ clothing.image_url }}" alt="" loading="lazy" width="56" height="56" class="size-full object-cover">{% endif %}</span>
+                            <span class="flex min-w-0 flex-col gap-1"><span class="text-b9 text-neutral-80">From {{ owner_name }}</span><span class="line-clamp-2 text-b8 font-semibold text-neutral-100">{{ clothing.name }}</span></span>
+                        </a>
+                        {% endwith %}
+                    </div>
+                </section>
+
                 {% if transaction.method == "Delivery" %}
                     <div class="py-3">
 
@@ -93,7 +109,7 @@
 
                                 <div class="flex items-center justify-between mb-4">
                                     <h4 class="text-base font-bold text-neutral-120">
-                                        {{ transaction.requester.username }}
+                                        {{ requester_name }}
                                     </h4>
 
                                     {% if transaction.requester_resi_valid %}
@@ -115,9 +131,9 @@
                                             Courier Name
                                         </p>
 
-                                        {% if transaction.owner_courier %}
+                                        {% if transaction.requester_courier %}
                                             <p class="text-sm text-neutral-70 mt-1 break-all">
-                                                {{ transaction.owner_courier }}
+                                                {{ transaction.requester_courier }}
                                             </p>
                                         {% else %}
                                             <p class="text-sm text-neutral-70 mt-1">
@@ -169,7 +185,7 @@
 
                                 <div class="flex items-center justify-between mb-4">
                                     <h4 class="text-base font-bold text-neutral-120">
-                                        {{ transaction.owner.username }}
+                                        {{ owner_name }}
                                     </h4>
 
                                     {% if transaction.owner_resi_valid %}
@@ -298,18 +314,18 @@
                     {% if transaction.requester_started and transaction.owner_started %}
                         {% if not transaction.status == "Completed" %}
                             <h3 class="text-base font-bold text-neutral-70 mb-2">
-                                Swapping has started! Confirm if you already recieved your new piece!
+                                Swapping has started! Confirm once you have received your new piece.
                             </h3>
                         {% else %}
                             <h3 class="text-base font-bold text-neutral-70 mb-2">
-                                Both participant have confirmed their new piece! Swapping is complete!
+                                Both participants have confirmed their new piece. Swapping is complete!
                             </h3>
                         {% endif %}
 
                         <div class="mb-4">
                             <p class="text-sm text-neutral-70">
-                                {{ transaction.requester.username }}:
-                                <span class="{% if transaction.requester_started %}font-bold text-green-80{% else %}font-bold text-red-500{% endif %}">
+                                {{ requester_name }}:
+                                <span class="{% if transaction.requester_received %}font-bold text-green-80{% else %}font-bold text-red-70{% endif %}">
                                     {% if transaction.requester_received %}
                                             Received{% if transaction.requester_received_at %} at {{ transaction.requester_received_at|date:"d M Y, H:i" }}{% endif %}
                                     {% else %}
@@ -319,24 +335,24 @@
                             </p>
 
                             <p class="text-sm text-neutral-70">
-                                {{ transaction.owner.username }}:
-                                <span class="{% if transaction.owner_started %}font-bold text-green-80{% else %}font-bold text-red-500{% endif %}">
+                                {{ owner_name }}:
+                                <span class="{% if transaction.owner_received %}font-bold text-green-80{% else %}font-bold text-red-70{% endif %}">
                                     {% if transaction.owner_received %}
                                         Received{% if transaction.owner_received_at %} at {{ transaction.owner_received_at|date:"d M Y, H:i" }}{% endif %}
                                     {% else %}
-                                            Not confirmed
+                                            Not yet
                                     {% endif %}
                                 </span>
                             </p>
                         </div>
                     {% else %}
                         <h3 class="text-base font-bold text-neutral-70 mb-2">
-                            Swap will be started once both participant has readied themselves!
+                            The swap starts once both participants are ready.
                         </h3>
 
                         <div class="mb-4">
                             <p class="text-sm text-neutral-70">
-                                {{ transaction.requester.username }}:
+                                {{ requester_name }}:
                                 <span class="{% if transaction.requester_started %}font-bold text-green-80{% else %}font-bold text-red-500{% endif %}">
                                     {% if transaction.requester_started %}
                                         Ready to start!
@@ -347,7 +363,7 @@
                             </p>
 
                             <p class="text-sm text-neutral-70">
-                                {{ transaction.owner.username }}:
+                                {{ owner_name }}:
                                 <span class="{% if transaction.owner_started %}font-bold text-green-80{% else %}font-bold text-red-500{% endif %}">
                                     {% if transaction.owner_started %}
                                         Ready to start!
@@ -365,7 +381,7 @@
 
                         <a
                             href="{% url 'transaction_update' transaction.pk %}"
-                            class="btn flex-1 bg-neutral-10 text-primary-base border-primary-base hover:bg-neutral-40 hover:border-primary-60"
+                            class="btn btn-primary-ghost flex-1"
                         >
                             Update Information
                         </a>
@@ -376,24 +392,24 @@
                                     {% if transaction.requester_started %}
                                         <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                            <button type="submit" class="btn btn-primary w-full">Unready</button>
                                         </form>
                                     {% else %}
                                         <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                            <button type="submit" class="btn btn-primary w-full">Ready</button>
                                         </form>
                                     {% endif %}
                                 {% else %}
                                     {% if transaction.owner_started %}
                                         <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                            <button type="submit" class="btn btn-primary w-full">Unready</button>
                                         </form>
                                     {% else %}
                                         <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                            <button type="submit" class="btn btn-primary w-full">Ready</button>
                                         </form>
                                     {% endif %}
                                 {% endif %}
@@ -402,24 +418,24 @@
                                     {% if transaction.owner_resi_valid %}
                                         <form method="post" action="{% url 'unvalidate_resi' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unvalidate</button>
+                                            <button type="submit" class="btn btn-primary w-full">Unvalidate</button>
                                         </form>
                                     {% else %}
                                         <form method="post" action="{% url 'validate_resi' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Validate</button>
+                                            <button type="submit" class="btn btn-primary w-full">Validate</button>
                                         </form>
                                     {% endif %}
                                 {% else %}
                                     {% if transaction.requester_resi_valid %}
                                         <form method="post" action="{% url 'unvalidate_resi' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unvalidate</button>
+                                            <button type="submit" class="btn btn-primary w-full">Unvalidate</button>
                                         </form>
                                     {% else %}
                                         <form method="post" action="{% url 'validate_resi' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Validate</button>
+                                            <button type="submit" class="btn btn-primary w-full">Validate</button>
                                         </form>
                                     {% endif %}
                                 {% endif %}
@@ -429,24 +445,24 @@
                                 {% if transaction.requester_started %}
                                     <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                        <button type="submit" class="btn btn-primary w-full">Unready</button>
                                     </form>
                                 {% else %}
                                     <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                        <button type="submit" class="btn btn-primary w-full">Ready</button>
                                     </form>
                                 {% endif %}
                             {% else %}
                                 {% if transaction.owner_started %}
                                     <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                        <button type="submit" class="btn btn-primary w-full">Unready</button>
                                     </form>
                                 {% else %}
                                     <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                        <button type="submit" class="btn btn-primary w-full">Ready</button>
                                     </form>
                                 {% endif %}
                             {% endif %}
@@ -470,7 +486,7 @@
                             </p>
                         {% else %}
                             <a
-                                href="{% url 'review_rating:create' transaction.pk %}"
+                                href="{% url 'review_rating:create' transaction.pk %}" data-review-link
                                 class="btn btn-primary mt-3"
                             >
                                 Write a Review
@@ -488,4 +504,6 @@
     </div>
 </div>
 
+{% endwith %}
+{% endwith %}
 {% endblock %}

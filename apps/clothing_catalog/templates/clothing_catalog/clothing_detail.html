@@ -23,7 +23,7 @@
       <div class="flex flex-wrap gap-3"><a class="market-button" href="{% url 'clothing_catalog:update' clothing.pk %}">Edit item</a><a class="market-secondary" href="{% url 'clothing_catalog:delete' clothing.pk %}">Delete item</a></div>
       {% else %}<p class="rounded-xl bg-secondary-10 p-4 text-b8">This listing cannot be edited or deleted while it is reserved or after it has been swapped.</p>{% endif %}
     {% elif clothing.status == 'available' %}
-      <a class="market-button self-start text-b7" href="{% url 'swap_request:create' clothing.pk %}" data-swap-link>{% lucide "arrow-right-left" size=24 %}Propose a swap</a>
+      <a class="market-button self-start" href="{% url 'swap_request:create' clothing.pk %}" data-swap-link>{% lucide "arrow-right-left" size=24 %}Propose a swap</a>
     {% else %}<p class="rounded-xl bg-secondary-10 p-4 text-b8" role="status">This piece is {{ clothing.get_status_display|lower }} and is no longer available for a new swap.</p>{% endif %}
     <section aria-labelledby="exchange-options" class="flex flex-col gap-3">
       <h2 id="exchange-options" class="text-s6 font-semibold">Available options</h2>

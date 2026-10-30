@@ -15,8 +15,8 @@ class ChatRoomQuerySet(models.QuerySet):
 
     def with_related(self):
         return self.select_related(
-            "swap_request__requester",
-            "swap_request__requested_clothing__owner",
+            "swap_request__requester__profile",
+            "swap_request__requested_clothing__owner__profile",
             "swap_request__offered_clothing",
         )
 

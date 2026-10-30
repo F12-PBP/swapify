@@ -1,7 +1,7 @@
 {% extends "chat/base.html" %}
 {% load static %}
 
-{% block title %}Chat dengan {{ partner.get_username }} · Swapify{% endblock %}
+{% block title %}Chat dengan {{ partner.profile.display_name|default:partner.get_username }} · Swapify{% endblock %}
 
 {% block chat_content %}
 <section
@@ -43,12 +43,17 @@
             aria-label="Kembali ke daftar percakapan"
         >←</a>
 
+        <a href="{% url 'user_profile:public' partner.username %}" class="flex min-w-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-base md:gap-4" aria-label="View {{ partner.profile.display_name|default:partner.get_username }}’s public profile">
         <span
             class="flex size-12 shrink-0 items-center justify-center
-                rounded-full bg-primary-20 text-primary-base"
+                overflow-hidden rounded-full bg-primary-20 text-primary-base"
             aria-hidden="true"
         >
-            {{ partner.get_username|first|upper }}
+            {% if partner.profile.profile_picture %}
+                <img src="{{ partner.profile.profile_picture.url }}" alt="" width="48" height="48" class="size-full object-cover">
+            {% else %}
+                {{ partner.profile.display_name|default:partner.get_username|first|upper }}
+            {% endif %}
         </span>
 
         <div class="min-w-0">
@@ -56,7 +61,7 @@
             class="font-display text-h6 font-normal
                     text-primary-base [overflow-wrap:anywhere]"
             >
-            {{ partner.get_username }}
+            {{ partner.profile.display_name|default:partner.get_username }}
             </h2>
 
             <p class="mt-1 text-b9 text-neutral-80 [overflow-wrap:anywhere]">
@@ -64,6 +69,7 @@
             ↔ {{ chat_room.swap_request.offered_clothing.name }}
             </p>
         </div>
+        </a>
         </header>
 
         <div
@@ -111,7 +117,7 @@
             {% if chat_messages %}hidden{% endif %}
         >
             No messages yet.
-            Say hello to {{ partner.get_username }} to start conversation!.
+            Say hello to {{ partner.profile.display_name|default:partner.get_username }} to start conversation!.
         </p>
         </div>
 

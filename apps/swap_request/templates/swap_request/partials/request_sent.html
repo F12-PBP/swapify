@@ -5,8 +5,8 @@
     <p class="text-b8 text-neutral-80">Your request is on its way to <strong class="font-semibold text-neutral-90">{{ owner.profile.display_name|default:owner.username }}</strong>. You can chat and arrange the details once they accept your request.</p>
   </div>
   <div class="flex flex-col gap-3">
-    <a class="market-button w-full text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)]" href="{% url 'swap_request:list' %}">Follow your swap</a>
-    <a class="market-outline w-full text-b7" href="{% url 'clothing_catalog:list' %}" data-swap-keep-discovering>Keep discovering</a>
+    <a class="market-button w-full" href="{% url 'swap_request:list' %}">Follow your swap</a>
+    <a class="market-outline w-full" href="{% url 'clothing_catalog:list' %}" data-swap-keep-discovering>Keep discovering</a>
   </div>
 </div>
 {% endwith %}

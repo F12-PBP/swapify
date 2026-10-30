@@ -1,0 +1,32 @@
+{% load lucide %}
+<div class="flex flex-col gap-8" data-review-content>
+  <div class="flex flex-col gap-3 pr-8">
+    <h1 id="review-form-title" tabindex="-1" class="font-display text-h3 font-normal text-primary-base">How was your swap</h1>
+    <p class="text-b7 leading-relaxed text-neutral-80 sm:text-b6">Your honest review helps our community swap with confidence.</p>
+  </div>
+  <form method="post" action="{% url 'review_rating:create' transaction.pk %}" class="flex flex-col gap-8" data-review-form>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div role="alert" tabindex="-1" class="rounded-2xl bg-red-10 p-4 text-b8 text-red-70">{{ form.non_field_errors }}</div>{% endif %}
+    <fieldset class="flex flex-col gap-2">
+      <legend class="sr-only">Rate your swap</legend>
+      <div class="flex items-center justify-center gap-2 sm:gap-6" data-review-stars>
+        {% for option in form.rating %}
+        <label class="relative flex size-12 cursor-pointer items-center justify-center sm:size-14" data-review-star="{{ option.data.value }}">
+          {{ option.tag }}
+          <span class="sr-only">{{ option.choice_label }}</span>
+          <span aria-hidden="true" class="rounded-lg text-secondary-base peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-primary-base peer-checked:[&_svg]:fill-secondary-base motion-safe:transition-transform motion-safe:duration-200 motion-safe:hover:scale-110 motion-reduce:transition-none">{% lucide "star" size=48 class="size-10 transition-[fill,color] duration-200 motion-reduce:transition-none sm:size-14" %}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <p id="review-rating-error" class="text-b9 text-red-70" {% if not form.rating.errors %}hidden{% endif %}>{% for error in form.rating.errors %}{{ error }}{% endfor %}</p>
+      <p class="sr-only" role="status" data-review-rating-status></p>
+    </fieldset>
+    <div class="flex flex-col gap-3">
+      <label for="{{ form.comment.id_for_label }}" class="text-b7 font-semibold text-primary-base sm:text-b6">A few thoughtful words for @{{ recipient.username }}<span class="sr-only"> (optional)</span></label>
+      {{ form.comment }}
+      {% for error in form.comment.errors %}<p role="alert" class="text-b9 text-red-70">{{ error }}</p>{% endfor %}
+    </div>
+    <p data-review-status role="status" class="text-b9 text-neutral-80" hidden></p>
+    <button type="submit" class="btn btn-primary w-full">Share my review</button>
+  </form>
+</div>

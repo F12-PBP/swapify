@@ -53,29 +53,29 @@
       <div class="flex flex-col-reverse gap-3 sm:flex-row {% if blocking %}sm:justify-end{% endif %}">
         <form method="post" action="{% url 'swap_request:reject' swap_request.pk %}" data-swap-action class="{% if not blocking %}flex-1{% endif %}">
           {% csrf_token %}
-          <button class="market-danger w-full px-6 text-b7" type="submit">Reject</button>
+          <button class="market-danger w-full px-6" type="submit">Reject</button>
         </form>
         {% if not blocking %}
         <form method="post" action="{% url 'swap_request:accept' swap_request.pk %}" data-swap-action class="flex-1">
           {% csrf_token %}
-          <button class="market-button w-full text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)]" type="submit">Accept</button>
+          <button class="market-button w-full" type="submit">Accept</button>
         </form>
         {% endif %}
       </div>
     {% elif requester.pk == user.pk %}
       <form method="post" action="{% url 'swap_request:cancel' swap_request.pk %}" data-swap-action class="flex justify-end">
         {% csrf_token %}
-        <button class="market-danger w-full px-5 text-b7 sm:w-auto" type="submit">Cancel Request</button>
+        <button class="market-danger w-full px-5 sm:w-auto" type="submit">Cancel Request</button>
       </form>
     {% endif %}
   {% elif swap_request.status == 'accepted' %}
     <div class="flex flex-col gap-3 sm:flex-row">
-      {% if swap_request.chat_room %}<a class="market-outline flex-1 text-b7" href="{% url 'chat:detail' swap_request.chat_room.pk %}">Open Chat</a>{% endif %}
-      {% if swap_request.transaction %}<a class="market-button flex-1 text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)]" href="{% url 'transaction_detail' swap_request.transaction.pk %}">View transaction</a>{% endif %}
+      {% if swap_request.chat_room %}<a class="market-outline flex-1" href="{% url 'chat:detail' swap_request.chat_room.pk %}">Open Chat</a>{% endif %}
+      {% if swap_request.transaction %}<a class="market-button flex-1" href="{% url 'transaction_detail' swap_request.transaction.pk %}">View transaction</a>{% endif %}
     </div>
   {% elif requester.pk == user.pk %}
     {% if requested.status == 'available' %}
-      <a class="market-button w-full text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)]" href="{% url 'swap_request:create' requested.pk %}?from={{ swap_request.pk }}" data-swap-link>{% if swap_request.status == 'rejected' %}Send Request with Other Piece{% else %}Resend Swap Request{% endif %}</a>
+      <a class="market-button w-full" href="{% url 'swap_request:create' requested.pk %}?from={{ swap_request.pk }}" data-swap-link>{% if swap_request.status == 'rejected' %}Send Request with Other Piece{% else %}Resend Swap Request{% endif %}</a>
     {% else %}
       <p class="rounded-2xl bg-neutral-30 p-4 text-b8 text-neutral-80">{{ requested.name }} is no longer available, so this request can’t be sent again.</p>
     {% endif %}
