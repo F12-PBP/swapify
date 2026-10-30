@@ -79,6 +79,31 @@ def cancel_ready_transaction(transaction_id, user):
 
 
 @transaction.atomic
+def cancel_ready_both(transaction_id, user):
+    exchange = _get_participant_transaction(transaction_id, user)
+
+    if exchange.status == Transaction.Status.IN_PROGRESS:
+        return exchange
+    if exchange.status != Transaction.Status.WAITING:
+        raise ValidationError("You can only unready a waiting exchange.")
+
+    requester_field = "requester_started"
+    owner_field = "owner_started"
+
+    updated_fields = []
+
+    if getattr(exchange, requester_field):
+        setattr(exchange, requester_field, False)
+        updated_fields.append(requester_field)
+    if getattr(exchange, owner_field):
+        setattr(exchange, owner_field, False)
+        updated_fields.append(owner_field)
+
+    exchange.save(update_fields=updated_fields)
+    return exchange
+
+
+@transaction.atomic
 def validate_resi(transaction_id, user):
     exchange = _get_participant_transaction(transaction_id, user)
     party = "owner" if user.pk == exchange.swap_request.requester_id else "requester"
@@ -113,6 +138,31 @@ def unvalidate_resi(transaction_id, user):
     if getattr(exchange, valid_field):
         setattr(exchange, valid_field, False)
         updated_fields.append(valid_field)
+
+    exchange.save(update_fields=updated_fields)
+    return exchange
+
+
+@transaction.atomic
+def unvalidate_resi_both(transaction_id, user):
+    exchange = _get_participant_transaction(transaction_id, user)
+
+    if exchange.status == Transaction.Status.IN_PROGRESS:
+        return exchange
+    if exchange.status != Transaction.Status.WAITING:
+        raise ValidationError("Only a waiting exchange resi can be unvalidated")
+
+    owner_field = "owner_resi_valid"
+    requester_field = "requester_resi_valid"
+    updated_fields = []
+
+    if getattr(exchange, owner_field):
+        setattr(exchange, owner_field, False)
+        updated_fields.append(owner_field)
+
+    if getattr(exchange, requester_field):
+        setattr(exchange, requester_field, False)
+        updated_fields.append(requester_field)
 
     exchange.save(update_fields=updated_fields)
     return exchange
