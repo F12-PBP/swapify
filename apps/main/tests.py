@@ -17,6 +17,13 @@ class HomeViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "marketplace/base.html")
 
+    def test_only_landing_page_displays_full_footer(self):
+        landing = self.client.get(reverse("main:home"))
+        catalog = self.client.get(reverse("clothing_catalog:list"))
+        self.assertContains(landing, "data-footer-main")
+        self.assertNotContains(catalog, "data-footer-main")
+        self.assertContains(catalog, "Made for a more sustainable future.")
+
     def test_legacy_discover_redirect_preserves_filters(self):
         response = self.client.get(
             reverse("main:legacy_discover"),
