@@ -6,7 +6,7 @@
   {% if unavailable_reason == "own" %}<strong>{{ requested_clothing.name }}</strong> is one of your own pieces. Choose a piece from another swapper to start a swap.
   {% else %}<strong>{{ requested_clothing.name }}</strong> is already part of another swap, so it can’t receive new requests right now.{% endif %}
 </p>
-<a class="market-secondary mt-8 w-full text-b7" href="{% url 'clothing_catalog:list' %}">Find another piece</a>
+<a class="market-secondary mt-8 w-full" href="{% url 'clothing_catalog:list' %}">Find another piece</a>
 {% else %}
 <h2 id="swap-title" tabindex="-1" class="pr-8 font-display text-h4 text-primary-base outline-none">{% if previous_request %}Swap detail{% else %}Swap with others!{% endif %}</h2>
 <p class="mt-3 text-b7 text-neutral-80">Offer one of your available pieces for <strong>{{ owner_name }}’s {{ requested_clothing.name }}.</strong></p>
@@ -32,12 +32,12 @@
   </div>
   {% if previous_request %}
   <div class="mt-2 flex flex-col-reverse gap-3 sm:flex-row">
-    <a class="market-outline flex-1 text-b7" href="{{ previous_request.get_absolute_url }}" data-swap-detail>Undo</a>
-    <button class="market-button flex-1 text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)]" type="submit">Send Swap Request</button>
+    <a class="market-outline flex-1" href="{{ previous_request.get_absolute_url }}" data-swap-detail>Undo</a>
+    <button class="market-button flex-1" type="submit">Send Swap Request</button>
   </div>
   {% else %}
   <p class="flex items-center gap-3 rounded-lg border border-neutral-40 bg-neutral-30 p-4 text-b9 text-neutral-70"><img src="{% static 'swap_request/images/shield.svg' %}" alt="">Your item stays available until the swap is accepted.</p>
-  <button class="market-button mt-3 w-full text-b7" type="submit">Send Swap Request</button>
+  <button class="market-button mt-3 w-full" type="submit">Send Swap Request</button>
   {% endif %}
 </form>
 {% else %}

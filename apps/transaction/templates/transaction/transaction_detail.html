@@ -381,7 +381,7 @@
 
                         <a
                             href="{% url 'transaction_update' transaction.pk %}"
-                            class="btn flex-1 bg-neutral-10 text-primary-base border-primary-base hover:bg-neutral-40 hover:border-primary-60"
+                            class="btn btn-primary-ghost flex-1"
                         >
                             Update Information
                         </a>
@@ -392,24 +392,24 @@
                                     {% if transaction.requester_started %}
                                         <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                            <button type="submit" class="btn btn-primary w-full">Unready</button>
                                         </form>
                                     {% else %}
                                         <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                            <button type="submit" class="btn btn-primary w-full">Ready</button>
                                         </form>
                                     {% endif %}
                                 {% else %}
                                     {% if transaction.owner_started %}
                                         <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                            <button type="submit" class="btn btn-primary w-full">Unready</button>
                                         </form>
                                     {% else %}
                                         <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                            <button type="submit" class="btn btn-primary w-full">Ready</button>
                                         </form>
                                     {% endif %}
                                 {% endif %}
@@ -418,24 +418,24 @@
                                     {% if transaction.owner_resi_valid %}
                                         <form method="post" action="{% url 'unvalidate_resi' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unvalidate</button>
+                                            <button type="submit" class="btn btn-primary w-full">Unvalidate</button>
                                         </form>
                                     {% else %}
                                         <form method="post" action="{% url 'validate_resi' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Validate</button>
+                                            <button type="submit" class="btn btn-primary w-full">Validate</button>
                                         </form>
                                     {% endif %}
                                 {% else %}
                                     {% if transaction.requester_resi_valid %}
                                         <form method="post" action="{% url 'unvalidate_resi' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unvalidate</button>
+                                            <button type="submit" class="btn btn-primary w-full">Unvalidate</button>
                                         </form>
                                     {% else %}
                                         <form method="post" action="{% url 'validate_resi' transaction.pk %}" class="flex flex-1">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Validate</button>
+                                            <button type="submit" class="btn btn-primary w-full">Validate</button>
                                         </form>
                                     {% endif %}
                                 {% endif %}
@@ -445,24 +445,24 @@
                                 {% if transaction.requester_started %}
                                     <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                        <button type="submit" class="btn btn-primary w-full">Unready</button>
                                     </form>
                                 {% else %}
                                     <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                        <button type="submit" class="btn btn-primary w-full">Ready</button>
                                     </form>
                                 {% endif %}
                             {% else %}
                                 {% if transaction.owner_started %}
                                     <form method="post" action="{% url 'transaction_cancel' transaction.pk %}" class="flex flex-1">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Unready</button>
+                                        <button type="submit" class="btn btn-primary w-full">Unready</button>
                                     </form>
                                 {% else %}
                                     <form method="post" action="{% url 'transaction_start' transaction.pk %}" class="flex flex-1">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn w-full bg-primary-base text-neutral-10 border-primary-base hover:bg-primary-60 hover:border-primary-60">Ready</button>
+                                        <button type="submit" class="btn btn-primary w-full">Ready</button>
                                     </form>
                                 {% endif %}
                             {% endif %}

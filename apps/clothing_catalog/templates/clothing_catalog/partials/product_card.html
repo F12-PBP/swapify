@@ -17,7 +17,7 @@
       {% if clothing.pending_request_id %}
         <a href="{% url 'swap_request:detail' clothing.pending_request_id %}" class="btn btn-secondary flex items-center justify-center">View Request<span class="sr-only"> for {{ clothing.name }}</span></a>
       {% else %}
-        <a href="{{ clothing.get_absolute_url }}" class="btn flex items-center justify-center border-0 bg-neutral-20 text-primary-base hover:bg-primary-10">View Detail<span class="sr-only">: {{ clothing.name }}</span></a>
+        <a href="{{ clothing.get_absolute_url }}" class="btn btn-neutral">View Detail<span class="sr-only">: {{ clothing.name }}</span></a>
       {% endif %}
     {% else %}
     <div class="flex items-center justify-between gap-3">

@@ -11,6 +11,6 @@
     <input type="hidden" name="sort" value="{{ filters.sort|default:'recommended' }}">
     {% include "clothing_catalog/discovery/filter_fields.html" with suffix="modal" modal=True dropdown_size="md" auto_apply=False %}
     <button class="market-button mt-3" type="submit">Show matching finds</button>
-    <a href="{% querystring size=None condition=None distance=None page=None %}#finds" data-catalog-link data-catalog-reset class="market-secondary text-b7">Reset filters</a>
+    <a href="{% querystring size=None condition=None distance=None page=None %}#finds" data-catalog-link data-catalog-reset class="market-secondary">Reset filters</a>
   </form>
 </dialog>

@@ -29,9 +29,9 @@
   </div>
   <div class="flex shrink-0 gap-3">
     {% if swap_request.status == 'accepted' and exchange.status == 'Completed' and not swap_request.has_reviewed %}
-      <a href="{% url 'review_rating:create' exchange.pk %}" class="market-button min-w-36 flex-1 bg-secondary-base px-4 text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)] hover:bg-secondary-60 md:flex-none">Rate &amp; Review</a>
+      <a href="{% url 'review_rating:create' exchange.pk %}" class="btn btn-secondary min-w-36 flex-1 px-4 md:flex-none">Rate &amp; Review</a>
     {% endif %}
-    <a href="{{ swap_request.get_absolute_url }}" data-swap-detail class="market-button min-w-36 flex-1 px-4 text-b7 shadow-[0_4px_32px_rgb(0_0_0/0.04)] md:flex-none" aria-label="See detail for {{ requested.name }}">See detail</a>
+    <a href="{{ swap_request.get_absolute_url }}" data-swap-detail class="market-button min-w-36 flex-1 px-4 md:flex-none" aria-label="See detail for {{ requested.name }}">See detail</a>
   </div>
 </article>
 {% endwith %}
