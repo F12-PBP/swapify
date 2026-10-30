@@ -5,7 +5,7 @@
     const motion = gsap.matchMedia();
     const positions = ['bottom-left', 'right', 'top-right', 'left', 'bottom-right'];
 
-    motion.add('(prefers-reduced-motion: no-preference)', () => {
+    motion.add('(prefers-reduced-motion: no-preference) and (min-width: 640px)', () => {
         let position = 0;
         visitor.dataset.position = positions[position];
         const timeline = Swapy.createGreeting(visitor, {

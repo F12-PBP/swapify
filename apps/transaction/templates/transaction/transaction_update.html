@@ -65,13 +65,12 @@
                             {{ form.method }}
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3 p-1 bg-neutral-20 rounded-full border border-neutral-30" id="method-toggle-group">
-                            <button type="button" data-value="Meetup" class="py-3 px-4 rounded-full font-medium text-sm transition-all text-center">
-                                Meet Up
+                        <div class="flex gap-3 p-1 bg-neutral-20 rounded-full border border-neutral-30" id="method-toggle-group">
+                            {% for value, label in form.method.field.choices %}
+                            <button type="button" data-value="{{ value }}" class="flex-1 py-3 px-4 rounded-full font-medium text-sm transition-colors text-center" aria-pressed="false">
+                                {{ label }}
                             </button>
-                            <button type="button" data-value="Delivery" class="py-3 px-4 rounded-full font-medium text-sm transition-all text-center">
-                                Delivery
-                            </button>
+                            {% endfor %}
                         </div>
 
                         {% for error in form.method.errors %}
@@ -247,22 +246,20 @@
     function updateView() {
         var val = methodInput.value;
 
-        // Show/hide fields based on selected method
         form.querySelectorAll("[data-method-fields]").forEach(function (section) {
             section.hidden = section.dataset.methodFields !== val;
         });
 
-        // Update toggle button active states matching the screenshot style
         toggleButtons.forEach(function (btn) {
+            btn.setAttribute("aria-pressed", String(btn.dataset.value === val));
             if (btn.dataset.value === val) {
-                btn.className = "py-3 px-4 rounded-full font-medium text-sm transition-all text-center bg-primary-base text-neutral-10 shadow-sm";
+                btn.className = "flex-1 py-3 px-4 rounded-full font-medium text-sm transition-colors text-center bg-primary-base text-neutral-10 shadow-sm";
             } else {
-                btn.className = "py-3 px-4 rounded-full font-medium text-sm transition-all text-center text-neutral-80 hover:text-neutral-110";
+                btn.className = "flex-1 py-3 px-4 rounded-full font-medium text-sm transition-colors text-center text-neutral-80 hover:text-neutral-110";
             }
         });
     }
 
-    // Bind click events to custom pill buttons
     toggleButtons.forEach(function (btn) {
         btn.addEventListener("click", function () {
             methodInput.value = btn.dataset.value;

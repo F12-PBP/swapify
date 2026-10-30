@@ -23,6 +23,7 @@
   <div class="flex flex-col gap-2">
     {% include "components/dropdown.html" with dropdown_id=form.offered_clothing.id_for_label name="offered_clothing" label="Your piece to swap" choices=offered_choices value=form.offered_clothing.value size="md" show_label=True required=True %}
     {% for error in form.offered_clothing.errors %}<p class="text-b9 text-red-70" role="alert">{{ error }}</p>{% endfor %}
+    {% if mismatched_count %}<p class="text-b9 text-neutral-80">{{ mismatched_count }} of your piece{{ mismatched_count|pluralize }} can't be offered because {% if mismatched_count == 1 %}it doesn't{% else %}they don't{% endif %} share a meetup or delivery option with this piece.</p>{% endif %}
   </div>
   <div class="flex flex-col gap-2">
     <label for="{{ form.message.id_for_label }}" class="text-b7 font-semibold text-primary-base">{% if previous_request %}Message{% else %}Your message for {{ owner_name }}{% endif %} <span class="font-normal text-neutral-70">(optional)</span></label>
@@ -41,8 +42,9 @@
 </form>
 {% else %}
 <div class="mt-8 flex flex-col gap-4 rounded-2xl bg-secondary-10 p-5 text-b8">
-  <p>You don’t have an available piece to offer yet. Add one to start this swap.</p>
-  <a class="market-button" href="{% url 'clothing_catalog:create' %}?next={{ request.path|urlencode }}">Add your first available piece</a>
+  {% if mismatched_count %}<p>None of your available pieces share a meetup or delivery option with {{ requested_clothing.name }}. Add or edit a piece to match how {{ owner_name }} can swap.</p>
+  {% else %}<p>You don’t have an available piece to offer yet. Add one to start this swap.</p>{% endif %}
+  <a class="market-button" href="{% url 'clothing_catalog:create' %}?next={{ request.path|urlencode }}">{% if mismatched_count %}Add a compatible piece{% else %}Add your first available piece{% endif %}</a>
   {% if previous_request %}<a class="market-outline text-b8" href="{{ previous_request.get_absolute_url }}" data-swap-detail>Back to swap detail</a>{% endif %}
 </div>
 {% endif %}

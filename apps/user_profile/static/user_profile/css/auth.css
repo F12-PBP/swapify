@@ -108,8 +108,7 @@
 }
 
 @media (max-width: 639px) {
-  .auth-swapy { transform: scale(0.38); }
-  .auth-swapy[data-position="top-right"] { right: 30%; }
+  .auth-swapy { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

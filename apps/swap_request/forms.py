@@ -1,6 +1,6 @@
 from django import forms
 
-from apps.clothing_catalog.models import Clothing
+from apps.clothing_catalog.models import Clothing, shared_exchange_methods
 
 from .models import SwapRequest
 
@@ -30,10 +30,19 @@ class SwapRequestForm(forms.ModelForm):
         self.instance.requester = requester
         self.instance.requested_clothing = requested_clothing
         offered_field = self.fields["offered_clothing"]
-        offered_field.queryset = Clothing.objects.filter(
-            owner=requester,
-            status=Clothing.Status.AVAILABLE,
+        available = list(
+            Clothing.objects.filter(
+                owner=requester,
+                status=Clothing.Status.AVAILABLE,
+            )
         )
+        matching = [
+            item.pk
+            for item in available
+            if shared_exchange_methods(item, requested_clothing)
+        ]
+        self.mismatched_count = len(available) - len(matching)
+        offered_field.queryset = Clothing.objects.filter(pk__in=matching)
         offered_field.empty_label = "Pick your piece"
 
     def clean(self):

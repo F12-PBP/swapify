@@ -202,6 +202,7 @@ class SwapRequestCreateView(LoginRequiredMixin, CreateView):
         ]
         context["requested_clothing"] = self.requested_clothing
         context["has_offerable_clothing"] = len(context["offered_choices"]) > 1
+        context["mismatched_count"] = context["form"].mismatched_count
         context["previous_request"] = self.previous_request
         return context
 

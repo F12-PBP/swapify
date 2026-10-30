@@ -40,6 +40,12 @@ def start_transaction(transaction_id, user):
         return exchange
     if exchange.status != Transaction.Status.WAITING:
         raise ValidationError("Only a waiting exchange can be started.")
+    if exchange.method == Transaction.Method.DELIVERY and not (
+        exchange.requester_resi_valid and exchange.owner_resi_valid
+    ):
+        raise ValidationError(
+            "Both tracking numbers must be validated before a delivery can start."
+        )
 
     start_field = f"{party}_started"
     updated_fields = []
@@ -111,6 +117,8 @@ def validate_resi(transaction_id, user):
         return exchange
     if exchange.status != Transaction.Status.WAITING:
         raise ValidationError("Only a waiting exchange resi can be validated")
+    if not (getattr(exchange, f"{party}_resi") or "").strip():
+        raise ValidationError("Your partner has not added a tracking number yet.")
 
     valid_field = f"{party}_resi_valid"
     updated_fields = []

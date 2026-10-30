@@ -66,15 +66,19 @@
         >
             <span
             class="flex size-10 shrink-0 items-center justify-center
-                    rounded-full bg-primary-20 text-primary-base"
+                    overflow-hidden rounded-full bg-primary-20 text-primary-base"
             aria-hidden="true"
             >
-            {{ room.partner.get_username|first|upper }}
+            {% if room.partner.profile.profile_picture %}
+                <img src="{{ room.partner.profile.profile_picture.url }}" alt="" width="40" height="40" class="size-full object-cover" loading="lazy">
+            {% else %}
+                {{ room.partner.profile.display_name|default:room.partner.get_username|first|upper }}
+            {% endif %}
             </span>
 
             <span class="chat-room-copy flex min-w-0 flex-1 flex-col gap-1">
             <strong class="truncate text-s8 font-semibold text-neutral-110">
-                {{ room.partner.get_username }}
+                {{ room.partner.profile.display_name|default:room.partner.get_username }}
             </strong>
 
             <span class="truncate text-b9 text-neutral-70">

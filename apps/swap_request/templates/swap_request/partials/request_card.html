@@ -20,7 +20,7 @@
         <p class="text-b10 {% if swap_request.blocking_clothing %}font-semibold text-yellow-70{% else %}text-neutral-70{% endif %}">
           {% if swap_request.blocking_clothing %}{{ swap_request.blocking_clothing.name }} is already part of another swap, so this request can’t be accepted.
           {% elif swap_request.status == 'pending' %}{% if swap_request.requester_id == user.pk %}We’ll let you know when {{ owner_name }} responds.{% else %}{{ requester_name }} is waiting for your answer.{% endif %}
-          {% elif swap_request.status == 'accepted' %}{% if exchange.status == 'Completed' %}Swap completed.{% if not swap_request.has_reviewed %} Share how it went.{% endif %}{% else %}Swap accepted. Plan the handover together in Messages.{% endif %}
+          {% elif swap_request.status == 'accepted' %}{% if exchange.status == 'Completed' %}Swap completed.{% if not swap_request.has_reviewed %} Share how it went.{% endif %}{% elif exchange.status == 'InProgress' %}Swap in progress. Confirm once your new piece arrives.{% else %}Swap accepted. Plan the handover together in Messages.{% endif %}
           {% elif swap_request.status == 'rejected' %}{% if swap_request.requester_id == user.pk %}{{ owner_name }} passed on this offer. You can try another piece.{% else %}You passed on this offer.{% endif %}
           {% else %}{% if swap_request.requester_id == user.pk %}You cancelled this request.{% else %}{{ requester_name }} cancelled this request.{% endif %}{% endif %}
         </p>
