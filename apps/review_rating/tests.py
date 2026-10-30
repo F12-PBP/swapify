@@ -266,6 +266,61 @@ class ReviewSubmissionTests(ReviewTestData, TestCase):
         self.assertTrue(response.context["form"].non_field_errors())
         self.assertEqual(Review.objects.count(), 1)
 
+    def test_dialog_renders_star_choices_without_the_page_shell(self):
+        response = self.client.get(self.url, HTTP_X_REVIEW_DIALOG="1")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "review_rating/partials/review_form.html")
+        self.assertNotContains(response, "<!DOCTYPE html>")
+        self.assertContains(response, 'type="radio"', count=5)
+        self.assertContains(response, "How was your swap")
+        self.assertContains(response, "Share my review")
+        self.assertIn("X-Review-Dialog", response.headers["Vary"])
+
+    def test_dialog_validation_keeps_the_selected_rating_and_comment(self):
+        response = self.client.post(
+            self.url,
+            {"rating": "4", "comment": "x" * 1001},
+            HTTP_X_REVIEW_DIALOG="1",
+        )
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.context["form"]["rating"].value(), "4")
+        self.assertEqual(response.context["form"]["comment"].value(), "x" * 1001)
+        self.assertIn("comment", response.context["form"].errors)
+        self.assertFalse(Review.objects.exists())
+
+    def test_dialog_submission_returns_confirmation_and_rejects_duplicates(self):
+        response = self.client.post(
+            self.url,
+            {"rating": "4", "comment": "Thoughtful swapper"},
+            HTTP_X_REVIEW_DIALOG="1",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(), {"message": "Your review has been submitted."}
+        )
+        review = Review.objects.get()
+        self.assertEqual(review.rating, 4)
+        self.assertEqual(review.recipient, self.owner)
+        duplicate = self.client.post(
+            self.url, {"rating": "5"}, HTTP_X_REVIEW_DIALOG="1"
+        )
+        self.assertEqual(duplicate.status_code, 422)
+        self.assertContains(duplicate, "already reviewed", status_code=422)
+        self.assertEqual(Review.objects.count(), 1)
+
+    def test_dialog_header_does_not_bypass_participant_authorization(self):
+        self.client.force_login(self.outsider)
+        self.assertEqual(
+            self.client.get(self.url, HTTP_X_REVIEW_DIALOG="1").status_code, 404
+        )
+        self.assertEqual(
+            self.client.post(
+                self.url, {"rating": "5"}, HTTP_X_REVIEW_DIALOG="1"
+            ).status_code,
+            404,
+        )
+        self.assertFalse(Review.objects.exists())
+
     def test_submission_requires_csrf(self):
         client = Client(enforce_csrf_checks=True)
         client.force_login(self.requester)

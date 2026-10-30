@@ -1,61 +1,9 @@
-{% extends "base.html" %}
-
+{% extends "marketplace/base.html" %}
+{% load lucide %}
 {% block title %}Write a Review | Swapify{% endblock %}
-
 {% block content %}
-<section class="mx-auto max-w-2xl px-4 py-10 md:px-6">
-    <div class="card border border-neutral-40 bg-base-100 shadow-sm">
-        <div class="card-body gap-6">
-            <h1 class="font-display text-h3">Write a Review</h1>
-            <p class="text-base-content/60">
-                How was your exchange with @{{ recipient.username }}?
-            </p>
-
-            <form method="post" class="space-y-4">
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                    <div class="alert alert-error" role="alert">
-                        {{ form.non_field_errors }}
-                    </div>
-                {% endif %}
-
-                {% for field in form %}
-                    <div>
-                        <label
-                            for="{{ field.id_for_label }}"
-                            class="mb-2 block text-sm font-semibold"
-                        >
-                            {{ field.label }}
-                        </label>
-
-                        {{ field }}
-
-                        {% if field.help_text %}
-                            <p class="mt-1 text-sm text-base-content/60">
-                                {{ field.help_text }}
-                            </p>
-                        {% endif %}
-
-                        {% for error in field.errors %}
-                            <p class="mt-1 text-sm text-error">{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-
-                <div class="flex flex-wrap gap-3 pt-4">
-                    <button type="submit" class="btn btn-primary">
-                        Submit Review
-                    </button>
-                    <a
-                        href="{% url 'transaction_detail' transaction.pk %}"
-                        class="btn btn-primary-ghost"
-                    >
-                        Cancel
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
+<section class="relative mx-auto flex w-full max-w-[592px] flex-col rounded-[40px] bg-neutral-10 p-7 motion-safe:animate-profile-reveal sm:p-11" aria-labelledby="review-form-title">
+  <a href="{% url 'transaction_detail' transaction.pk %}" class="absolute top-7 right-7 rounded-full text-neutral-80 hover:text-primary-base sm:top-11 sm:right-11" aria-label="Cancel review">{% lucide "x" size=24 %}</a>
+  {% include "review_rating/partials/review_form.html" %}
 </section>
 {% endblock %}

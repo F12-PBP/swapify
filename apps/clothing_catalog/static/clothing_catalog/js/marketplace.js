@@ -9,7 +9,7 @@ window.MarketplacePages.register((scope) => {
     button.hidden = false;
     scope.on(button, "click", () => openDialog(document.getElementById(button.dataset.dialogOpen)));
   });
-  document.querySelectorAll(".market-dialog").forEach((dialog) => {
+  document.querySelectorAll(".market-dialog:not([data-review-dialog])").forEach((dialog) => {
     scope.on(dialog, "cancel", (event) => {
       if (dialog.dataset.submitting === "true") event.preventDefault();
     });

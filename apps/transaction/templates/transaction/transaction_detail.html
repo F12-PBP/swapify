@@ -486,7 +486,7 @@
                             </p>
                         {% else %}
                             <a
-                                href="{% url 'review_rating:create' transaction.pk %}"
+                                href="{% url 'review_rating:create' transaction.pk %}" data-review-link
                                 class="btn btn-primary mt-3"
                             >
                                 Write a Review

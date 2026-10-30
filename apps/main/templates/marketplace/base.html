@@ -31,7 +31,8 @@
     </dialog>
   {% endif %}
   <div id="market-page-dialogs">{% block dialogs %}{% endblock %}</div>
-  {% include "components/toasts.html" %}
+  {% include "review_rating/review_dialog.html" %}
+    {% include "components/toasts.html" %}
   <script src="{% static 'js/design-system-dropdown.js' %}" defer></script>
   <script src="{% static 'main/js/marketplace-pages.js' %}" defer></script>
   <script src="{% static 'main/js/marketplace-motion.js' %}" defer></script>

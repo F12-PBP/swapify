@@ -1,0 +1,6 @@
+{% load static lucide %}
+<dialog id="review-dialog" data-review-dialog class="market-dialog max-w-[592px] rounded-[40px] p-7 sm:p-11" aria-labelledby="review-form-title">
+  <button type="button" data-review-close class="absolute top-7 right-7 z-10 flex size-7 items-center justify-center rounded-full text-neutral-80 transition-colors hover:text-primary-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-base sm:top-11 sm:right-11" aria-label="Close review">{% lucide "x" size=24 %}</button>
+  <div data-review-dialog-content></div>
+</dialog>
+<script src="{% static 'review_rating/review.js' %}" defer></script>
