@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "rest_framework.authtoken",
     "apps.main",
     "tailwind",
     "theme",
@@ -69,11 +71,27 @@ INSTALLED_APPS = [
     "apps.chat",
     "apps.user_profile.apps.UserProfileConfig",
     "apps.review_rating.apps.ReviewRatingConfig",
+    "apps.mobile_api.apps.MobileApiConfig",
     "lucide",
 ]
 
 if DEBUG:
     INSTALLED_APPS += ["django_browser_reload"]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {"auth": "10/hour"},
+}
 
 TAILWIND_APP_NAME = "theme"
 

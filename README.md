@@ -331,6 +331,31 @@ erDiagram
 
 `GeocodingCacheEntry` merupakan tabel cache pendukung tanpa foreign key ke model lain. Peserta transaksi dan chat diperoleh melalui `SwapRequest`.
 
+## Mobile API (Django REST Framework)
+
+The versioned API is served under `/api/v1/`. Except for token login, every route requires `Authorization: Token <token>`. Obtain a token with a JSON `POST` to `/api/v1/auth/token/` containing `username` and `password`; revoke it with `POST /api/v1/auth/logout/`. Login is limited to 10 attempts per hour per client IP. Use HTTPS outside local development.
+
+| Module | Endpoint | Methods | Access scope |
+| --- | --- | --- | --- |
+| Profile & Location | `/api/v1/profile/` | GET, PATCH | Current user's profile only |
+| Clothing Catalog | `/api/v1/catalog/`, `/api/v1/catalog/<id>/` | GET | Available clothes plus the current user's own listings |
+| Swap Request | `/api/v1/swap-requests/`, `/api/v1/swap-requests/<id>/` | GET | Requests where the current user is a participant |
+| Transaction | `/api/v1/transactions/`, `/api/v1/transactions/<uuid>/` | GET | Transactions where the current user is a participant |
+| Chat | `/api/v1/chats/`, `/api/v1/chats/<id>/` | GET | Rooms where the current user is a participant |
+| Chat messages | `/api/v1/chats/<id>/messages/` | GET, POST | Participants of that room; sending is allowed while the room is active |
+| Review & Rating | `/api/v1/reviews/`, `/api/v1/reviews/<id>/` | GET | Reviews written by or received by the current user |
+
+List responses use page-number pagination (`count`, `next`, `previous`, `results`, 20 items per page). Profile updates validate preference values and paired/ranged coordinates. Chat message writes reuse the website service so its participant and active-room checks remain in effect.
+
+After installing `requirements.txt`, apply migrations to create the DRF token table, then start Django as usual:
+
+```sh
+python manage.py migrate
+python manage.py runserver
+```
+
+The API contract is exercised by `python manage.py test apps.mobile_api`.
+
 ## External Services
 
 ### Nominatim
