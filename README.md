@@ -333,7 +333,7 @@ erDiagram
 
 ## Mobile API (Django REST Framework)
 
-The versioned API is served under `/api/v1/`. Except for token login, every route requires `Authorization: Token <token>`. Obtain a token with a JSON `POST` to `/api/v1/auth/token/` containing `username` and `password`; revoke it with `POST /api/v1/auth/logout/`. Login is limited to 10 attempts per hour per client IP. Use HTTPS outside local development.
+The versioned API is served under `/api/v1/`. Except for token login, every route requires `Authorization: Token <token>`. Obtain a token with a JSON `POST` to `/api/v1/auth/token/` containing `username` and `password`; revoke it with `POST /api/v1/auth/logout/`. Tokens do not expire automatically. Login is limited to 10 attempts per hour per client IP. Use HTTPS outside local development.
 
 | Module | Endpoint | Methods | Access scope |
 | --- | --- | --- | --- |

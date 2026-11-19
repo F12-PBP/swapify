@@ -79,6 +79,7 @@ if DEBUG:
     INSTALLED_APPS += ["django_browser_reload"]
 
 REST_FRAMEWORK = {
+    # shortcut: DRF tokens do not expire, use expiring tokens before public deployment.
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
     ],
