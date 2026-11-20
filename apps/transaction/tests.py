@@ -3,9 +3,11 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from rest_framework import status as http_status
+from rest_framework.test import APITestCase
 
 from apps.clothing_catalog.models import Clothing
 from apps.swap_request.models import SwapRequest
@@ -699,3 +701,257 @@ class TransactionLifecycleGuardTests(TestCase):
             self.assertEqual(
                 exchange.swap_request.offered_clothing.name, self.offered.name
             )
+
+
+User = get_user_model()
+
+
+@override_settings(ROOT_URLCONF="apps.transaction.api_urls")
+class TransactionAPITestCase(APITestCase):
+    def setUp(self):
+        self.requester = User.objects.create_user(
+            username="requester_user",
+            password="password123",
+        )
+        self.owner = User.objects.create_user(
+            username="owner_user",
+            password="password123",
+        )
+        self.outsider = User.objects.create_user(
+            username="outsider_user",
+            password="password123",
+        )
+
+        # Adjust required fields below if your Clothing model enforces extras
+        # (e.g., category, size, condition, or exchange_methods).
+        self.offered_clothing = Clothing.objects.create(
+            owner=self.requester,
+            name="Vintage Denim Jacket",
+            status=Clothing.Status.RESERVED,
+        )
+        self.requested_clothing = Clothing.objects.create(
+            owner=self.owner,
+            name="Flannel Overshirt",
+            status=Clothing.Status.RESERVED,
+        )
+
+        self.swap_request = SwapRequest.objects.create(
+            requester=self.requester,
+            requested_clothing=self.requested_clothing,
+            offered_clothing=self.offered_clothing,
+            status=SwapRequest.Status.ACCEPTED,
+        )
+
+        # Uses get_or_create in case a post_save signal auto-creates Transaction
+        self.transaction, _ = Transaction.objects.get_or_create(
+            swap_request=self.swap_request,
+            defaults={
+                "method": Transaction.Method.DELIVERY,
+                "status": Transaction.Status.WAITING,
+            },
+        )
+
+        self.detail_url = reverse(
+            "transaction-detail",
+            kwargs={"transaction_id": self.transaction.id},
+        )
+        self.update_url = reverse(
+            "transaction-update",
+            kwargs={"transaction_id": self.transaction.id},
+        )
+        self.start_url = reverse(
+            "transaction-start",
+            kwargs={"transaction_id": self.transaction.id},
+        )
+        self.cancel_url = reverse(
+            "transaction-cancel",
+            kwargs={"transaction_id": self.transaction.id},
+        )
+        self.validate_resi_url = reverse(
+            "transaction-validate-resi",
+            kwargs={"transaction_id": self.transaction.id},
+        )
+        self.unvalidate_resi_url = reverse(
+            "transaction-unvalidate-resi",
+            kwargs={"transaction_id": self.transaction.id},
+        )
+        self.confirm_received_url = reverse(
+            "transaction-confirm-received",
+            kwargs={"transaction_id": self.transaction.id},
+        )
+
+    # --- Permissions & Visibility ---
+
+    def test_unauthenticated_user_cannot_access_endpoints(self):
+        response = self.client.get(self.detail_url)
+        self.assertIn(
+            response.status_code,
+            [http_status.HTTP_401_UNAUTHORIZED, http_status.HTTP_403_FORBIDDEN],
+        )
+
+    def test_non_participant_gets_404(self):
+        self.client.force_authenticate(user=self.outsider)
+
+        self.assertEqual(
+            self.client.get(self.detail_url).status_code,
+            http_status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.patch(
+                self.update_url,
+                {"method": Transaction.Method.MEETUP},
+            ).status_code,
+            http_status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.post(self.start_url).status_code,
+            http_status.HTTP_404_NOT_FOUND,
+        )
+
+    # --- Detail Endpoint ---
+
+    def test_detail_view_returns_participant_specific_fields(self):
+        self.client.force_authenticate(user=self.requester)
+        res_requester = self.client.get(self.detail_url)
+        self.assertEqual(res_requester.status_code, http_status.HTTP_200_OK)
+        self.assertTrue(res_requester.data["is_requester"])
+        self.assertFalse(res_requester.data["my_received"])
+        self.assertFalse(res_requester.data["has_reviewed"])
+
+        self.client.force_authenticate(user=self.owner)
+        res_owner = self.client.get(self.detail_url)
+        self.assertEqual(res_owner.status_code, http_status.HTTP_200_OK)
+        self.assertFalse(res_owner.data["is_requester"])
+
+    # --- Update Endpoint ---
+
+    def test_participant_can_update_own_delivery_details_and_resets_flags(self):
+        self.transaction.requester_started = True
+        self.transaction.owner_started = True
+        self.transaction.requester_resi_valid = True
+        self.transaction.save()
+
+        self.client.force_authenticate(user=self.requester)
+        estimate = (timezone.now() + timedelta(days=3)).date().isoformat()
+        payload = {
+            "method": Transaction.Method.DELIVERY,
+            "requester_courier": "JNE",
+            "requester_resi": "JNE123456789",
+            "requester_delivery_estimate": estimate,
+            # Owner fields should be ignored by TransactionUpdateSerializer
+            "owner_resi": "HACKED_RESI",
+        }
+
+        response = self.client.patch(self.update_url, payload, format="json")
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+        self.transaction.refresh_from_db()
+        self.assertEqual(self.transaction.requester_courier, "JNE")
+        self.assertEqual(self.transaction.requester_resi, "JNE123456789")
+        self.assertIsNone(self.transaction.owner_resi)
+        self.assertFalse(self.transaction.requester_started)
+        self.assertFalse(self.transaction.owner_started)
+        self.assertFalse(self.transaction.requester_resi_valid)
+
+    def test_update_delivery_without_required_fields_returns_400(self):
+        self.client.force_authenticate(user=self.requester)
+        response = self.client.patch(
+            self.update_url,
+            {"method": Transaction.Method.DELIVERY},
+            format="json",
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn("requester_resi", response.data)
+        self.assertIn("requester_delivery_estimate", response.data)
+
+    def test_update_locked_after_transaction_starts_returns_403(self):
+        self.transaction.status = Transaction.Status.IN_PROGRESS
+        self.transaction.save(update_fields=["status"])
+
+        self.client.force_authenticate(user=self.requester)
+        response = self.client.patch(
+            self.update_url,
+            {"method": Transaction.Method.MEETUP},
+            format="json",
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    # --- Action Endpoints ---
+
+    def test_validate_and_unvalidate_other_party_resi(self):
+        self.transaction.owner_courier = "SiCepat"
+        self.transaction.owner_resi = "SCP987654321"
+        self.transaction.owner_delivery_estimate = (
+            timezone.now() + timedelta(days=2)
+        ).date()
+        self.transaction.save()
+
+        self.client.force_authenticate(user=self.requester)
+
+        validate_res = self.client.post(self.validate_resi_url)
+        self.assertEqual(validate_res.status_code, http_status.HTTP_200_OK)
+        self.assertTrue(validate_res.data["transaction"]["owner_resi_valid"])
+
+        unvalidate_res = self.client.post(self.unvalidate_resi_url)
+        self.assertEqual(unvalidate_res.status_code, http_status.HTTP_200_OK)
+        self.assertFalse(unvalidate_res.data["transaction"]["owner_resi_valid"])
+
+    def test_start_cancel_and_both_ready_transitions_to_in_progress(self):
+        # Populate and validate both resis so start_transaction preconditions pass
+        estimate = (timezone.now() + timedelta(days=2)).date()
+        self.transaction.requester_courier = "JNE"
+        self.transaction.requester_resi = "JNE111"
+        self.transaction.requester_delivery_estimate = estimate
+        self.transaction.requester_resi_valid = True
+        self.transaction.owner_courier = "J&T"
+        self.transaction.owner_resi = "JNT222"
+        self.transaction.owner_delivery_estimate = estimate
+        self.transaction.owner_resi_valid = True
+        self.transaction.save()
+
+        # 1. Requester marks ready
+        self.client.force_authenticate(user=self.requester)
+        res1 = self.client.post(self.start_url)
+        self.assertEqual(res1.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(
+            res1.data["transaction"]["status"],
+            Transaction.Status.WAITING,
+        )
+        self.assertTrue(res1.data["transaction"]["requester_started"])
+
+        # 2. Requester cancels readiness
+        cancel_res = self.client.post(self.cancel_url)
+        self.assertEqual(cancel_res.status_code, http_status.HTTP_200_OK)
+        self.assertFalse(cancel_res.data["transaction"]["requester_started"])
+
+        # 3. Both parties mark ready -> status becomes IN_PROGRESS
+        self.client.post(self.start_url)
+        self.client.force_authenticate(user=self.owner)
+        res2 = self.client.post(self.start_url)
+        self.assertEqual(res2.status_code, http_status.HTTP_200_OK, res2.data)
+        self.assertEqual(
+            res2.data["transaction"]["status"],
+            Transaction.Status.IN_PROGRESS,
+        )
+
+    def test_confirm_receipt_by_both_parties_completes_exchange(self):
+        self.transaction.status = Transaction.Status.IN_PROGRESS
+        self.transaction.save(update_fields=["status"])
+
+        self.client.force_authenticate(user=self.requester)
+        res1 = self.client.post(self.confirm_received_url)
+        self.assertEqual(res1.status_code, http_status.HTTP_200_OK)
+        self.assertTrue(res1.data["transaction"]["requester_received"])
+        self.assertEqual(
+            res1.data["transaction"]["status"],
+            Transaction.Status.IN_PROGRESS,
+        )
+
+        self.client.force_authenticate(user=self.owner)
+        res2 = self.client.post(self.confirm_received_url)
+        self.assertEqual(res2.status_code, http_status.HTTP_200_OK)
+        self.assertTrue(res2.data["transaction"]["owner_received"])
+        self.assertEqual(
+            res2.data["transaction"]["status"],
+            Transaction.Status.COMPLETED,
+        )
