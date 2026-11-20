@@ -52,3 +52,34 @@ class ReviewAPITest(ReviewTestData, APITestCase):
         response = self.client.post(self.api_url, {"rating": 5}, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(Review.objects.exists())
+
+    def test_public_reviews_hide_transaction_and_inactive_profiles(self):
+        self.submit()
+        url = reverse("review_rating_api:user-review-list", args=[self.owner.username])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertNotIn("transaction", response.data[0])
+        self.owner.is_active = False
+        self.owner.save()
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_transaction_reviews_require_participation(self):
+        self.submit()
+        self.client.force_authenticate(user=self.outsider)
+        self.assertEqual(self.client.get(self.api_url).status_code, 403)
+        self.assertEqual(
+            self.client.post(self.api_url, {"rating": 9}, format="json").status_code,
+            403,
+        )
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.get(self.api_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(str(response.data[0]["transaction"]), str(self.exchange.pk))
+
+    def test_anonymous_user_cannot_submit(self):
+        self.assertEqual(
+            self.client.post(self.api_url, {"rating": 5}, format="json").status_code,
+            403,
+        )
