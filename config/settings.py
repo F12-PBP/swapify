@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "apps.user_profile.apps.UserProfileConfig",
     "apps.review_rating.apps.ReviewRatingConfig",
     "lucide",
+    "rest_framework",
 ]
 
 if DEBUG:
