@@ -21,7 +21,11 @@ from rest_framework.views import APIView
 from apps.transaction.models import Transaction
 
 from .models import Review
-from .serializers import ReviewCreateSerializer, ReviewSerializer
+from .serializers import (
+    PublicReviewSerializer,
+    ReviewCreateSerializer,
+    ReviewSerializer,
+)
 from .services import submit_review
 
 
@@ -33,13 +37,14 @@ class UserReviewListAPIView(APIView):
         user = get_object_or_404(
             get_user_model(),
             username=username,
+            is_active=True,
         )
 
         reviews = Review.objects.filter(recipient=user).select_related(
             "author", "recipient", "transaction"
         )
 
-        serializer = ReviewSerializer(reviews, many=True)
+        serializer = PublicReviewSerializer(reviews, many=True)
 
         return Response(serializer.data)
 
@@ -48,7 +53,24 @@ class ReviewCreateAPIView(APIView):
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def get_transaction(self, request, transaction_id):
+        exchange = get_object_or_404(
+            Transaction.objects.select_related(
+                "swap_request__requester", "swap_request__requested_clothing__owner"
+            ),
+            pk=transaction_id,
+        )
+        if not exchange.is_participant(request.user):
+            raise DRFPermissionDenied("Only exchange participants can view reviews.")
+        return exchange
+
+    def get(self, request, transaction_id):
+        exchange = self.get_transaction(request, transaction_id)
+        reviews = exchange.reviews.select_related("author", "recipient", "transaction")
+        return Response(ReviewSerializer(reviews, many=True).data)
+
     def post(self, request, transaction_id):
+        self.get_transaction(request, transaction_id)
         input_serializer = ReviewCreateSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
 

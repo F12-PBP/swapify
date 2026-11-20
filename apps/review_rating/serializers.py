@@ -39,3 +39,9 @@ class ReviewCreateSerializer(serializers.Serializer):
         max_length=1000,
         default="",
     )
+
+
+class PublicReviewSerializer(ReviewSerializer):
+    class Meta(ReviewSerializer.Meta):
+        fields = ["id", "author", "recipient", "rating", "comment", "created_at"]
+        read_only_fields = fields
