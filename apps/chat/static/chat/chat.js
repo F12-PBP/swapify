@@ -32,11 +32,39 @@ window.MarketplacePages.register((scope) => {
         if (roomList) observer.observe(roomList);
         on(lifecycle.signal, "abort", () => observer.disconnect());
 
+        // const search = root.querySelector("[data-chat-search]");
+        // on(search, "input", () => {
+        //     let count = 0;
+        //     root.querySelectorAll(".chat-room[data-room-id]").forEach((room) => {
+        //         room.hidden = !room.textContent.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase());
+        //         if (!room.hidden) {
+        //             window.SwapifyMotion?.reveal(room, { duration: 240, delay: Math.min(count * 20, 80) });
+        //             count += 1;
+        //         }
+        //     });
+        //     root.querySelector("[data-no-results]").hidden = count !== 0;
+        //     positionIndicator();
+        // });
+
         const search = root.querySelector("[data-chat-search]");
-        on(search, "input", () => {
+
+        let searchTimer;
+        let searchSequence = 0;
+
+        on(lifecycle.signal, "abort", () => scope.clearTimeout(searchTimer));
+
+        function applySearch(query, matchingMessageRoomIds = new Set()) {
+            const normalizedQuery = query.toLocaleLowerCase();
             let count = 0;
+
             root.querySelectorAll(".chat-room[data-room-id]").forEach((room) => {
-                room.hidden = !room.textContent.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase());
+                const matchesContact = room.textContent.toLocaleLowerCase().includes(normalizedQuery);
+
+
+                const matchesMessage = matchingMessageRoomIds.has(room.dataset.roomId);
+
+                room.hidden = !(matchesContact || matchesMessage);
+
                 if (!room.hidden) {
                     window.SwapifyMotion?.reveal(room, { duration: 240, delay: Math.min(count * 20, 80) });
                     count += 1;
@@ -44,7 +72,37 @@ window.MarketplacePages.register((scope) => {
             });
             root.querySelector("[data-no-results]").hidden = count !== 0;
             positionIndicator();
+        }
+
+        on(search, "input", () => {
+            const currentSearch = ++searchSequence;
+            const query = search.value.trim();
+
+            scope.clearTimeout(searchTimer);
+
+            applySearch(query);
+            if(!query) return;
+
+            searchTimer = scope.timeout(async() => {
+                try {
+                    const url = new URL(root.dataset.unreadUrl, location.href);
+                    url.searchParams.set("q", query);
+
+                    const data = await request(url);
+
+                    if(currentSearch !== searchSequence || lifecycle.signal.aborted) return;
+
+                    const matchingMessageRoomIds = new Set(data.rooms.map((room) => String(room.id)));
+
+                    applySearch(query, matchingMessageRoomIds);
+                } catch {
+                    if(currentSearch === searchSequence && !lifecycle.signal.aborted) {
+                        applySearch(query);
+                    }
+                }
+            }, 250);
         });
+
 
         function startUnreadPolling() {
             const url = root.dataset.unreadUrl;
