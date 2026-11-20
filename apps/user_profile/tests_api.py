@@ -240,3 +240,46 @@ class ProfileWorkflowAPITest(APITestCase):
         self.user.profile.refresh_from_db()
         self.assertIn("photo", str(self.user.profile.profile_picture))
         upload.assert_called_once()
+
+    def test_foreign_location_token_is_rejected(self):
+        from django.core import signing
+
+        token = signing.dumps(
+            {
+                "user_id": self.user.pk + 100,
+                "latitude": -6.2,
+                "longitude": 106.8,
+                "district": "Beji",
+                "city": "Depok",
+                "province": "West Java",
+            },
+            salt="user_profile.location",
+        )
+        response = self.client.put(
+            reverse("user_profile_api:location"),
+            {
+                "district": "Beji",
+                "city": "Depok",
+                "province": "West Java",
+                "location_token": token,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.user.profile.refresh_from_db()
+        self.assertIsNone(self.user.profile.latitude)
+
+    @patch("apps.user_profile.api_views.upload_profile_picture")
+    def test_photo_upload_failure_preserves_profile(self, upload):
+        from apps.user_profile.services import ProfilePhotoUploadError
+        from apps.user_profile.tests import image_upload
+
+        upload.side_effect = ProfilePhotoUploadError("Upload unavailable.")
+        response = self.client.post(
+            reverse("user_profile_api:photo"),
+            {"new_profile_picture": image_upload()},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.user.profile.refresh_from_db()
+        self.assertFalse(self.user.profile.profile_picture)
