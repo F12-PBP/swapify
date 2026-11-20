@@ -1,0 +1,54 @@
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
+
+from apps.transaction.models import Transaction
+
+from .models import Review
+from .tests import ReviewTestData
+
+
+class ReviewAPITest(ReviewTestData, APITestCase):
+    def setUp(self):
+        self.api_url = reverse(
+            "review_rating_api:review-create", args=[self.exchange.pk]
+        )
+
+    def test_participant_can_create_review(self):
+        self.client.force_authenticate(user=self.requester)
+        response = self.client.post(
+            self.api_url, {"rating": 5, "comment": "Pertukaran lancar."}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["author"], self.requester.username)
+        self.assertEqual(response.data["recipient"], self.owner.username)
+        self.assertEqual(Review.objects.count(), 1)
+
+    def test_invalid_rating_is_rejected(self):
+        self.client.force_authenticate(user=self.requester)
+        response = self.client.post(self.api_url, {"rating": 6}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("rating", response.data)
+        self.assertFalse(Review.objects.exists())
+
+    def test_cannot_review_same_transaction_twice(self):
+        self.client.force_authenticate(user=self.requester)
+        first = self.client.post(self.api_url, {"rating": 5}, format="json")
+        second = self.client.post(self.api_url, {"rating": 4}, format="json")
+        self.assertEqual(first.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(second.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Review.objects.count(), 1)
+
+    def test_outsider_cannot_create_review(self):
+        self.client.force_authenticate(user=self.outsider)
+        response = self.client.post(self.api_url, {"rating": 5}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(Review.objects.exists())
+
+    def test_unfinished_transaction_cannot_be_reviewed(self):
+        self.exchange.status = Transaction.Status.WAITING
+        self.exchange.save(update_fields=["status"])
+        self.client.force_authenticate(user=self.requester)
+        response = self.client.post(self.api_url, {"rating": 5}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(Review.objects.exists())
