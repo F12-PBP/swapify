@@ -31,6 +31,23 @@ class ChatRoomListView(LoginRequiredMixin, ListView):
 
     def get(self, request, *args, **kwargs):
         if wants_json(request):
+            term = request.GET.get("q", "").strip()
+
+            if term:
+                matching_room_ids = (
+                    ChatRoom.objects.for_user(request.user)
+                    .filter(messages__message__icontains=term)
+                    .value_list("pk", flat=True)
+                    .distinct()
+                )
+
+                return json_response(
+                    {
+                        "ok": True,
+                        "rooms": [{"id": room_id} for room_id in matching_room_ids],
+                    }
+                )
+
             return json_response(
                 {
                     "ok": True,

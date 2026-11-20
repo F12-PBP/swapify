@@ -31,6 +31,7 @@ urlpatterns = [
     path("chat/", include("apps.chat.urls")),
     path("profile/", include("apps.user_profile.urls")),
     path("reviews/", include("apps.review_rating.urls")),
+    path("chat/", include("apps.chat.api_urls")),
 ]
 
 if settings.DEBUG:
